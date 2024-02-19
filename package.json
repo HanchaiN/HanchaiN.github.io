@@ -30,7 +30,7 @@
     "gatsby-plugin-sass": "^6.12.3",
     "gatsby-plugin-sharp": "^5.12.3",
     "gatsby-plugin-sitemap": "^6.11.0",
-    "gatsby-source-filesystem": "^5.11.0",
+    "gatsby-source-filesystem": "^5.13.1",
     "gifencoder": "^2.0.1",
     "katex": "^0.16.9",
     "mathjs": "^12.1.0",
