@@ -33,7 +33,7 @@
     "gatsby-source-filesystem": "^5.11.0",
     "gifencoder": "^2.0.1",
     "katex": "^0.16.9",
-    "mathjs": "^12.1.0",
+    "mathjs": "^12.4.1",
     "node-gyp": "^10.0.1",
     "p5": "^1.9.0",
     "react": "^18.2.0",
