@@ -20,7 +20,7 @@
     "@catppuccin/palette": "^1.0.3",
     "@material/web": "^1.0.1",
     "@mdx-js/react": "^2.3.0",
-    "@thi.ng/color": "^5.6.10",
+    "@thi.ng/color": "^5.6.34",
     "base64-stream": "^1.0.0",
     "d3-color": "^3.1.0",
     "gatsby": "^5.13.3",
