@@ -25,7 +25,7 @@
     "@catppuccin/palette": "^1.7.1",
     "@material/web": "^2.2.0",
     "@mdx-js/react": "^3.1.0",
-    "@thi.ng/color": "^5.7.18",
+    "@thi.ng/color": "^5.7.21",
     "base64-stream": "^1.0.0",
     "esm-potrace-wasm": "^0.4.1",
     "gatsby": "^5.14.1",
