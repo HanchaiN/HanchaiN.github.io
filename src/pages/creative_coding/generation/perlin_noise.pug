@@ -1,0 +1,25 @@
+extends /components/layout.pug
+
+block title
+  title Perlin Noise
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/generation/perlin_noise/index.js';
+
+    const root = document.getElementById('perlin');
+    execute().start(
+      root.querySelector('#canvas'),
+    );
+
+block content
+  h1 Perlin Noise
+  #perlin.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+  p.
+    Perlin noise is a type of gradient noise developed by Ken Perlin in 1983.
+    It has many uses, including but not limited to:
+    procedurally generating terrain, applying pseudo-random changes to a variable,
+    and assisting in the creation of image textures.
+    It is most commonly implemented in two, three, or four dimensions,
+    but can be defined for any number of dimensions.

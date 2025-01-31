@@ -1,0 +1,46 @@
+extends /components/layout.pug
+
+block title
+  title Color Quantization
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/image_processing/color_quantization/index.js';
+
+    const root = document.getElementById('color-quantization');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#svg-config'),
+      root.querySelector('#config'),
+    );
+
+block content
+  h1 Color Quantization
+  #color-quantization.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    svg#svg-canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    form.data-container#config
+      label(for='image') Image:
+      input#image(type='file', accept='image/*')
+      label(for='sample-dim') Sample Dimension:
+      input#sample-dim(type='number', value='100', min='50', max='5000', step='1')
+      button#autorun(type='button') Autorun
+      button#update-color(type='button') Update Colors
+      label(for='palette-count') Color Count:
+      input#palette-count(type='number', value='0', min='0', step='1')
+      button#calc(type='button') Calculate
+      button#snap(type='button') Snap
+      button#eval(type='button') Evaluate
+      label(for='palette-score') Silhouette Score:
+      input#palette-score(type='number', value='0', readonly, disabled)
+      button#draw-raw(type='button') Draw (Raw)
+      button#draw-quant(type='button') Quantize
+      button#draw-dither(type='button') Dither
+      button#draw-svg(type='button') Vectorize
+      textarea#palette-text
+      div#palette
+
+  p.
+    In computer graphics, color quantization or color image quantization is quantization applied to color spaces;
+    it is a process that reduces the number of distinct colors used in an image,
+    usually with the intention that the new image should be as visually similar as possible to the original image.

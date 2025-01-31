@@ -1,0 +1,20 @@
+extends /components/layout.pug
+
+block title
+  title Dynamical System
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/simulation/particles/dynamical_system/index.js';
+
+    const root = document.getElementById('dynamic-system');
+    execute().start(
+      root.querySelector('#canvas'),
+    );
+
+block content
+  h1 Dynamical System
+  #dynamic-system.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+  p.
+    In physics, a dynamical system is described as a “particle or ensemble of particles whose state varies over time and thus obeys differential equations involving time derivatives”.

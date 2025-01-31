@@ -1,0 +1,51 @@
+extends /components/layout.pug
+
+block title
+  title Ideal Gas
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/simulation/particles/ideal_gas/index.js';
+
+    const root = document.getElementById('dynamic-system');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#config'),
+    );
+
+block content
+  h1 Ideal Gas
+  #dynamic-system.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    form#config.data-container
+      label(for='volume')
+        | Volume:
+        span#volume-value
+      input#volume(type='range', step='1e-5')
+      label(for='temperature')
+        | Temperature:
+        span#temperature-value
+      input#temperature(type='range', step='1e-16')
+      label(for='pressure')
+        | Pressure:
+        span#pressure-value
+      input#pressure(type='range', step='1e-16', readonly, disabled)
+      label(for="entropy")
+        | Entropy:
+        span#entropy-value
+      input#entropy(type='range', step='1e-16', readonly, disabled)
+  p.
+    An ideal gas is a theoretical gas composed of many randomly moving point particles that are not subject to interparticle interactions.
+    The ideal gas concept is useful because it obeys the ideal gas law, a simplified equation of state, and is amenable to analysis under statistical mechanics.
+    The requirement of zero interaction can often be relaxed if, for example, the interaction is perfectly elastic or regarded as point-like collisions.
+  p.
+    The Sackur–Tetrode equation expresses the entropy \(S\) of a monatomic ideal gas
+    in terms of its thermodynamic state—specifically,
+    its volume \(V\),
+    internal energy \(U\),
+    and the number of particles \(N\):
+  p.
+    \[\displaystyle {\frac {S}{k_{\rm {B}}N}}=\ln \left[{\frac {V}{N}}\left({\frac {4\pi m}{3h^{2}}}{\frac {U}{N}}\right)^{3/2}\right]+{\frac {5}{2}},\]
+    where \(k_{\mathrm {B}}\) is the Boltzmann constant,
+    \(m\) is the mass of a gas particle and \(h\) is
+    the Planck constant.

@@ -1,0 +1,25 @@
+extends /components/layout.pug
+
+block title
+  title Fractal Trees
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/generation/fractal/fractal_tree_curve/index.js';
+
+    const root = document.getElementById('fractral-tree-curve');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#config'),
+    );
+
+block content
+  h1 Fractal Trees
+  #fractral-tree-curve.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    form#config.data-container
+      button#set(type='button') Regenerate
+      button#box(type='button') Toggle Box
+      button#reset(type='button') Restart
+  p.
+    The #[a(href='https://en.wikipedia.org/wiki/Fibonacci_sequence') Fibonacci spiral]: an approximation of the golden spiral created by drawing circular arcs connecting the opposite corners of squares in the Fibonacci tiling.
