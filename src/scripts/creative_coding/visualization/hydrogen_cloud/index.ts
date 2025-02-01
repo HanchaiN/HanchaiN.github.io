@@ -49,7 +49,7 @@ export default function execute() {
       0.05,
       constrain(brightness, 0, 1),
     ]);
-    this.color(c[0] * 255, c[1] * 255, c[2] * 255, 1);
+    this.color(c[0], c[1], c[2], 1);
   }
 
   return {

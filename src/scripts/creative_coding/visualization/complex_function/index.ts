@@ -8,7 +8,7 @@ import {
 } from "@/scripts/utils/math/index.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/types.ts";
 import convert_color from "@/scripts/utils/color/conversion.js";
-import { getPaletteBaseColor } from "@/scripts/utils/color/palette";
+import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 
 const okhcl2srgb = convert_color("okhcl", "srgb")!;
 

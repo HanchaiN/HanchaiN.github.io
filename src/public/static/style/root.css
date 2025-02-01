@@ -9,6 +9,11 @@
 }
 
 @font-face {
+  font-family: "Monaspace Krypton";
+  src: url("/static/fonts/MonaspaceKryptonVar.woff2") format("woff2");
+}
+
+@font-face {
   font-family: "Monaspace Xeon";
   src: url("/static/fonts/MonaspaceXeonVar.woff2") format("woff2");
 }
@@ -19,13 +24,8 @@
 }
 
 @font-face {
-  font-family: "Monaspace Krypton";
-  src: url("/static/fonts/MonaspaceKryptonVar.woff2") format("woff2");
-}
-
-@font-face {
   font-family: "Symbols Nerd Font";
-  src: url("/static/fonts/SymbolsNerdFont.ttf") format("ttf");
+  src: url("/static/fonts/SymbolsNerdFont.woff2") format("woff2");
 }
 
 @media (prefers-color-scheme: light) {
