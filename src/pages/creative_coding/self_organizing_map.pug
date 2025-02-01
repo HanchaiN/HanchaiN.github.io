@@ -1,0 +1,46 @@
+extends /components/layout.pug
+
+block title
+  title Self-organizing Map
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/self_organizing_map/index.js';
+
+    const root = document.getElementById('som');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#config'),
+    );
+
+block content
+  h1 Self-organizing Map
+  #som.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    form#config.data-container
+      label(for='image') Image:
+      input#image(type='file', accept='image/*')
+      label(for='range')
+        | Initial Range:
+        slot#range-value
+      input#range(type='range', min='0', max='1', step='1e-5')
+      label(for='learning-rate')
+        | Initial Learning Rate:
+        slot#learning-rate-value
+      input#learning-rate(type='range', min='0', max='1', step='1e-5')
+      label(for='range-decay-rate') Range Decay Rate:
+      input#range-decay-rate(type='number', min='0')
+      label(for='learning-decay-rate') Learning Rate Decay Rate:
+      input#learning-decay-rate(type='number', min='0')
+      label(for='color-choices')
+        | Color Choices:
+        slot#color-choices-value
+      input#color-choices(type='number', min='1', max='10', step='1')
+      label(for='weight-positions') Position Weighting:
+      input#weight-positions(type='number')
+      label(for='weight-colors') Color Weighting:
+      input#weight-colors(type='number')
+      label(for='iteration-count') Iteration Count:
+      input#iteration-count(type='number', disabled)
+  p.
+    A self-organizing map (SOM) or self-organizing feature map (SOFM) is an unsupervised machine learning technique used to produce a low-dimensional (typically two-dimensional) representation of a higher dimensional data set while preserving the topological structure of the data.

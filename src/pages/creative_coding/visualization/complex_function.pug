@@ -1,0 +1,22 @@
+extends /components/layout.pug
+
+block title
+  title Complex Function
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/visualization/complex_function/index.js';
+
+    const root = document.getElementById('complex-function');
+    execute().start(
+      root.querySelector('#canvas'),
+    );
+
+block content
+  h1 Complex Function
+  #complex-function.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+  p.
+    In complex analysis, domain coloring or a color wheel graph is a
+    technique for visualizing complex functions by assigning a color to
+    each point of the complex plane.

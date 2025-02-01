@@ -1,0 +1,21 @@
+extends /components/layout.pug
+
+block title
+  title DTMF
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/dtmf/index.js';
+
+    const root = document.getElementById('dtmf');
+    execute().start(
+    );
+
+block content
+  h1 DTMF
+  #dtmf.preview-container
+  p.
+    Dual-tone multi-frequency signaling (DTMF) is a telecommunication
+    signaling system using the voice-frequency band over telephone lines
+    between telephone equipment and other communications devices and
+    switching centers.

@@ -1,0 +1,38 @@
+extends /components/layout.pug
+
+block title
+  title 2D Fourier Transform
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/visualization/2d_fourier/index.js';
+
+    const root = document.getElementById('2d-fourier');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#kspace'),
+      root.querySelector('#config'),
+    );
+
+block content
+  h1 2D Fourier Transform
+  #2d-fourier.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    canvas#kspace.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    form.data-container#config
+      label(for='image') Image:
+      input#image(type='file', accept='image/*')
+      label(for='fft-size')
+        | FFT Size:
+        slot#fft-size-value
+      input#fft-size(type='number', step='1')
+      label(for='render-size')
+        | Render Size:
+        slot#render-size-value
+      input#render-size(type='number', step='1')
+      label(for='overlay')
+        | Overlay:
+        slot#overlay-value
+      input#overlay(type='number', min='0', max='1', step='0.01', value='0.25')
+  p.
+    In magnetic resonance imaging (MRI), the k-space or reciprocal space (a mathematical space of spatial frequencies) is obtained as the 2D or 3D Fourier transform of the image measured. It was introduced in 1979 by Likes and in 1983 by Ljunggren and Twieg.

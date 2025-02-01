@@ -2,24 +2,24 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["DOM", "ESNext"],
-    "jsx": "react",
     "module": "ESNext",
-    "moduleResolution": "Node10",
+    "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "three/addons/*": ["three/examples/jsm/*"]
     },
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "outDir": "./dist/static/scripts",
+    "plugins": [
+      {
+        "transform": "typescript-transform-paths",
+        "exclude": ["**/node_modules/**"]
+      }
+    ]
   },
-  "include": [
-    "./src/**/*",
-    "./gatsby-node.ts",
-    "./gatsby-config.ts",
-    "./gatsby-ssr.tsx",
-    "./gatsby-browser.tsx",
-    "./plugins/**/*"
-  ]
+  "include": ["./src/scripts/**/*"]
 }

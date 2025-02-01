@@ -1,0 +1,20 @@
+extends /components/layout.pug
+
+block title
+  title Hydrogen Pilot Wave
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/visualization/hydrogen_pilot/index.js';
+
+    const root = document.getElementById('h-pilot');
+    execute().start(
+      root.querySelector('#canvas'),
+    );
+
+block content
+  h1 Hydrogen Pilot Wave
+  #h-pilot.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+  p.
+    The de Broglie–Bohm theory, also known as the pilot wave theory, Bohmian mechanics, Bohm's interpretation, and the causal interpretation, is an interpretation of quantum mechanics. In addition to the wavefunction, it also postulates an actual configuration of particles exists even when unobserved. The evolution over time of the configuration of all particles is defined by a guiding equation. The evolution of the wave function over time is given by the Schrödinger equation.

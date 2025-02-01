@@ -1,0 +1,31 @@
+extends /components/layout.pug
+
+block title
+  title Fractal Trees
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/generation/fractal/fractal_tree/index.js';
+
+    const root = document.getElementById('fractral-tree');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#config'),
+    );
+
+block content
+  h1 Fractal Trees
+  #fractral-tree.preview-container
+    div#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    form#config.data-container
+      label(for='alpha') Unbranched:
+      input#alpha(type='range', value='0', min='-1', max='1', step='1e-5')
+      label(for='beta1') Branched (new):
+      input#beta1(type='range', value='0', min='-1', max='1', step='1e-5')
+      label(for='beta2') Branched (old):
+      input#beta2(type='range', value='0', min='-1', max='1', step='1e-5')
+      button#reset(type='button') Toggle Leaves
+  p.
+    An L-system or Lindenmayer system is a parallel rewriting system and a type of formal grammar.
+  p.
+    Lindenmayer's original L-system for modelling the growth of algae. The result is the sequence of Fibonacci words. If we count the length of each string, we obtain the famous Fibonacci sequence of numbers (skipping the first 1, due to our choice of axiom).

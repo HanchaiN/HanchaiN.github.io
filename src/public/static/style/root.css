@@ -1,0 +1,182 @@
+@font-face {
+  font-family: "Monaspace Neon";
+  src: url("/static/fonts/MonaspaceNeonVar.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Monaspace Argon";
+  src: url("/static/fonts/MonaspaceArgonVar.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Monaspace Xeon";
+  src: url("/static/fonts/MonaspaceXeonVar.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Monaspace Radon";
+  src: url("/static/fonts/MonaspaceRadonVar.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Monaspace Krypton";
+  src: url("/static/fonts/MonaspaceKryptonVar.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Symbols Nerd Font";
+  src: url("/static/fonts/SymbolsNerdFont.ttf") format("ttf");
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    /* tx */
+    --bs-body-color: rgb(16, 15, 15);
+    --bs-body-color-rgb: 16, 15, 15;
+    /* bg */
+    --bs-body-bg: rgb(255, 252, 240);
+    --bs-body-bg-rgb: 255, 252, 240;
+    /* tx2 */
+    --bs-secondary-color: rgb(111, 110, 105);
+    --bs-secondary-color-rgb: 111, 110, 105;
+    /* bg2 */
+    --bs-secondary-bg: rgb(242, 240, 229);
+    --bs-secondary-bg-rgb: 242, 240, 229;
+    /* tx3 */
+    --bs-tertiary-color: rgb(183, 181, 172);
+    --bs-tertiary-color-rgb: 183, 181, 172;
+    /* bg2 */
+    --bs-tertiary-bg: rgb(242, 240, 229);
+    --bs-tertiary-bg-rgb: 242, 240, 229;
+    /* b/w */
+    --bs-emphasis-color: rgb(0, 0, 0);
+    --bs-emphasis-color-rgb: 0, 0, 0;
+    /* ui */
+    --bs-border-color: rgb(230, 228, 217);
+    --bs-border-color-rgb: 230, 228, 217;
+    /* cy */
+    --bs-primary: rgb(36, 131, 123);
+    --bs-primary-rgb: 36, 131, 123;
+    /* cy~bg2 */
+    --bs-primary-subtle: rgb(221, 241, 228);
+    /* cy~ui3 */
+    --bs-primary-border-subtle: rgb(135, 211, 195);
+    /* cy~tx */
+    --bs-primary-text-emphasis: rgb(16, 31, 29);
+    /* gr */
+    --bs-success: rgb(102, 128, 11);
+    --bs-success-rgb: 102, 128, 11;
+    /* gr~bg2 */
+    --bs-success-subtle: rgb(237, 238, 207);
+    /* gr~ui3 */
+    --bs-success-border-subtle: rgb(190, 201, 126);
+    /* gr~tx */
+    --bs-success-text-emphasis: rgb(26, 30, 12);
+    /* re */
+    --bs-danger: rgb(175, 48, 41);
+    --bs-danger-rgb: 175, 48, 41;
+    /* re~bg2 */
+    --bs-danger-subtle: rgb(255, 225, 213);
+    /* re~ui3 */
+    --bs-danger-border-subtle: rgb(248, 154, 138);
+    /* re~tx */
+    --bs-danger-text-emphasis: rgb(38, 19, 18);
+    /* or */
+    --bs-warning: rgb(188, 82, 21);
+    --bs-warning-rgb: 188, 82, 21;
+    /* or~bg2 */
+    --bs-warning-subtle: rgb(255, 231, 206);
+    /* or~ui3 */
+    --bs-warning-border-subtle: rgb(249, 174, 119);
+    /* or~tx */
+    --bs-warning-text-emphasis: rgb(39, 24, 14);
+    /* bl */
+    --bs-info: rgb(32, 94, 166);
+    --bs-info-rgb: 32, 94, 166;
+    /* bl~bg2 */
+    --bs-info-subtle: rgb(225, 236, 235);
+    /* bl~ui3 */
+    --bs-info-border-subtle: rgb(146, 191, 219);
+    /* bl~tx */
+    --bs-info-text-emphasis: rgb(16, 26, 36);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* tx */
+    --bs-body-color: rgb(206, 205, 195);
+    --bs-body-color-rgb: 206, 205, 195;
+    /* bg */
+    --bs-body-bg: rgb(16, 15, 15);
+    --bs-body-bg-rgb: 16, 15, 15;
+    /* tx2 */
+    --bs-secondary-color: rgb(135, 133, 128);
+    --bs-secondary-color-rgb: 135, 133, 128;
+    /* bg2 */
+    --bs-secondary-bg: rgb(28, 27, 26);
+    --bs-secondary-bg-rgb: 28, 27, 26;
+    /* tx3 */
+    --bs-tertiary-color: rgb(87, 86, 83);
+    --bs-tertiary-color-rgb: 87, 86, 83;
+    /* bg2 */
+    --bs-tertiary-bg: rgb(28, 27, 26);
+    --bs-tertiary-bg-rgb: 28, 27, 26;
+    /* b/w */
+    --bs-emphasis-color: rgb(255, 255, 255);
+    --bs-emphasis-color-rgb: 255, 255, 255;
+    /* ui */
+    --bs-border-color: rgb(40, 39, 38);
+    --bs-border-color-rgb: 40, 39, 38;
+    /* cy */
+    --bs-primary: rgb(58, 169, 159);
+    --bs-primary-rgb: 58, 169, 159;
+    /* cy~bg2 */
+    --bs-primary-subtle: rgb(16, 31, 29);
+    /* cy~ui3 */
+    --bs-primary-border-subtle: rgb(22, 79, 74);
+    /* cy~tx */
+    --bs-primary-text-emphasis: rgb(135, 211, 195);
+    /* gr */
+    --bs-success: rgb(135, 154, 57);
+    --bs-success-rgb: 135, 154, 57;
+    /* gr~bg2 */
+    --bs-success-subtle: rgb(26, 30, 12);
+    /* gr~ui3 */
+    --bs-success-border-subtle: rgb(61, 76, 7);
+    /* gr~tx */
+    --bs-success-text-emphasis: rgb(190, 201, 126);
+    /* re */
+    --bs-danger: rgb(209, 77, 65);
+    --bs-danger-rgb: 209, 77, 65;
+    /* re~bg2 */
+    --bs-danger-subtle: rgb(38, 19, 18);
+    /* re~ui3 */
+    --bs-danger-border-subtle: rgb(108, 32, 28);
+    /* re~tx */
+    --bs-danger-text-emphasis: rgb(248, 154, 138);
+    /* or */
+    --bs-warning: rgb(218, 112, 44);
+    --bs-warning-rgb: 218, 112, 44;
+    /* or~bg2 */
+    --bs-warning-subtle: rgb(39, 24, 14);
+    /* or~ui3 */
+    --bs-warning-border-subtle: rgb(113, 50, 13);
+    /* or~tx */
+    --bs-warning-text-emphasis: rgb(249, 174, 119);
+    /* bl */
+    --bs-info: rgb(67, 133, 190);
+    --bs-info-rgb: 67, 133, 190;
+    /* bl~bg2 */
+    --bs-info-subtle: rgb(16, 26, 36);
+    /* bl~ui3 */
+    --bs-info-border-subtle: rgb(22, 59, 102);
+    /* bl~tx */
+    --bs-info-text-emphasis: rgb(146, 191, 219);
+  }
+}
+
+:root {
+  --bs-font-sans-serif: "Monaspace Neon", monospace, "Symbols Nerd Font";
+  --bs-font-monospace: "Monaspace Xenon", monospace, "Symbols Nerd Font";
+}

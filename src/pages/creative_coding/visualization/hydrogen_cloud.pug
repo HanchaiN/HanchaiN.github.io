@@ -1,0 +1,29 @@
+extends /components/layout.pug
+
+block title
+  title Hydrogen Cloud
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/visualization/hydrogen_cloud/index.js';
+
+    const root = document.getElementById('h-cloud');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#foreground'),
+    );
+
+block content
+  h1 Hydrogen Cloud
+  #h-cloud.preview-container(style='position: relative;')
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500', style='z-index: -1; position: absolute;')
+    canvas#foreground.border.border-primary.rounded.border-opacity-50(width='500', height='500', style='z-index: 0;')
+  p.
+    In the solution to the Schrödinger equation, which is non-relativistic,
+    hydrogen-like atomic orbitals are eigenfunctions of
+    the one-electron angular momentum operator \(L\)
+    and its \(z\) component \(L_z\)​.
+    A hydrogen-like atomic orbital is uniquely identified by
+    the values of the principal quantum number \(n\),
+    the angular momentum quantum number \(l\),
+    and the magnetic quantum number \(m_l\).

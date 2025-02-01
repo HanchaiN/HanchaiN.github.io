@@ -1,0 +1,20 @@
+extends /components/layout.pug
+
+block title
+  title Spectral Graph
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/visualization/spectral_graph/index.js';
+
+    const root = document.getElementById('poincare');
+    execute().start(
+      root.querySelector('#canvas'),
+    );
+
+block content
+  h1 Spectral Graph
+  #poincare.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+  p.
+    Spectral layout is a class of algorithm for drawing graphs. The layout uses the eigenvectors of a matrix, such as the Laplace matrix of the graph, as Cartesian coordinates of the graph's vertices.

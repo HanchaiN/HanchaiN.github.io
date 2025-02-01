@@ -1,0 +1,25 @@
+extends /components/layout.pug
+
+block title
+  title Dithering
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/image_processing/dithering/index.js';
+
+    const root = document.getElementById('dithering');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#config'),
+    );
+
+block content
+  h1 Dithering
+  #dithering.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    form.data-container#config
+      label(for='image') Image:
+      input#image(type='file', accept='image/*')
+  p.
+    Dither is an intentionally applied form of noise used to randomize quantization error,
+    preventing large-scale patterns such as color banding in images.
