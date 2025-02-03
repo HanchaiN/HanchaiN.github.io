@@ -20,7 +20,7 @@
     "@types/mathjs": "^9.4.2",
     "@types/p5": "^1.7.6",
     "@types/potrace": "^2.1.5",
-    "@types/three": "^0.171.0",
+    "@types/three": "^0.173.0",
     "@typescript-eslint/eslint-plugin": "^8.19.0",
     "@typescript-eslint/parser": "^8.21.0",
     "base64-stream": "^1.0.0",
@@ -31,7 +31,7 @@
     "p5": "^1.11.1",
     "potrace": "^2.1.8",
     "prettier": "^3.4.2",
-    "three": "^0.171.0"
+    "three": "^0.173.0"
   },
   "scripts": {
     "build": "yarn build:base && yarn build:script",
