@@ -2788,7 +2788,7 @@ __metadata:
     eslint: "npm:^9.19.0"
     gifencoder: "npm:^2.0.1"
     katex: "npm:^0.16.21"
-    mathjs: "npm:^14.0.1"
+    mathjs: "npm:^14.2.1"
     p5: "npm:^1.11.1"
     potrace: "npm:^2.1.8"
     prettier: "npm:^3.4.2"
@@ -3419,7 +3419,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mathjs@npm:*, mathjs@npm:^14.0.1":
+"mathjs@npm:*":
   version: 14.2.0
   resolution: "mathjs@npm:14.2.0"
   dependencies:
@@ -3436,6 +3436,25 @@ __metadata:
   bin:
     mathjs: bin/cli.js
   checksum: 10c0/55fe6aae231732c76e9570d80b41c0159451bddaf4f4ea485025739dd9e2207f7423dbd343d1f805104b5f33a61fd5a973f7e3e300801fbd776e5fe8f5c7c1d9
+  languageName: node
+  linkType: hard
+
+"mathjs@npm:^14.2.1":
+  version: 14.2.1
+  resolution: "mathjs@npm:14.2.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.25.7"
+    complex.js: "npm:^2.2.5"
+    decimal.js: "npm:^10.4.3"
+    escape-latex: "npm:^1.2.0"
+    fraction.js: "npm:^5.2.1"
+    javascript-natural-sort: "npm:^0.7.1"
+    seedrandom: "npm:^3.0.5"
+    tiny-emitter: "npm:^2.1.0"
+    typed-function: "npm:^4.2.1"
+  bin:
+    mathjs: bin/cli.js
+  checksum: 10c0/c15b197d58072c52df14feada9fb95ed8c598072407e5783d5d96b2cfccb42f534631a6771a449a0e7d40505a1f49f47f4ed114131b2bcb640da02655affd6bc
   languageName: node
   linkType: hard
 
