@@ -1,0 +1,23 @@
+extends /components/layout.pug
+
+block title
+  title Autocorrelation
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/audio_processing/autocorrelation/index.js';
+
+    const root = document.getElementById('autocorrelation');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#config'),
+    );
+
+block content
+  h1 Autocorrelation
+  #autocorrelation.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    form#config.data-container
+      button#start(type='button') Start
+  p.
+    Autocorrelation, sometimes known as serial correlation in the discrete time case, measures the correlation of a signal with a delayed copy of itself. Autocorrelation is widely used in signal processing, time domain and time series analysis to understand the behavior of data over time.

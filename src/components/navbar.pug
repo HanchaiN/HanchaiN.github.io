@@ -10,6 +10,13 @@ nav.navbar.navbar-expand-lg.sticky-top.bg-body-tertiary
         li.nav-item.dropdown
           a.nav-link.dropdown-toggle(href='/creative_coding', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Creative Coding
           ul.dropdown-menu
+            li.dropdown-item.dropend
+              span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Audio Processing
+              ul.dropdown-menu
+                li.dropdown-item
+                  a.nav-link(href='/creative_coding/audio_processing/autocorrelation') Autocorrelation
+                li.dropdown-item
+                  a.nav-link(href='/creative_coding/audio_processing/spectrogram') Spectrogram
             li.dropdown-item
               a.nav-link(href='/creative_coding/dtmf') DTMF
             li.dropdown-item.dropend
@@ -37,10 +44,6 @@ nav.navbar.navbar-expand-lg.sticky-top.bg-body-tertiary
                   a.nav-link(href='/creative_coding/image_processing/dithering') Dithering
                 li.dropdown-item
                   a.nav-link(href='/creative_coding/image_processing/edge_detection') Edge Detection
-            li.dropdown-item
-              a.nav-link(href='/creative_coding/ray_tracing') Ray Tracing
-            li.dropdown-item
-              a.nav-link(href='/creative_coding/self_organizing_map') Self-Organizing Map
             li.dropdown-item.dropend
               span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Simulation
               ul.dropdown-menu
@@ -63,9 +66,13 @@ nav.navbar.navbar-expand-lg.sticky-top.bg-body-tertiary
                     li.dropdown-item
                       a.nav-link(href='/creative_coding/simulation/particles/ideal_gas') Ideal Gas
                 li.dropdown-item
+                  a.nav-link(href='/creative_coding/simulation/ray_tracing') Ray Tracing
+                li.dropdown-item
                   a.nav-link(href='/creative_coding/simulation/reaction_diffusion') Reaction-Diffusion
                 li.dropdown-item
                   a.nav-link(href='/creative_coding/simulation/sandpile') Sandpile
+                li.dropdown-item
+                  a.nav-link(href='/creative_coding/simulation/self_organizing_map') Self-Organizing Map
                 li.dropdown-item
                   a.nav-link(href='/creative_coding/simulation/slit_experiment') Slit Experiment
             li.dropdown-item.dropend

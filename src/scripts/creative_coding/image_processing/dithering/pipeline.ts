@@ -6,16 +6,21 @@ import {
 } from "@/scripts/utils/math/index.js";
 import { softargmax } from "@/scripts/utils/math/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
+import type {
+  ColorSpace,
+  SRGBColor,
+} from "@/scripts/utils/color/conversion.js";
 
-const srgb2oklab = convert_color("srgb", "oklab")!;
+const mode: ColorSpace = "xyz";
+const srgb2embed = convert_color("srgb", mode)!;
 
 export function applyDithering(
   buffer: ImageData,
-  color_palette: [r: number, g: number, b: number][],
+  color_palette: SRGBColor[],
   temperature = 0,
 ) {
-  const embed = (c: [r: number, g: number, b: number]) => {
-    return srgb2oklab(c);
+  const embed = (c: SRGBColor) => {
+    return srgb2embed(c);
   };
   const color_palette_ = color_palette.map(embed);
   const err_diffusion: [[number, number], number][] = [

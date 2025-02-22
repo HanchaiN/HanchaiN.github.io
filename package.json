@@ -3,7 +3,7 @@
   "packageManager": "yarn@4.6.0",
   "dependencies": {
     "pug": "^3.0.3",
-    "serve": "^14.2.4",
+    "serve-handler": "^6.1.6",
     "ts-patch": "^3.3.0",
     "typescript": "^5.7.3",
     "typescript-transform-paths": "^3.5.3"
@@ -12,14 +12,13 @@
     "@eslint/compat": "^1.2.4",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.20.0",
-    "@thi.ng/color": "^5.7.21",
     "@types/base64-stream": "^1.0.0",
     "@types/eslint": "^9.6.1",
     "@types/gifencoder": "^2.0.3",
     "@types/katex": "^0.16.7",
-    "@types/mathjs": "^9.4.2",
     "@types/p5": "^1.7.6",
     "@types/potrace": "^2.1.5",
+    "@types/serve-handler": "^6",
     "@types/three": "^0.173.0",
     "@typescript-eslint/eslint-plugin": "^8.23.0",
     "@typescript-eslint/parser": "^8.21.0",
@@ -34,10 +33,10 @@
     "three": "^0.173.0"
   },
   "scripts": {
-    "build": "yarn build:base && yarn build:script",
-    "build:base": "node src/bin/build.js",
     "build:script": "tspc",
-    "serve": "serve dist",
+    "build": "node src/bin/build.js",
+    "serve": "node src/bin/serve.js --serve",
+    "watch": "node src/bin/build.js --watch --serve",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

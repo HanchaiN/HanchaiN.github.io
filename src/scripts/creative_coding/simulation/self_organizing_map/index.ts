@@ -9,8 +9,8 @@ import {
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
-import { getPalette } from "../image_processing/color_quantization/pipeline.js";
-import { applyDithering } from "../image_processing/dithering/pipeline.js";
+import { getPalette } from "../../image_processing/color_quantization/pipeline.js";
+import { applyDithering } from "../../image_processing/dithering/pipeline.js";
 
 const str2srgb = convert_color("str", "srgb")!,
   srgb2oklab = convert_color("srgb", "oklab")!,

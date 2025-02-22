@@ -2,16 +2,16 @@ import { kernelGenerator } from "@/scripts/utils/dom.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
 import { map } from "@/scripts/utils/math/utils.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/types.ts";
-import type { TColorRGB } from "./colors.ts";
+import type { TColorRGB } from "./colors.js";
 import { Light } from "./colors.js";
-import type { SceneObject } from "./object.ts";
+import type { SceneObject } from "./object.js";
 import {
   postProcessorGen,
   reinhard_jodie_lum_ext as tonemaper,
 } from "./postprocessor.js";
 import { Ray, trace } from "./ray.js";
 import { CAMERA_POSITION, FOCAL_LENGTH, FRAME_SIZE, SCENE } from "./scene.js";
-import type { MessageResponse as WhiteMessageResponse } from "./worker_white.ts";
+import type { MessageResponse as WhiteMessageResponse } from "./worker_white.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 
 export default function execute() {

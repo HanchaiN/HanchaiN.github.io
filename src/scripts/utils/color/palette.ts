@@ -1,7 +1,8 @@
-import convert_color, { str2str } from "@/scripts/utils/color/conversion.js";
+import convert_color from "@/scripts/utils/color/conversion.js";
 import { constrainLerp } from "../math/utils.js";
 
-const str2okhcl = convert_color("str", "okhcl")!;
+const str2okhcl = convert_color("str", "okhcl")!,
+  str2hex = convert_color("str", "hex")!;
 
 const _palettes = {
   light: {
@@ -63,12 +64,12 @@ export function getPaletteAccentColor(
   isDark: boolean | null = null,
 ) {
   const palettes = getPalette(isDark);
-  return str2str(palettes.accent[index % palettes.accent.length]);
+  return str2hex(palettes.accent[index % palettes.accent.length]);
 }
 
 export function getPaletteAccentColors(isDark: boolean | null = null) {
   const palettes = getPalette(isDark);
-  return palettes.accent.map((c) => str2str(c));
+  return palettes.accent.map((c) => str2hex(c));
 }
 
 export function getPaletteBaseColor(
@@ -76,7 +77,7 @@ export function getPaletteBaseColor(
   isDark: boolean | null = null,
 ) {
   const palettes = getPalette(isDark);
-  return str2str(
+  return str2hex(
     palettes.base[
       Math.floor(constrainLerp(index, 0, palettes.accent.length - 0.99))
     ],
@@ -85,7 +86,7 @@ export function getPaletteBaseColor(
 
 export function getPaletteBaseColors(isDark: boolean | null = null) {
   const palettes = getPalette(isDark);
-  return palettes.base.map((c) => str2str(c));
+  return palettes.base.map((c) => str2hex(c));
 }
 
 export function getChroma(isDark: boolean | null = null) {

@@ -13,7 +13,7 @@ import { generateGradient } from "@/scripts/utils/color/interpl.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 
 const str2oklab = convert_color("str", "oklab")!,
-  oklab2str = convert_color("oklab", "str")!;
+  oklab2hex = convert_color("oklab", "hex")!;
 
 export default function execute() {
   let canvas: HTMLCanvasElement;
@@ -34,7 +34,7 @@ export default function execute() {
     [1 / 3, str2oklab(getPaletteAccentColor(6))],
     [2 / 3, str2oklab(getPaletteAccentColor(7))],
     [3 / 3, str2oklab(getPaletteAccentColor(8))],
-  ]).map((c) => oklab2str(c));
+  ]).map((c) => oklab2hex(c));
   const n = 2048;
   const time_scale = 1;
   const max_dt = (1 / 8) * time_scale;

@@ -1,0 +1,20 @@
+extends /components/layout.pug
+
+block title
+  title Sandpile
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/placeholder.js';
+
+    const root = document.getElementById('sandpile');
+    execute().start(
+      root.querySelector('#canvas'),
+    );
+
+block content
+  h1 Sandpile
+  #sandpile.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+  p.
+    The Abelian sandpile model (ASM) is the more popular name of the original Bak–Tang–Wiesenfeld model (BTW). The BTW model was the first discovered example of a dynamical system displaying self-organized criticality.

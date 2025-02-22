@@ -1,4 +1,4 @@
-import convert_color, { srgba2str } from "@/scripts/utils/color/conversion.js";
+import convert_color, { srgba2css } from "@/scripts/utils/color/conversion.js";
 import { BoidSystem, SETTING } from "./boid.js";
 import {
   getChroma,
@@ -7,7 +7,7 @@ import {
 } from "@/scripts/utils/color/palette.js";
 
 const str2srgb = convert_color("str", "srgb")!,
-  okhcl2str = convert_color("okhcl", "str")!;
+  okhcl2hex = convert_color("okhcl", "hex")!;
 
 export default function execute() {
   let canvas: HTMLCanvasElement;
@@ -22,7 +22,7 @@ export default function execute() {
           "--state-opacity-hover",
         ),
       ) / 100;
-    return srgba2str(c, alpha);
+    return srgba2css(c, alpha);
   };
   const time_scale = 1;
   let isActive = false;
@@ -78,7 +78,7 @@ export default function execute() {
       ctx.fill();
     });
     system.data().forEach(({ c, p }) => {
-      ctx.fillStyle = okhcl2str([c / 360, saturation, lightness]);
+      ctx.fillStyle = okhcl2hex([c / 360, saturation, lightness]);
       ctx.beginPath();
       ctx.arc(p.x * scale, p.y * scale, 3, 0, 2 * Math.PI);
       ctx.fill();

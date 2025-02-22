@@ -2,7 +2,9 @@ import type {
   IKernelFunctionThis,
   IRenderFunctionThis,
 } from "@/scripts/utils/types.ts";
-import { str2str } from "@/scripts/utils/color/conversion.js";
+import convert_color from "@/scripts/utils/color/conversion.js";
+
+const str2hex = convert_color("str", "hex")!;
 
 export function getParentSize(parent: HTMLElement, canvas: HTMLElement) {
   if (canvas) canvas.hidden = true;
@@ -24,7 +26,7 @@ export function getParentSize(parent: HTMLElement, canvas: HTMLElement) {
 }
 
 export function getCssVarColor(name: string, fallback = "#0000") {
-  return str2str(
+  return str2hex(
     getComputedStyle(document.body).getPropertyValue(name) || fallback,
   );
 }

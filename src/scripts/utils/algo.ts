@@ -103,3 +103,20 @@ export class PriorityQueue<A> {
     this._heap[indexTwo] = temp;
   }
 }
+
+export function binarySearch(arr: number[], targetL: number, targetH: number) {
+  let low = 0;
+  let high = arr.length - 1;
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const midVal = arr[mid];
+    if (midVal < targetL) {
+      low = mid + 1;
+    } else if (midVal > targetH) {
+      high = mid - 1;
+    } else {
+      return mid;
+    }
+  }
+  return -1;
+}

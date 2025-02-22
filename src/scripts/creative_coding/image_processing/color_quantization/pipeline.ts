@@ -7,11 +7,14 @@ import {
 import { softargmax } from "@/scripts/utils/math/utils.js";
 import { kMeans } from "./kmeans.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
-import type { ColorSpace } from "@/scripts/utils/color/conversion.ts";
+import type {
+  ColorSpace,
+  SRGBColor,
+} from "@/scripts/utils/color/conversion.js";
 
 const mode: ColorSpace = "xyz";
 const srgb2embed = convert_color("srgb", mode)!,
-  embed2str = convert_color(mode, "str")!;
+  embed2hex = convert_color(mode, "hex")!;
 
 export function getPalette(buffer: ImageData, n_colors: number) {
   return kMeans(
@@ -42,15 +45,15 @@ export function getPalette(buffer: ImageData, n_colors: number) {
         number,
       ];
     },
-  ).map((c) => embed2str(c));
+  ).map((c) => embed2hex(c));
 }
 
 export function applyQuantization(
   buffer: ImageData,
-  color_palette: [r: number, g: number, b: number][],
+  color_palette: SRGBColor[],
   temperature = 0,
 ) {
-  const embed = (c: [r: number, g: number, b: number]) => {
+  const embed = (c: SRGBColor) => {
     return srgb2embed(c);
   };
   const color_palette_ = color_palette.map(embed);

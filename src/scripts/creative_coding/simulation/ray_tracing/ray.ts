@@ -7,7 +7,7 @@ import {
   MAX_DIST,
   MIN_DIST,
 } from "./const.js";
-import type { SceneObject } from "./object.ts";
+import type { SceneObject } from "./object.js";
 import { LIGHT_POSITION } from "./scene.js";
 
 export class Ray {

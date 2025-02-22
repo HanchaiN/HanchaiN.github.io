@@ -190,6 +190,9 @@ export function complex_zeta(s: TComplex, prec: number = 1e-10): TComplex {
 export class Complex {
   private _re!: number;
   private _im!: number;
+  static get I() {
+    return new this().set(0, 1);
+  }
   constructor() {}
   get re() {
     return this._re;
@@ -240,8 +243,14 @@ export class Complex {
   absSq() {
     return this.conj().mult(this).re;
   }
+  static absSq(v: number | Complex) {
+    return this.copy(v).absSq();
+  }
   abs() {
     return Math.sqrt(this.absSq());
+  }
+  static abs(v: number | Complex) {
+    return this.copy(v).abs();
   }
   add(v: Complex | number) {
     if (v instanceof Complex) {

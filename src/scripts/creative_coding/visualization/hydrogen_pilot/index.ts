@@ -10,7 +10,7 @@ import {
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
 
-const okhcl2str = convert_color("okhcl", "str")!;
+const okhcl2hex = convert_color("okhcl", "hex")!;
 
 export default function execute() {
   let camera: THREE.PerspectiveCamera,
@@ -117,7 +117,7 @@ export default function execute() {
             electron_mesh.setMatrixAt(index + i, matrix);
             electron_mesh.setColorAt(
               index + i,
-              new THREE.Color(okhcl2str([h / 360, saturation, lightness])),
+              new THREE.Color(okhcl2hex([h / 360, saturation, lightness])),
             );
           });
           electron_mesh.instanceMatrix.needsUpdate = true;

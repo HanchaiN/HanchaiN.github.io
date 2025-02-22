@@ -1,10 +1,10 @@
-import {
-  rgb2srgb,
-  rgb2xyz,
-  xyz2rgb,
-} from "@/scripts/utils/color/conversion.js";
+import convert_color from "@/scripts/utils/color/conversion.js";
 import { constrain, constrainLerp, lerp } from "@/scripts/utils/math/utils.js";
-import type { TColorRGB } from "./colors.ts";
+import type { TColorRGB } from "./colors.js";
+
+const rgb2srgb = convert_color("rgb", "srgb")!,
+  rgb2xyz = convert_color("rgb", "xyz")!,
+  xyz2rgb = convert_color("xyz", "rgb")!;
 
 type IToneMapper = (ref: TColorRGB) => (col: TColorRGB) => TColorRGB;
 

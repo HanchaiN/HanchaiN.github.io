@@ -1,9 +1,9 @@
 import { getParentSize } from "@/scripts/utils/dom.js";
 import { Vector } from "@/scripts/utils/math/index.js";
 import { constrain, fpart, lerp, map } from "@/scripts/utils/math/utils.js";
-import convert_color, { srgba2str } from "@/scripts/utils/color/conversion.js";
+import convert_color, { srgba2hex } from "@/scripts/utils/color/conversion.js";
 
-const okhcl2srgb = convert_color("okhcl", "srgb")!;
+const okhcl2srgb = convert_color("hcl", "srgb")!;
 
 export default function execute() {
   let parent: HTMLDivElement;
@@ -102,7 +102,7 @@ export default function execute() {
       brightness *= 1 / (0.5 + brightness);
       brightness = constrain(brightness, 0, 1);
     }
-    const gamma = 1;
+    const gamma = 1 / 5;
     brightness = Math.pow(brightness, gamma);
 
     const hue = map(phasor.heading(), -Math.PI, +Math.PI, 0, 360);
@@ -113,7 +113,7 @@ export default function execute() {
       constrain(chroma * 100, 0, 230) / 100,
       constrain(brightness * 100, 0, 100) / 100,
     ]);
-    return srgba2str(c, opacity);
+    return srgba2hex(c, opacity);
   }
   function getPhasor(
     bg_ctx: CanvasRenderingContext2D | null = null,

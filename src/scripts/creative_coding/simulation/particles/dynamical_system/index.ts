@@ -5,7 +5,7 @@ import convert_color from "@/scripts/utils/color/conversion.js";
 import type { MessageResponse } from "./worker.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 
-const okhcl2str = convert_color("okhcl", "str")!;
+const okhcl2hex = convert_color("okhcl", "hex")!;
 
 export default function execute() {
   let canvas: HTMLCanvasElement;
@@ -77,7 +77,7 @@ export default function execute() {
     result.forEach(({ states }) => {
       states!.forEach(({ state, hue }) => {
         const pos = project(...state);
-        ctx.fillStyle = okhcl2str([hue / 360, 0.125, 0.75]);
+        ctx.fillStyle = okhcl2hex([hue / 360, 0.125, 0.75]);
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, r, 0, 2 * Math.PI);
         ctx.fill();

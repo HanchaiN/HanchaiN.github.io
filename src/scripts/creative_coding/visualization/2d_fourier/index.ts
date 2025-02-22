@@ -2,14 +2,22 @@ import { onImageChange } from "@/scripts/utils/dom.js";
 import { constrainMap, symlog } from "@/scripts/utils/math/utils.js";
 import * as base64_stream from "base64-stream";
 import GIFEncoder from "gifencoder";
-import type { Complex, MathJsChain } from "mathjs";
-import * as math from "mathjs";
+import { Complex } from "@/scripts/utils/math/complex.js";
+import fft from "@/scripts/utils/math/fft.js";
 import { update } from "./update.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 
 const { Base64Encode } = base64_stream;
-const { abs, fft, im, re, reshape } = math;
+
+function reshape<T>(array: T[], shape: [number, number]): T[][] {
+  const [rows, cols] = shape;
+  const result = [];
+  for (let i = 0; i < rows; i++) {
+    result.push(array.slice(i * cols, (i + 1) * cols));
+  }
+  return result;
+}
 
 const str2xyz = convert_color("str", "xyz")!,
   xyz2hcl = convert_color("xyz", "hcl")!,
@@ -93,33 +101,23 @@ export default function execute() {
           ])[2];
         });
       const kspace = fft(
-        reshape(luminance, [
+        reshape(luminance.map(Complex.copy), [
           imageData.width,
           imageData.height,
-        ]) as unknown as number[][],
+        ]),
       ) as unknown[][] as Complex[][];
 
       const [minColor, maxColor] = getColor();
       const minValue = symlog(
         kspace
           .flat()
-          .map(
-            (v) =>
-              re(
-                abs(v) as unknown as MathJsChain<Complex>,
-              ) as unknown as number,
-          )
+          .map((v) => Complex.abs(v))
           .reduce((a, b) => Math.min(a, b)),
       );
       const maxValue = symlog(
         kspace
           .flat()
-          .map(
-            (v) =>
-              re(
-                abs(v) as unknown as MathJsChain<Complex>,
-              ) as unknown as number,
-          )
+          .map((v) => Complex.abs(v))
           .reduce((a, b) => Math.max(a, b)),
       );
       for (let i = 0; i < kspace.length; i++) {
@@ -132,11 +130,7 @@ export default function execute() {
               j < kspace[i].length / 2
                 ? j + kspace[i].length / 2
                 : j - kspace[i].length / 2;
-          const value = symlog(
-            re(
-              abs(kspace[i][j]) as unknown as MathJsChain<Complex>,
-            ) as unknown as number,
-          );
+          const value = symlog(Complex.abs(kspace[i][j]));
           imageData.data[(x * imageData.width + y) * 4 + 0] =
             constrainMap(value, minValue, maxValue, minColor[0], maxColor[0]) *
             255;
@@ -264,8 +258,8 @@ export default function execute() {
         updater(
           wx,
           wy,
-          re(value as unknown as MathJsChain<Complex>) as unknown as number,
-          im(value as unknown as MathJsChain<Complex>) as unknown as number,
+          Complex.copy(value).re,
+          Complex.copy(value).im,
           overlay_slider.valueAsNumber,
         );
         render_ctx.drawImage(

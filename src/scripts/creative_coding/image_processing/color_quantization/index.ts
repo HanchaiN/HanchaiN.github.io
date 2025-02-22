@@ -2,11 +2,20 @@ import { applyDithering } from "@/scripts/creative_coding/image_processing/dithe
 import { onImageChange } from "@/scripts/utils/dom.js";
 import { sample } from "@/scripts/utils/math/random.js";
 import { softargmax } from "@/scripts/utils/math/utils.js";
-import * as color from "@thi.ng/color";
-import potrace from "potrace";
+import convert_color from "@/scripts/utils/color/conversion.js";
+import type { XYZColor } from "@/scripts/utils/color/conversion.js";
 import { extendCentroids, getSilhouetteScore, kMeans } from "./kmeans.js";
 import { applyQuantization } from "./pipeline.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
+import { vector_dist } from "@/scripts/utils/math/vector.js";
+import type { TVector3 } from "@/scripts/utils/math/vector.js";
+
+const str2xyz = convert_color("str", "xyz")!,
+  xyz2hex = convert_color("xyz", "hex")!,
+  srgb2xyz = convert_color("srgb", "xyz")!,
+  xyz2srgb = convert_color("xyz", "srgb")!,
+  srgb2hex = convert_color("srgb", "hex")!,
+  str2hex = convert_color("str", "hex")!;
 
 export default function execute() {
   let canvas: HTMLCanvasElement;
@@ -17,7 +26,7 @@ export default function execute() {
   let isAuto = 0;
   let image: HTMLImageElement;
   let form: HTMLFormElement;
-  let cache: { [n: number]: color.XYZD65[] } = {};
+  let cache: { [n: number]: XYZColor[] } = {};
   let n_colors: number = 0;
   let _palette_: string[] = [];
   const palette_ = {
@@ -26,9 +35,9 @@ export default function execute() {
       _palette_ = palette;
     },
   };
-  const getPalette = () => palette_.get().map((c) => color.xyzD65(c));
-  const setPalette = (palette: color.XYZD65[]) => {
-    palette_.set(palette.map((c) => color.css(color.srgb(c))));
+  const getPalette = () => palette_.get().map((c) => str2xyz(c));
+  const setPalette = (palette: XYZColor[]) => {
+    palette_.set(palette.map((c) => xyz2hex(c)));
   };
 
   function setup() {
@@ -69,27 +78,26 @@ export default function execute() {
     const samples = new Array(buffer.width * buffer.height)
       .fill(0)
       .map((_, i) => {
-        return color.xyzD65(
-          color.srgb(
-            buffer.data[i * 4 + 0] / 255,
-            buffer.data[i * 4 + 1] / 255,
-            buffer.data[i * 4 + 2] / 255,
-          ),
-        );
+        return srgb2xyz([
+          buffer.data[i * 4 + 0] / 255,
+          buffer.data[i * 4 + 1] / 255,
+          buffer.data[i * 4 + 2] / 255,
+        ]);
       });
-    const copy = (v: color.XYZD65) => v.copy(),
-      dist = (a: color.XYZD65, b: color.XYZD65) => {
-        return color.distEucledian3(a, b);
+    const copy = (v: XYZColor) => [...v] as XYZColor,
+      dist = (a: XYZColor, b: XYZColor) => {
+        return vector_dist(a as TVector3, b as TVector3);
       },
-      average = (a: color.XYZD65[], w: number[]) => {
+      average = (a: XYZColor[], w: number[] | null = null) => {
         const v = [0, 0, 0, 0];
         a.forEach((_, i) => {
-          v[0] += a[i][0] * w[i];
-          v[1] += a[i][1] * w[i];
-          v[2] += a[i][2] * w[i];
-          v[3] += w[i];
+          const w_ = w ? w[i] : 1;
+          v[0] += a[i][0] * w_;
+          v[1] += a[i][1] * w_;
+          v[2] += a[i][2] * w_;
+          v[3] += w_;
         });
-        return color.xyzD65(v[0] / v[3], v[1] / v[3], v[2] / v[3]);
+        return [v[0] / v[3], v[1] / v[3], v[2] / v[3]] as XYZColor;
       };
     return { offscreen, samples, copy, dist, average };
   }
@@ -171,7 +179,7 @@ export default function execute() {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       (dither ? applyDithering : applyQuantization)(
         imageData,
-        palette_.get().map((c) => color.srgb(c).xyz),
+        getPalette().map(xyz2srgb),
         dither ? 1 / 1000 : 0,
       );
       ctx.putImageData(imageData, 0, 0);
@@ -187,13 +195,11 @@ export default function execute() {
       ctx.canvas.height,
     );
     for (let i = 0; i < ctx.canvas.width * ctx.canvas.height; i++) {
-      const c = color.css(
-        color.srgb(
-          imageData.data[i * 4 + 0] / 255,
-          imageData.data[i * 4 + 1] / 255,
-          imageData.data[i * 4 + 2] / 255,
-        ),
-      );
+      const c = srgb2hex([
+        imageData.data[i * 4 + 0] / 255,
+        imageData.data[i * 4 + 1] / 255,
+        imageData.data[i * 4 + 2] / 255,
+      ]);
       if (colors.indexOf(c) === -1) colors.push(c);
       if (colors.length === 0 || colors.length > n_colors) {
         console.log("Invalid number of colors", colors.length);
@@ -214,13 +220,11 @@ export default function execute() {
           offscreen.height,
         );
         for (let i = 0; i < ctx.canvas.width * ctx.canvas.height; i++) {
-          const c_ = color.css(
-            color.srgb(
-              imageData.data[i * 4 + 0] / 255,
-              imageData.data[i * 4 + 1] / 255,
-              imageData.data[i * 4 + 2] / 255,
-            ),
-          );
+          const c_ = srgb2hex([
+            imageData.data[i * 4 + 0] / 255,
+            imageData.data[i * 4 + 1] / 255,
+            imageData.data[i * 4 + 2] / 255,
+          ]);
           if (c_ === c) {
             imageData_.data[i * 4 + 0] =
               imageData_.data[i * 4 + 1] =
@@ -248,32 +252,34 @@ export default function execute() {
         });
         const data = dataURL.replace(/^data:image\/\w+;base64,/, ""),
           buffer = new Buffer(data, "base64");
-        return new Promise<SVGSVGElement>((resolve, reject) =>
-          potrace.trace(
-            buffer,
-            {
-              turdPolicy: "minority",
-              turdSize: 2,
-              alphaMax: 1,
-              optCurve: true,
-              optTolerance: 1,
-              blackOnWhite: true,
-              background: "transparent",
-            },
-            (err, svg) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              const svg_ = domParser.parseFromString(svg, "image/svg+xml")
-                .documentElement as unknown as SVGSVGElement;
-              svg_.querySelectorAll("path").forEach((path) => {
-                path.setAttribute("fill", c);
-              });
-              resolve(svg_);
-            },
-          ),
-        );
+        return new Promise<SVGSVGElement>((resolve, reject) => {
+          import("potrace").then(({ default: potrace }) =>
+            potrace.trace(
+              buffer,
+              {
+                turdPolicy: "minority",
+                turdSize: 2,
+                alphaMax: 1,
+                optCurve: true,
+                optTolerance: 1,
+                blackOnWhite: true,
+                background: "transparent",
+              },
+              (err: Error | null, svg: string) => {
+                if (err) {
+                  reject(err);
+                  return;
+                }
+                const svg_ = domParser.parseFromString(svg, "image/svg+xml")
+                  .documentElement as unknown as SVGSVGElement;
+                svg_.querySelectorAll("path").forEach((path) => {
+                  path.setAttribute("fill", c);
+                });
+                resolve(svg_);
+              },
+            ),
+          );
+        });
       }),
     ).then((svgs) => {
       console.log(svgs);
@@ -291,7 +297,7 @@ export default function execute() {
     const palette = [];
     for (const c of colors) {
       if (c === "") continue;
-      palette.push(color.xyzD65(c));
+      palette.push(str2xyz(c));
     }
     form.querySelector<HTMLInputElement>("#palette-count")!.valueAsNumber =
       palette.length;
@@ -316,11 +322,11 @@ export default function execute() {
         for (let i = 0; i < palette.length; i++) {
           const input = document.createElement("input");
           input.type = "color";
-          input.value = color.css(color.srgb(palette[i]));
+          input.value = str2hex(palette[i]);
           form.querySelector<HTMLDivElement>("#palette")!.appendChild(input);
           input.addEventListener("input", function () {
             const palette = getPalette();
-            palette[i] = color.xyzD65(this.value);
+            palette[i] = str2xyz(this.value);
             setPalette(palette);
           });
           form.querySelector<HTMLTextAreaElement>("#palette-text")!.value +=
