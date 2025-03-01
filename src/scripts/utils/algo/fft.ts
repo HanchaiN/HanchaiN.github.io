@@ -1,6 +1,6 @@
 // https://github.com/josdejong/mathjs/blob/develop/src/function/matrix/fft.js
 
-import { Complex } from "./complex.js";
+import { Complex } from "../math/complex.js";
 
 type Tensor1D = Complex[];
 type Tensor2D = Complex[][];

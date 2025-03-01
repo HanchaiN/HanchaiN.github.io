@@ -1,4 +1,4 @@
-import { getParentSize } from "@/scripts/utils/dom.js";
+import { getParentSize } from "@/scripts/utils/dom/utils.js";
 import p5 from "p5";
 import { BrainfuckEngine } from "./bf.js";
 export default function execute() {

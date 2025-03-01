@@ -1,0 +1,27 @@
+extends /components/layout.pug
+
+block title
+  title Color Grading
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/image_processing/color_grading/index.js';
+
+    const root = document.getElementById('color-grading');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#config'),
+    );
+
+block content
+  h1 Color Grading
+  #color-grading.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    form.data-container#config
+      label(for='image') Image:
+      input#image(type='file', accept='image/*')
+      label(for='clut') CLUT:
+      input#clut(type='file', accept='image/*')
+
+  p.
+    Color grading and color correction are often used synonymously as terms for this process and can include the generation of artistic color effects through creative blending and compositing of different layer masks of the source image.

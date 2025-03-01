@@ -1,5 +1,5 @@
-import { getParentSize } from "@/scripts/utils/dom.js";
-import { Vector } from "@/scripts/utils/math/index.js";
+import { getParentSize } from "@/scripts/utils/dom/utils.js";
+import { Vector } from "@/scripts/utils/math/vector.js";
 import { constrain, fpart, lerp, map } from "@/scripts/utils/math/utils.js";
 import convert_color, { srgba2hex } from "@/scripts/utils/color/conversion.js";
 

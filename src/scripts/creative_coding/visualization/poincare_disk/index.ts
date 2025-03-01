@@ -1,4 +1,4 @@
-import { getParentSize } from "@/scripts/utils/dom.js";
+import { getParentSize } from "@/scripts/utils/dom/utils.js";
 import { Complex } from "@/scripts/utils/math/complex.js";
 import type { p5Extension } from "@/scripts/utils/types.ts";
 import p5 from "p5";

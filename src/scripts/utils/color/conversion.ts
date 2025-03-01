@@ -1,4 +1,4 @@
-import { PriorityQueue } from "../algo.js";
+import { PriorityQueue } from "../algo/datastructure.js";
 import { constrain } from "../math/utils.js";
 
 function rescale(x: number): number {
@@ -15,7 +15,8 @@ export type XYZColor = [x: number, y: number, z: number];
 export type RGBColor = [r: number, g: number, b: number];
 export type SRGBColor = [r: number, g: number, b: number];
 export type CubehelixColor = [h: number, s: number, l: number];
-type ColorSpaceMap = {
+export type RGBAColor = [r: number, g: number, b: number, a: number];
+export type ColorSpaceMap = {
   hcl: HCLColor;
   lab: LABColor;
   okhcl: HCLColor;
@@ -40,15 +41,19 @@ function str2srgb(c: string): SRGBColor {
   const ctx = canvas.getContext("2d", { colorSpace: "srgb" })!;
   ctx.fillStyle = c;
   ctx.fillRect(0, 0, 1, 1);
-  const data = ctx.getImageData(0, 0, 1, 1).data;
+  const data = ctx.getImageData(0, 0, 1, 1, { colorSpace: "srgb" }).data;
   return [data[0] / 255, data[1] / 255, data[2] / 255];
 }
 
 function hex2srgb(c: string): RGBColor {
+  if (c.startsWith("#")) c = c.slice(1);
+  c = c.replace(/[^0-9a-fA-F]/g, "");
+  const len = Math.max(1, Math.ceil(c.length / 3));
+  c = c.padEnd(3 * len, "0");
   return [
-    parseInt(c.slice(1, 3), 16) / 255,
-    parseInt(c.slice(3, 5), 16) / 255,
-    parseInt(c.slice(5, 7), 16) / 255,
+    Number.parseInt(c.slice(0 * len, 1 * len), 16) / (Math.pow(16, len) - 1),
+    Number.parseInt(c.slice(1 * len, 2 * len), 16) / (Math.pow(16, len) - 1),
+    Number.parseInt(c.slice(2 * len, 3 * len), 16) / (Math.pow(16, len) - 1),
   ];
 }
 function srgb2css(c: SRGBColor): string {

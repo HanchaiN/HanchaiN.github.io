@@ -1,4 +1,7 @@
-import { createAndLinkProgram, createShader } from "@/scripts/utils/webgl.js";
+import {
+  createAndLinkProgram,
+  createShader,
+} from "@/scripts/utils/dom/webgl.js";
 
 const VERTEX_SHADER = `
 attribute vec2 a_position;

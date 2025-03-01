@@ -1,9 +1,9 @@
-import { onImageChange } from "@/scripts/utils/dom.js";
+import { onImageChange } from "@/scripts/utils/dom/image.js";
 import { constrainMap, symlog } from "@/scripts/utils/math/utils.js";
 import * as base64_stream from "base64-stream";
 import GIFEncoder from "gifencoder";
 import { Complex } from "@/scripts/utils/math/complex.js";
-import fft from "@/scripts/utils/math/fft.js";
+import fft from "@/scripts/utils/algo/fft.js";
 import { update } from "./update.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
@@ -89,6 +89,7 @@ export default function execute() {
         0,
         fft_canvas.width,
         fft_canvas.height,
+        { colorSpace: "srgb" },
       );
       const luminance = new Array(imageData.width * imageData.height)
         .fill(0)
@@ -396,9 +397,7 @@ export default function execute() {
         render_size_value.innerText = render_size_slider.value;
       });
       overlay_slider.addEventListener("input", () => {
-        overlay_value.innerText = Number.parseFloat(
-          overlay_slider.value,
-        ).toFixed(3);
+        overlay_value.innerText = overlay_slider.valueAsNumber.toFixed(3);
       });
       setup();
       isActive = true;

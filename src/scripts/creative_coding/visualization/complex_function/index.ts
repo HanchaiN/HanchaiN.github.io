@@ -1,12 +1,8 @@
-import { kernelGenerator } from "@/scripts/utils/dom.js";
-import type { TComplex } from "@/scripts/utils/math/index.ts";
-import {
-  complex_absSq,
-  complex_zeta,
-  fpart,
-  map,
-} from "@/scripts/utils/math/index.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/types.ts";
+import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { TComplex } from "@/scripts/utils/math/complex";
+import { complex_absSq, complex_zeta } from "@/scripts/utils/math/complex.js";
+import { fpart, map } from "@/scripts/utils/math/utils.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 
@@ -76,9 +72,10 @@ export default function execute() {
         desynchronized: true,
       })!;
       ctx.fillStyle = getPaletteBaseColor(0);
-      console.log(ctx.fillStyle);
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      const buffer = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const buffer = ctx.getImageData(0, 0, canvas.width, canvas.height, {
+        colorSpace: "srgb",
+      });
       const renderer = kernelGenerator(main, { R, l0, l1, s0, s1 }, buffer);
       const step = renderer();
       requestAnimationFrame(function draw() {

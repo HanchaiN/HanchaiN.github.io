@@ -68,7 +68,7 @@ export default function execute() {
       root = new Branch(a, b, NAIVE, {
         [NAIVE]: [
           {
-            angle: Number.parseFloat(alpha.value) * Math.PI,
+            angle: alpha.valueAsNumber * Math.PI,
             widScale: Math.pow(widScale, 0),
             lenScale,
             type: MATURE,
@@ -76,13 +76,13 @@ export default function execute() {
         ],
         [MATURE]: [
           {
-            angle: Number.parseFloat(beta1.value) * Math.PI,
+            angle: beta1.valueAsNumber * Math.PI,
             widScale: Math.pow(widScale, 2),
             lenScale,
             type: NAIVE,
           },
           {
-            angle: Number.parseFloat(beta2.value) * Math.PI,
+            angle: beta2.valueAsNumber * Math.PI,
             widScale: Math.pow(widScale, 1),
             lenScale,
             type: MATURE,

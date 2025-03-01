@@ -1,4 +1,4 @@
-import { Vector } from "@/scripts/utils/math/index.js";
+import { Vector } from "@/scripts/utils/math/vector.js";
 import { Dye, Light } from "./colors.js";
 
 type IEmittance = (toViewer: Vector, norm: Vector) => Light;

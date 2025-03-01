@@ -20,6 +20,15 @@ block content
     form.data-container#config
       label(for='image') Image:
       input#image(type='file', accept='image/*')
+      label(for='temperature') Temperature:
+      input#temperature(type='number', value='1', min='0', step='1e-5')
+      label(for='algorithm') Algorithm:
+      select#algorithm
+        option(value='order' selected) Ordered Dithering
+        option(value='error') Error Diffusion
+      button#apply(type='button') Execute
+      textarea#palette-text
+      div#palette
   p.
     Dither is an intentionally applied form of noise used to randomize quantization error,
     preventing large-scale patterns such as color banding in images.

@@ -14,7 +14,7 @@ function clearOutput() {
   fs.mkdirSync(outputPath, { recursive: true });
   fs.writeFileSync(path.join(outputPath, ".gitignore"), "*");
 }
-function buildPublic() {
+function _buildPublic() {
   const inputPath = path.join(options.basedir, "public");
   const files = fs.readdirSync(inputPath, { recursive: true });
   for (const file of files) {
@@ -28,7 +28,15 @@ function buildPublic() {
     console.log(`Copied ${inFile}`);
   }
 }
-function buildPages() {
+function buildPublic() {
+  console.log("Building public");
+  try {
+    _buildPublic();
+  } catch (e) {
+    console.error("Failed to build public");
+  }
+}
+function _buildPages() {
   const inputPath = path.join(options.basedir, "pages");
   const files = fs.readdirSync(inputPath, { recursive: true });
   for (const file of files) {
@@ -45,6 +53,14 @@ function buildPages() {
     fs.mkdirSync(path.dirname(outFile), { recursive: true });
     fs.writeFileSync(outFile, html);
     console.log(`Rendering ${inFile}`);
+  }
+}
+function buildPages() {
+  console.log("Building pages");
+  try {
+    _buildPages();
+  } catch (e) {
+    console.error("Failed to build pages");
   }
 }
 function buildScripts() {
@@ -69,57 +85,61 @@ function debounce(fn, delay) {
   };
 }
 
-buildAll();
-if (process.argv.includes("--watch")) {
-  const _buildAll = debounce(buildAll, 30000);
-  const _buildPublic = debounce((event, filename) => {
-    console.log(`Sync: ${filename} ${event}`);
-    buildPublic();
-    _buildAll();
-  }, 1000);
-  const _buildPages = debounce((event, filename) => {
-    console.log(`Sync: ${filename} ${event}`);
-    buildPages();
-    _buildAll();
-  }, 1000);
-  const _buildScripts = debounce((event, filename) => {
-    console.log(`Sync: ${filename} ${event}`);
-    buildScripts();
-    _buildAll();
-  }, 1000);
-  fs.watch(
-    path.join(options.basedir, "public"),
-    { recursive: true },
-    _buildPublic,
-  );
-  fs.watch(
-    path.join(options.basedir, "pages"),
-    { recursive: true },
-    _buildPages,
-  );
-  fs.watch(
-    path.join(options.basedir, "components"),
-    { recursive: true },
-    _buildPages,
-  );
-  fs.watch(
-    path.join(options.basedir, "scripts/importmap.json"),
-    { recursive: true },
-    _buildPages,
-  );
-  fs.watch(
-    path.join(options.basedir, "scripts"),
-    { recursive: true },
-    _buildScripts,
-  );
+function main() {
+  buildAll();
+  if (process.argv.includes("--watch")) {
+    const _buildAll = debounce(buildAll, 30000);
+    const _buildPublic = debounce((event, filename) => {
+      console.log(`Sync: ${filename} ${event}`);
+      buildPublic();
+      _buildAll();
+    }, 1000);
+    const _buildPages = debounce((event, filename) => {
+      console.log(`Sync: ${filename} ${event}`);
+      buildPages();
+      _buildAll();
+    }, 1000);
+    const _buildScripts = debounce((event, filename) => {
+      console.log(`Sync: ${filename} ${event}`);
+      buildScripts();
+      _buildAll();
+    }, 1000);
+    fs.watch(
+      path.join(options.basedir, "public"),
+      { recursive: true },
+      _buildPublic,
+    );
+    fs.watch(
+      path.join(options.basedir, "pages"),
+      { recursive: true },
+      _buildPages,
+    );
+    fs.watch(
+      path.join(options.basedir, "components"),
+      { recursive: true },
+      _buildPages,
+    );
+    fs.watch(
+      path.join(options.basedir, "scripts/importmap.json"),
+      { recursive: true },
+      _buildPages,
+    );
+    fs.watch(
+      path.join(options.basedir, "scripts"),
+      { recursive: true },
+      _buildScripts,
+    );
+  }
+  if (process.argv.includes("--serve")) {
+    const handler = require("serve-handler");
+    const http = require("http");
+    const server = http.createServer((req, res) =>
+      handler(req, res, { public: outputPath }),
+    );
+    server.listen(3000, () => {
+      console.log("Running at http://localhost:3000");
+    });
+  }
 }
-if (process.argv.includes("--serve")) {
-  const handler = require("serve-handler");
-  const http = require("http");
-  const server = http.createServer((req, res) =>
-    handler(req, res, { public: outputPath }),
-  );
-  server.listen(3000, () => {
-    console.log("Running at http://localhost:3000");
-  });
-}
+
+main();

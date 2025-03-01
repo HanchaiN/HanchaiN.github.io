@@ -10,7 +10,7 @@ export function mirrorrule(rule: number) {
   for (let j = 0; j < 8; j++) {
     mirrrul *= 2;
     const z = "000";
-    const compid = parseInt(
+    const compid = Number.parseInt(
       z.concat(j.toString(2)).split("").reverse().slice(0, 3).join(""),
       2,
     );
@@ -31,7 +31,7 @@ export function complementrule(rule: number) {
   for (let j = 0; j < 8; j++) {
     comprul *= 2;
     const z = "000";
-    const compid = parseInt(
+    const compid = Number.parseInt(
       z
         .concat(j.toString(2))
         .split("")
@@ -65,7 +65,7 @@ export function mirrorcomplementrule(rule: number) {
   for (let j = 0; j < 8; j++) {
     comprul *= 2;
     const z = "000";
-    const compid = parseInt(
+    const compid = Number.parseInt(
       z
         .concat(j.toString(2))
         .split("")

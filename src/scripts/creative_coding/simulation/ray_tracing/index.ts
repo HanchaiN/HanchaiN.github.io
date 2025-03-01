@@ -1,7 +1,7 @@
-import { kernelGenerator } from "@/scripts/utils/dom.js";
+import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
 import { map } from "@/scripts/utils/math/utils.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/types.ts";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { TColorRGB } from "./colors.js";
 import { Light } from "./colors.js";
 import type { SceneObject } from "./object.js";
@@ -100,6 +100,7 @@ export default function execute() {
         0,
         canvas.width / scale,
         canvas.height / scale,
+        { colorSpace: "srgb" },
       );
       const acc = new Array(buffer.width)
         .fill(null)

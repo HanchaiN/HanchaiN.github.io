@@ -128,12 +128,12 @@ export default function execute() {
   }
 
   function volume_handler() {
-    const value = parseFloat(volume_slider.value) / system.w;
+    const value = volume_slider.valueAsNumber / system.w;
     system.wall.bottom = value;
     volume_value.innerText = system.Volume.toExponential(2);
   }
   function temperature_handler() {
-    const value = symlog_inv(parseFloat(temperature_slider.value));
+    const value = symlog_inv(temperature_slider.valueAsNumber);
     system.wall_temp.bottom = value;
   }
   return {

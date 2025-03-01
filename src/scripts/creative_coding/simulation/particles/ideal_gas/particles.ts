@@ -1,4 +1,4 @@
-import { Vector } from "@/scripts/utils/math/index.js";
+import { Vector } from "@/scripts/utils/math/vector.js";
 import { map } from "@/scripts/utils/math/utils.js";
 import { randomGaussian, randomUniform } from "@/scripts/utils/math/random.js";
 

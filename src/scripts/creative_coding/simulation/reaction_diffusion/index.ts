@@ -1,6 +1,6 @@
-import { kernelGenerator } from "@/scripts/utils/dom.js";
+import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator";
 import { constrain, constrainLerp } from "@/scripts/utils/math/utils.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/types.ts";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 

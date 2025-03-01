@@ -1,4 +1,4 @@
-import { binarySearch } from "@/scripts/utils/algo.js";
+import { binarySearch } from "@/scripts/utils/algo/datastructure.js";
 import {
   getNoteColor,
   getNoteString,

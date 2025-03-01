@@ -28,14 +28,13 @@
     "katex": "^0.16.21",
     "mathjs": "^14.2.1",
     "p5": "^1.11.1",
-    "potrace": "^2.1.8",
     "prettier": "^3.5.1",
     "three": "^0.173.0"
   },
   "scripts": {
     "build:script": "tspc",
     "build": "node src/bin/build.js",
-    "serve": "node src/bin/serve.js --serve",
+    "serve": "node src/bin/build.js --serve",
     "watch": "node src/bin/build.js --watch --serve",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",

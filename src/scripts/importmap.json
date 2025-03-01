@@ -8,7 +8,6 @@
     "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.173.0/examples/jsm/",
     "base64-stream": "https://unpkg.com/base64-stream@1.0.0/index.js",
     "gifencoder": "https://cdn.jsdelivr.net/npm/gifencoder@2.0.1/+esm",
-    "mathjs": "https://unpkg.com/mathjs@14.2.0/lib/browser/math.js",
-    "potrace": "https://cdn.jsdelivr.net/npm/potrace@2.1.8"
+    "mathjs": "https://unpkg.com/mathjs@14.2.0/lib/browser/math.js"
   }
 }

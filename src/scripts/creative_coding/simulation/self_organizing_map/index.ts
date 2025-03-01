@@ -1,16 +1,21 @@
 import { generate } from "@/scripts/creative_coding/generation/perlin_noise/pipeline.js";
-import { kernelGenerator, onImageChange } from "@/scripts/utils/dom.js";
-import { TVector2, TVector3, vector_dist } from "@/scripts/utils/math/index.js";
+import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
+import { onImageChange } from "@/scripts/utils/dom/image.js";
+import {
+  TVector2,
+  TVector3,
+  vector_dist,
+} from "@/scripts/utils/math/vector.js";
 import { constrainLerp, gaus, softargmax } from "@/scripts/utils/math/utils.js";
 import { randomGaussian, randomUniform } from "@/scripts/utils/math/random.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/types.ts";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.js";
 import {
   getPaletteAccentColors,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
-import { getPalette } from "../../image_processing/color_quantization/pipeline.js";
-import { applyDithering } from "../../image_processing/dithering/pipeline.js";
+import { getPalette } from "../../image_processing/palette_extraction/pipeline.js";
+import { applyDithering_ErrorDiffusion } from "../../image_processing/dithering/pipeline.js";
 
 const str2srgb = convert_color("str", "srgb")!,
   srgb2oklab = convert_color("srgb", "oklab")!,
@@ -66,7 +71,7 @@ export default function execute() {
     const auto_palette = getPalette(buffer, 16).map((c) => str2srgb(c));
     const auto_palette_weight = auto_palette.map(() => 1 / auto_palette.length);
     {
-      applyDithering(buffer, auto_palette);
+      applyDithering_ErrorDiffusion(buffer, auto_palette);
       const ind = new Array(buffer.width * buffer.height)
         .fill(0)
         .map((_, i) => {
@@ -315,8 +320,9 @@ export default function execute() {
       x = col[c].x;
       y = col[c].y;
     }
-    const step = renderer([x, y], values[c], i++);
-    while (!step.next().done) continue;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-empty
+    for (const _ in renderer([x, y], values[c], i++)) {
+    }
   }
 
   return {
@@ -325,7 +331,11 @@ export default function execute() {
       ctx = canvas.getContext("2d", { alpha: false, desynchronized: true })!;
       ctx.fillStyle = getPaletteBaseColor(0.5);
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      buffer = ctx.createImageData(canvas.width / scale, canvas.height / scale);
+      buffer = ctx.createImageData(
+        canvas.width / scale,
+        canvas.height / scale,
+        { colorSpace: "srgb" },
+      );
       config.querySelector<HTMLInputElement>("input#range")!.defaultValue =
         constants.range.toString();
       config.querySelector<HTMLInputElement>(
@@ -381,9 +391,10 @@ export default function execute() {
           const canvas = new OffscreenCanvas(buffer.width, buffer.height);
           const ctx = canvas.getContext("2d", { alpha: false })!;
           ctx.drawImage(img, 0, 0, buffer.width, buffer.height);
-          buffer.data.set(
-            ctx.getImageData(0, 0, buffer.width, buffer.height).data,
-          );
+          const _buffer = ctx.getImageData(0, 0, buffer.width, buffer.height, {
+            colorSpace: "srgb",
+          });
+          buffer.data.set(_buffer.data);
           setup(config, canvas);
         },
       );

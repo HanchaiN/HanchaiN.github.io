@@ -5,7 +5,7 @@ function getSilhouetteScoreArray<T>(
   samples: T[],
   centroids: T[] = [],
   dist: (a: T, b: T) => number,
-) {
+): [number, number][] {
   const ind = samples.map((v) => {
     let min_dist = Infinity,
       min_ind = -1;
@@ -45,7 +45,7 @@ function getSilhouetteScoreArray<T>(
   });
   const s = samples.map((_, i) => {
     const max = softmax([a[i], b[i]], 0);
-    return Number.isNaN(a[i]) || Number.isNaN(b[i])
+    return cls[ind[i]].length <= 1 || Number.isNaN(a[i]) || Number.isNaN(b[i])
       ? 0
       : !Number.isFinite(a[i])
         ? -1
@@ -56,7 +56,9 @@ function getSilhouetteScoreArray<T>(
             : (b[i] - a[i]) / max;
   });
   return cls.map((v) =>
-    v.length === 0 ? -1 : v.reduce((acc, { i }) => acc + s[i], 0) / v.length,
+    v.length === 0
+      ? [-1, 0]
+      : [v.reduce((acc, { i }) => acc + s[i], 0) / v.length, v.length],
   );
 }
 
@@ -65,8 +67,11 @@ export function getSilhouetteScore<T>(
   centroids: T[] = [],
   dist: (a: T, b: T) => number,
 ) {
-  const score = softmax(getSilhouetteScoreArray(samples, centroids, dist), 0);
-  return score;
+  const score = getSilhouetteScoreArray(samples, centroids, dist);
+  return (
+    score.reduce((acc, [s, n]) => acc + s * n, 0) /
+    score.reduce((acc, [, n]) => acc + n, 0)
+  );
 }
 
 function addCentroid<T>(

@@ -1,4 +1,4 @@
-import { Vector } from "@/scripts/utils/math/index.js";
+import { Vector } from "@/scripts/utils/math/vector.js";
 import { Light } from "./colors.js";
 import {
   LIGHT_PROB as LIGHT_PROBABILITY,

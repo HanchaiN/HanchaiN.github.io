@@ -1,4 +1,4 @@
-import { maxWorkers } from "@/scripts/utils/dom.js";
+import { maxWorkers } from "@/scripts/utils/dom/utils.js";
 import { constrain } from "@/scripts/utils/math/utils.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";

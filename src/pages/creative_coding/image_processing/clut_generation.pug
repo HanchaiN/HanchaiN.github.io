@@ -1,0 +1,33 @@
+extends /components/layout.pug
+
+block title
+  title CLUT Generation
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/image_processing/clut_generation/index.js';
+
+    const root = document.getElementById('clut-generation');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#config'),
+    );
+
+block content
+  h1 CLUT Generation
+  #clut-generation.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    form.data-container#config
+      label(for='level') Level:
+      input#level(type='number', value='1', min='1', max='16', step='1')
+      label(for='algorithm') Algorithm:
+      select#algorithm
+        option(value='' selected) None
+        option(value='nearest') Nearest
+        option(value='gaussian') Gaussian radial basis
+      #algorithm-options
+      button#apply(type='button') Execute
+      textarea#palette-text
+      div#palette
+  p.
+    A 3D LUT is a 3D lattice of output RGB color values that can be indexed by sets of input RGB colour values. Each axis of the lattice represents one of the three input color components and the input color thus defines a point inside the lattice.

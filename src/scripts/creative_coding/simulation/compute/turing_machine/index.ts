@@ -1,4 +1,4 @@
-import { getParentSize } from "@/scripts/utils/dom.js";
+import { getParentSize } from "@/scripts/utils/dom/utils.js";
 import type { p5Extension } from "@/scripts/utils/types.ts";
 import {
   getPaletteAccentColor,

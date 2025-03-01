@@ -1,6 +1,7 @@
-import { getMousePos, kernelGenerator } from "@/scripts/utils/dom.js";
+import { getMousePos } from "@/scripts/utils/dom/utils.js";
+import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import { lerp } from "@/scripts/utils/math/utils.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/types.ts";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { rot_hilbert as rot, xy2d } from "./hilbert.js";
 import {
@@ -47,7 +48,9 @@ export default function execute() {
       canvas.height = n;
       ctx.fillStyle = getPaletteBaseColor(0);
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      const buffer = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const buffer = ctx.getImageData(0, 0, canvas.width, canvas.height, {
+        colorSpace: "srgb",
+      });
       const ref = str2okhcl(getPaletteAccentColor(0));
       const renderer = kernelGenerator(
         main,

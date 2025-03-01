@@ -1,7 +1,8 @@
-import { kernelGenerator } from "@/scripts/utils/dom.js";
-import { TComplex, TVector3 } from "@/scripts/utils/math/index.js";
+import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { TComplex } from "@/scripts/utils/math/complex";
+import type { TVector3 } from "@/scripts/utils/math/vector";
 import { constrain, fpart, map } from "@/scripts/utils/math/utils.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/types.ts";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.js";
 import { psi_orbital_superposition } from "./psi.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { getPaletteAccentColor } from "@/scripts/utils/color/palette.js";
@@ -68,9 +69,8 @@ export default function execute() {
         requestAnimationFrame(function draw(t) {
           if (!isActive) return;
           const z = map(fpart(t / T), 0, 1, -R, +R);
-          const step = renderer(z, 0.0);
-          while (!step.next().done) {
-            continue;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-empty
+          for (const _ in renderer(z, 0.0)) {
           }
           createImageBitmap(buffer).then((bmp) =>
             ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height),

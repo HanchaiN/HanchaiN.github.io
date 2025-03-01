@@ -1,4 +1,4 @@
-import { onImageChange } from "@/scripts/utils/dom.js";
+import { onImageChange } from "@/scripts/utils/dom/image.js";
 import { map } from "@/scripts/utils/math/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { getEdgeMask } from "./pipeline.js";
@@ -66,7 +66,9 @@ export default function execute() {
     if (!isActive) return;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height, {
+      colorSpace: "srgb",
+    });
     getEdgeMask(imageData);
     drawEdge(imageData);
     ctx.putImageData(imageData, 0, 0);

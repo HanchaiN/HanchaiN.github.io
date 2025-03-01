@@ -1,4 +1,4 @@
-import { Vector } from "@/scripts/utils/math/index.js";
+import { Vector } from "@/scripts/utils/math/vector.js";
 import { Dye, Light } from "./colors.js";
 import { Material, lambertianBRDF, phongEmitter } from "./material.js";
 import { SceneObject, quad } from "./object.js";

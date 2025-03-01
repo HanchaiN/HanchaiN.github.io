@@ -1,5 +1,5 @@
-import { maxWorkers } from "@/scripts/utils/dom.js";
-import { Vector } from "@/scripts/utils/math/index.js";
+import { maxWorkers } from "@/scripts/utils/dom/utils.js";
+import { Vector } from "@/scripts/utils/math/vector.js";
 import { constrainMap } from "@/scripts/utils/math/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import type { MessageResponse } from "./worker.js";

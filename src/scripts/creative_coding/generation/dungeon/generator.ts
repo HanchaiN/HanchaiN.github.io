@@ -1,4 +1,4 @@
-import { PriorityQueue } from "@/scripts/utils/algo.js";
+import { PriorityQueue } from "@/scripts/utils/algo/datastructure.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
 import { constrain, map } from "@/scripts/utils/math/utils.js";
 import { PerlinNoise } from "@/scripts/utils/math/noise.js";
