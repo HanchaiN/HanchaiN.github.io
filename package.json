@@ -21,7 +21,7 @@
     "@types/serve-handler": "^6",
     "@types/three": "^0.173.0",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
-    "@typescript-eslint/parser": "^8.21.0",
+    "@typescript-eslint/parser": "^8.25.0",
     "base64-stream": "^1.0.0",
     "eslint": "^9.20.1",
     "gifencoder": "^2.0.1",
