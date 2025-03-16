@@ -1,14 +1,10 @@
 import { onImageChange } from "@/scripts/utils/dom/image.js";
 import { constrainMap, symlog } from "@/scripts/utils/math/utils.js";
-import * as base64_stream from "base64-stream";
-import GIFEncoder from "gifencoder";
 import { Complex } from "@/scripts/utils/math/complex.js";
 import fft from "@/scripts/utils/algo/fft.js";
 import { update } from "./update.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
-
-const { Base64Encode } = base64_stream;
 
 function reshape<T>(array: T[], shape: [number, number]): T[][] {
   const [rows, cols] = shape;
@@ -282,44 +278,6 @@ export default function execute() {
       );
       return null;
     }
-    const encoder = new GIFEncoder(render_canvas.width, render_canvas.height);
-    {
-      const stream = encoder.createReadStream().pipe(
-        new Base64Encode({
-          prefix: "data:image/gif;base64,",
-        }),
-      );
-      const src = [""];
-      stream
-        .on("data", (chunk: string) => {
-          try {
-            src[src.length - 1] += chunk;
-          } catch (e) {
-            console.warn(e);
-            src.push(chunk);
-          }
-        })
-        .on("end", () => {
-          console.log(src);
-          const elem = document.createElement("img");
-          elem.className = display_canvas.className;
-          elem.width = display_canvas.width;
-          elem.height = display_canvas.height;
-          if (src.length === 1) elem.src = src[0];
-          else
-            render_canvas.convertToBlob({ type: "image/gif" }).then((blob) => {
-              const reader = new FileReader();
-              reader.addEventListener("load", () => {
-                elem.src = reader.result as string;
-              });
-              reader.readAsDataURL(blob);
-            });
-          elem.id = "display-canvas";
-          display_canvas.replaceWith(elem);
-        });
-    }
-    encoder.start();
-    encoder.setRepeat(-1);
     let total_time = 0;
     let delay = 0;
     const frames = draw();
@@ -349,13 +307,10 @@ export default function execute() {
         );
       }
       if (delay > 20) {
-        encoder.setDelay(delay);
         total_time += delay;
-        encoder.addFrame(render_ctx as unknown as CanvasRenderingContext2D);
         delay = 0;
       }
       if (!res.done) return requestAnimationFrame(draw);
-      encoder.finish();
       console.log(total_time);
     });
   }

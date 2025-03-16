@@ -6,8 +6,6 @@
     "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.3/+esm",
     "three": "https://cdn.jsdelivr.net/npm/three@0.173.0/build/three.module.js",
     "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.173.0/examples/jsm/",
-    "base64-stream": "https://unpkg.com/base64-stream@1.0.0/index.js",
-    "gifencoder": "https://cdn.jsdelivr.net/npm/gifencoder@2.0.1/+esm",
     "mathjs": "https://unpkg.com/mathjs@14.2.0/lib/browser/math.js"
   }
 }
