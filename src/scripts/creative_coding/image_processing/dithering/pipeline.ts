@@ -1,9 +1,5 @@
 import { sample } from "@/scripts/utils/math/random.js";
-import {
-  vector_dist,
-  vector_mult,
-  vector_sub,
-} from "@/scripts/utils/math/vector.js";
+import { vector_mult, vector_sub } from "@/scripts/utils/math/vector.js";
 import { softargmax } from "@/scripts/utils/math/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import type {
@@ -13,9 +9,13 @@ import type {
 } from "@/scripts/utils/color/conversion.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.js";
 import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
+import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 
 const mode: ColorSpace = "xyz";
-const srgb2embed = convert_color("srgb", mode)!;
+const srgb2embed = convert_color("srgb", mode)!,
+  embed2lab = convert_color(mode, "lab")!;
+const color_distance = (a: XYZColor, b: XYZColor) =>
+  DistanceE94(embed2lab(a), embed2lab(b));
 
 function validate_map(map: number[][]) {
   if (map.length === 0) throw new Error("map must be non-empty");
@@ -84,7 +84,7 @@ export function _applyDithering_Ordered(
   const target_color = srgb2embed([r, g, b]);
   const weight = softargmax(
     this.constants.embed_palette.map(
-      (color) => -Math.log(1e-20 + vector_dist(color, target_color)),
+      (color) => -Math.log(1e-20 + color_distance(color, target_color)),
     ),
     this.constants.temperature,
   );
@@ -180,7 +180,7 @@ export function applyDithering_ErrorDiffusion(
       const color_index = sample(
         color_palette.map((_, i) => i),
         softargmax(
-          color_palette_.map((color) => -vector_dist(color, target_color)),
+          color_palette_.map((color) => -color_distance(color, target_color)),
           temperature,
         ),
       );

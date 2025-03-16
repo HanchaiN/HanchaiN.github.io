@@ -42,22 +42,40 @@ export function symlog(x: number) {
 export function symlog_inv(x: number) {
   return x > 0 ? Math.exp(x) - 1 : 1 - Math.exp(-x);
 }
+export function normalize(array: number[], sum: number = 1) {
+  const _sum = array.reduce((acc, v) => acc + v, 0);
+  if (_sum === 0) {
+    console.log(array);
+    throw new Error("Cannot normalize an array with sum equal to zero");
+  }
+  if (!Number.isFinite(sum))
+    return normalize(
+      array.map((v) => (Number.isFinite(v) ? 0 : v > 0 ? +1 : -1)),
+      sum,
+    );
+  return array.map((v) => (v * sum) / _sum);
+}
+export function average(x: number[], w: number[] | null = null) {
+  if (w === null) w = new Array(x.length).fill(1);
+  w = normalize(w);
+  return x.reduce((acc, v, i) => acc + v * w[i], 0);
+}
 export function argmax(x: number[]) {
   return x.indexOf(Math.max(...x));
 }
 export function softargmax(x: number[], temperature = 1): number[] {
   if (temperature != 0) {
     const exps = x.map((v) => Math.exp(v / temperature));
-    const sum = exps.reduce((acc, v) => acc + v, 0);
-    const ret = exps.map((v) => v / sum);
+    const ret = normalize(exps, 1);
     if (ret.every((v) => Number.isFinite(v) && !Number.isNaN(v))) return ret;
   }
   {
     const max = x.reduce((acc, v) => Math.max(acc, v), -Infinity);
-    const argmax: number[] = x.map((v) => (v === max ? 1 : 0));
-    const sum = argmax.reduce((acc, v) => acc + v, 0);
-    const ret = argmax.map((v) => v / sum);
-    if (ret.every((v) => Number.isFinite(v) && !Number.isNaN(v))) return ret;
+    if (max !== -Infinity) {
+      const argmax: number[] = x.map((v) => (v === max ? 1 : 0));
+      const ret = normalize(argmax);
+      if (ret.every((v) => Number.isFinite(v) && !Number.isNaN(v))) return ret;
+    }
   }
   {
     const ret = new Array(x.length).fill(0);
@@ -67,7 +85,7 @@ export function softargmax(x: number[], temperature = 1): number[] {
 }
 export function softmax(x: number[], temperature = 1) {
   const argmax = softargmax(x, temperature);
-  return x.reduce((acc, v, i) => acc + v * argmax[i], 0);
+  return average(x, argmax);
 }
 export function product(from: number, to: number) {
   let y = 1.0;

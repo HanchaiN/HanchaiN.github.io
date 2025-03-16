@@ -3,143 +3,9 @@ import { Vector } from "@/scripts/utils/math/vector.js";
 import { constrain, map } from "@/scripts/utils/math/utils.js";
 import { PerlinNoise } from "@/scripts/utils/math/noise.js";
 import { randomGaussian } from "@/scripts/utils/math/random.js";
+import { delaunay_triangulation_step } from "@/scripts/utils/algo/delaunay_triangulation.js";
+import { minimum_spanning_tree_step } from "@/scripts/utils/algo/minimum_spanning_tree";
 
-function* delaunay_triangulation(nodes: Vector[], supertriangle: Vector[]) {
-  function getEdges(triangles: number[][]) {
-    const edges: number[][] = [];
-    triangles.forEach(([ia, ib, ic]) => {
-      if (
-        !edges.some(
-          ([i, j]) => (i === ia && j === ib) || (i === ib && j === ia),
-        )
-      )
-        edges.push([ia, ib]);
-      if (
-        !edges.some(
-          ([i, j]) => (i === ib && j === ic) || (i === ic && j === ib),
-        )
-      )
-        edges.push([ib, ic]);
-      if (
-        !edges.some(
-          ([i, j]) => (i === ic && j === ia) || (i === ia && j === ic),
-        )
-      )
-        edges.push([ic, ia]);
-    });
-    return edges;
-  }
-  const nodes_: Vector[] = [];
-  {
-    const [a, b, c] = supertriangle;
-    if (
-      a.x * b.y + c.x * a.y + b.x * c.y - (c.x * b.y + a.x * c.y + b.x * a.y) >
-      0
-    ) {
-      nodes_.push(a, b, c);
-    } else {
-      nodes_.push(c, b, a);
-    }
-  }
-  nodes_.push(...nodes);
-  let triangle: number[][] = [];
-  triangle.push([0, 1, 2]);
-  for (let _i = 0; _i < nodes.length; _i++) {
-    const node = nodes[_i];
-    const i = _i + 3;
-    const t: number[] = [];
-    triangle.forEach(([ia, ib, ic], it) => {
-      const a = nodes_[ia];
-      const b = nodes_[ib];
-      const c = nodes_[ic];
-      const a_ = Vector.sub(a, node);
-      const b_ = Vector.sub(b, node);
-      const c_ = Vector.sub(c, node);
-      const s_ =
-        a_.x * b_.y * c_.magSq() +
-        c_.x * a_.y * b_.magSq() +
-        b_.x * c_.y * a_.magSq() -
-        (c_.x * b_.y * a_.magSq() +
-          a_.x * c_.y * b_.magSq() +
-          b_.x * a_.y * c_.magSq());
-      if (s_ > 0) t.push(it);
-    });
-    const pol: number[][] = [];
-    t.forEach((it) => {
-      const [ia, ib, ic] = triangle[it];
-      if (
-        t.every((it_) => {
-          const [ia_, ib_, ic_] = triangle[it_];
-          return (
-            it === it_ ||
-            (ia !== ia_ && ia !== ib_ && ia !== ic_) ||
-            (ib !== ia_ && ib !== ib_ && ib !== ic_)
-          );
-        })
-      )
-        pol.push([ia, ib]);
-      if (
-        t.every((it_) => {
-          const [ia_, ib_, ic_] = triangle[it_];
-          return (
-            it === it_ ||
-            (ib !== ia_ && ib !== ib_ && ib !== ic_) ||
-            (ic !== ia_ && ic !== ib_ && ic !== ic_)
-          );
-        })
-      )
-        pol.push([ib, ic]);
-      if (
-        t.every((it_) => {
-          const [ia_, ib_, ic_] = triangle[it_];
-          return (
-            it === it_ ||
-            (ic !== ia_ && ic !== ib_ && ic !== ic_) ||
-            (ia !== ia_ && ia !== ib_ && ia !== ic_)
-          );
-        })
-      )
-        pol.push([ic, ia]);
-    });
-    triangle = triangle.filter((_, it) => !t.includes(it));
-    pol.forEach(([ia, ib]) => triangle.push([ia, ib, i]));
-    yield getEdges(
-      triangle
-        .filter(([ia, ib, ic]) => ia > 2 && ib > 2 && ic > 2)
-        .map(([ia, ib, ic]) => [ia - 3, ib - 3, ic - 3]),
-    );
-  }
-  return getEdges(
-    triangle
-      .filter(([ia, ib, ic]) => ia > 2 && ib > 2 && ic > 2)
-      .map(([ia, ib, ic]) => [ia - 3, ib - 3, ic - 3]),
-  );
-}
-function* minimum_spanning_tree(edges: number[][]) {
-  const tree_edges: number[] = [];
-  const vertex: number[] = [];
-  const lookup = new PriorityQueue<{ ie: number; d: number }>((_) => _.d);
-  function addNode(iv: number) {
-    if (vertex.includes(iv)) return;
-    vertex.push(iv);
-    edges.forEach(([ia, ib, d], ie) => {
-      if (ia === iv || ib === iv) lookup.push({ ie, d });
-    });
-  }
-  addNode(0);
-  while (lookup.top()) {
-    const { ie } = lookup.pop()!;
-    const [ia, ib] = edges[ie];
-    const a_ = vertex.includes(ia);
-    const b_ = vertex.includes(ib);
-    if (a_ && b_) continue;
-    if (a_) addNode(ib);
-    if (b_) addNode(ia);
-    tree_edges.push(ie);
-    yield tree_edges;
-  }
-  return tree_edges;
-}
 function* shortest_path<T>(
   nodes: T[],
   i_begin: number,
@@ -411,7 +277,7 @@ export class DungeonGenerator {
     return true;
   }
   *genEdges_Stepwise() {
-    const edges_gen = delaunay_triangulation(this.nodes, [
+    const edges_gen = delaunay_triangulation_step(this.nodes, [
       new Vector(0, 0),
       new Vector(2 * this.GRID_SIZE.x, 0),
       new Vector(0, 2 * this.GRID_SIZE.y),
@@ -429,7 +295,7 @@ export class DungeonGenerator {
     }
   }
   *genTree_Stepwise() {
-    const tree_gen = minimum_spanning_tree(
+    const tree_gen = minimum_spanning_tree_step(
       this.edges.map(([ia, ib]) => [
         ia,
         ib,

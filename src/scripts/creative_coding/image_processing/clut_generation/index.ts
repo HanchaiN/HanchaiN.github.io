@@ -1,6 +1,11 @@
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
-import { getBaseLUT, applyClosest, applyGaussianRBF } from "./pipeline.js";
+import {
+  getBaseLUT,
+  applyClosest,
+  applyGaussianRBF,
+  applyInverseRBF,
+} from "./pipeline.js";
 import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
 
 const str2srgb = convert_color("str", "srgb")!;
@@ -17,6 +22,7 @@ export default function execute() {
     NONE = "",
     NEAREST = "nearest",
     GAUSSIAN = "gaussian",
+    INVERSE = "inverse",
   }
 
   function clear() {
@@ -49,6 +55,15 @@ export default function execute() {
           algo_conf.querySelector<HTMLInputElement>("#count")!.valueAsNumber,
         );
         break;
+      case Algorithm.INVERSE:
+        applyInverseRBF(
+          buffer,
+          palette_,
+          algo_conf.querySelector<HTMLInputElement>("#temperature")!
+            .valueAsNumber,
+          algo_conf.querySelector<HTMLInputElement>("#count")!.valueAsNumber,
+        );
+        break;
 
       default:
         break;
@@ -57,36 +72,49 @@ export default function execute() {
   }
 
   function updateAlgoConfig(algo: Algorithm) {
+    function hideAll() {
+      algo_conf.innerHTML = "";
+    }
+    function addNumberInput(
+      label: string,
+      id: string,
+      min: number | null = null,
+      max: number | null = null,
+      step: number | null = null,
+      value: number | null = null,
+    ) {
+      const lebelElem = document.createElement("label");
+      lebelElem.htmlFor = id;
+      lebelElem.textContent = label;
+      const inputElem = document.createElement("input");
+      inputElem.type = "number";
+      inputElem.id = id;
+      if (min !== null) inputElem.min = min.toString();
+      if (max !== null) inputElem.max = max.toString();
+      if (step !== null) inputElem.step = step.toString();
+      if (value !== null) inputElem.value = value.toString();
+      return [lebelElem, inputElem];
+    }
+    hideAll();
     switch (algo) {
-      case Algorithm.GAUSSIAN: {
-        algo_conf.innerHTML = "";
-        const tempLabel = document.createElement("label");
-        tempLabel.htmlFor = "temperature";
-        tempLabel.textContent = "Temperature";
-        algo_conf.appendChild(tempLabel);
-        const temp = document.createElement("input");
-        temp.type = "number";
-        temp.id = "temperature";
-        temp.min = "0";
-        temp.step = "1e-5";
-        temp.value = "0.05";
-        algo_conf.appendChild(temp);
-        const countLabel = document.createElement("label");
-        countLabel.htmlFor = "count";
-        countLabel.textContent = "Color Count";
-        algo_conf.appendChild(countLabel);
-        const count = document.createElement("input");
-        count.type = "number";
-        count.id = "count";
-        count.min = "0";
-        count.step = "1";
-        count.value = "3";
-        algo_conf.appendChild(count);
+      case Algorithm.GAUSSIAN:
+        algo_conf.append(
+          ...addNumberInput("Temperature", "temperature", 0, null, 1e-5, 0.05),
+        );
+        algo_conf.append(
+          ...addNumberInput("Color Count", "count", 0, null, 1, 3),
+        );
         break;
-      }
+      case Algorithm.INVERSE:
+        algo_conf.append(
+          ...addNumberInput("Temperature", "temperature", 0, null, 1e-5, 0.05),
+        );
+        algo_conf.append(
+          ...addNumberInput("Color Count", "count", 0, null, 1, 3),
+        );
+        break;
 
       default:
-        algo_conf.innerHTML = "";
         break;
     }
   }

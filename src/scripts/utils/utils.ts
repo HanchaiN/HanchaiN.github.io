@@ -13,3 +13,11 @@ export function throttle<T extends (...args: any) => any>(
     }, delay);
   };
 }
+
+export function iterate_all<T>(gen: Generator<unknown, T, unknown>): T {
+  let result = gen.next();
+  while (!result.done) {
+    result = gen.next();
+  }
+  return result.value;
+}

@@ -9,18 +9,16 @@ import type {
   SRGBColor,
 } from "@/scripts/utils/color/conversion.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
-import { softargmax } from "@/scripts/utils/math/utils.js";
-import {
-  vector_add,
-  vector_dist,
-  vector_mult,
-} from "@/scripts/utils/math/vector.js";
+import { normalize, softargmax } from "@/scripts/utils/math/utils.js";
+import { vector_add, vector_mult } from "@/scripts/utils/math/vector.js";
 import { sample } from "@/scripts/utils/math/random.js";
+import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 
-const mode: ColorSpace = "xyz";
+const mode: ColorSpace = "lab";
 type EmbedColor = ColorSpaceMap[typeof mode];
 const srgb2embed = convert_color("srgb", mode)!,
   embed2srgb = convert_color(mode, "srgb")!;
+const color_distance = DistanceE94;
 
 export function detectLevel(width: number, height: number) {
   if (width !== height) {
@@ -69,7 +67,7 @@ export function _applyClosest(
   const current_color = sample(
     color_palette,
     softargmax(
-      embed_palette.map((c) => -vector_dist(target_color, c)),
+      embed_palette.map((c) => -color_distance(target_color, c)),
       0,
     ),
   );
@@ -86,14 +84,14 @@ export function applyClosest(img: ImageData, palette: SRGBColor[]) {
   return runner();
 }
 
-export function _applyGaussianRBF(
+export function _applyRBF(
   this: IKernelFunctionThis_CMap<{
     embed_palette: EmbedColor[];
-    temperature: number;
+    rbf: (distance: number) => number;
     color_count: number;
   }>,
 ) {
-  const { embed_palette, temperature } = this.constants;
+  const { embed_palette, rbf } = this.constants;
   const color_count =
     0 < this.constants.color_count &&
     this.constants.color_count < embed_palette.length
@@ -103,9 +101,8 @@ export function _applyGaussianRBF(
 
   const target_color = srgb2embed([r, g, b]);
 
-  const acc = softargmax(
-    embed_palette.map((c) => -vector_dist(target_color, c)),
-    temperature,
+  const acc = normalize(
+    embed_palette.map((c) => rbf(color_distance(target_color, c))),
   )
     .map((w, i) => [embed_palette[i], w] as [EmbedColor, number])
     .sort(([, w1], [, w2]) => w2 - w1)
@@ -127,8 +124,54 @@ export function applyGaussianRBF(
 ) {
   const embed_palette = palette.map(srgb2embed);
   const runner = kernelRunner(
-    _applyGaussianRBF,
-    { embed_palette, temperature, color_count },
+    _applyRBF,
+    {
+      embed_palette,
+      color_count,
+      rbf: (distance) => Math.exp(-Math.pow(distance, 2) / temperature),
+    },
+    img,
+  );
+  return runner();
+}
+
+export function applyInverseRBF(
+  img: ImageData,
+  palette: SRGBColor[],
+  temperature: number = 1,
+  color_count: number = 0,
+) {
+  const embed_palette = palette.map(srgb2embed);
+  const runner = kernelRunner(
+    _applyRBF,
+    {
+      embed_palette,
+      color_count,
+      rbf: (distance) => 1 / distance / temperature,
+    },
+    img,
+  );
+  return runner();
+}
+
+export function _applySibson(
+  this: IKernelFunctionThis_CMap<{
+    embed_palette: EmbedColor[];
+    color_count: number;
+  }>,
+) {
+  throw new Error("Not implemented");
+}
+
+export function applySibson(
+  img: ImageData,
+  palette: SRGBColor[],
+  color_count: number = 0,
+) {
+  const embed_palette = palette.map(srgb2embed);
+  const runner = kernelRunner(
+    _applySibson,
+    { embed_palette, color_count },
     img,
   );
   return runner();

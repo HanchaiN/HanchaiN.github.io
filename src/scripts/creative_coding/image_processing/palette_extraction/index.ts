@@ -1,24 +1,19 @@
 import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
 import { getImageData, onImageChange } from "@/scripts/utils/dom/image.js";
-import { sample } from "@/scripts/utils/math/random.js";
-import { softargmax } from "@/scripts/utils/math/utils.js";
+import { argmax } from "@/scripts/utils/math/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import type { XYZColor } from "@/scripts/utils/color/conversion.js";
-import {
-  extendCentroids,
-  getSilhouetteScore,
-  kMeans,
-} from "@/scripts/utils/algo/kmeans.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
-import { vector_dist } from "@/scripts/utils/math/vector.js";
-import type { TVector3 } from "@/scripts/utils/math/vector.js";
 import { applyColorMapping } from "../color_grading/pipeline.js";
 import { _applyClosest } from "../clut_generation/pipeline.js";
+import { evaluatePalette, extractPalette, extendPalette } from "./pipeline.js";
+import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 
 const str2xyz = convert_color("str", "xyz")!,
   xyz2hex = convert_color("xyz", "hex")!,
   srgb2xyz = convert_color("srgb", "xyz")!,
   xyz2srgb = convert_color("xyz", "srgb")!;
+const color_distance = DistanceE94;
 
 export default function execute() {
   let canvas: HTMLCanvasElement;
@@ -51,7 +46,7 @@ export default function execute() {
     setPalette([]);
     redraw(true);
   }
-  function getSamples() {
+  function downSample() {
     const sample_dim =
       form.querySelector<HTMLInputElement>("#sample-dim")!.valueAsNumber;
     const scale = Math.max(
@@ -71,31 +66,7 @@ export default function execute() {
       offscreen.height,
       { colorSpace: "srgb" },
     );
-    const samples = new Array(buffer.width * buffer.height)
-      .fill(0)
-      .map((_, i) => {
-        return srgb2xyz([
-          buffer.data[i * 4 + 0] / 255,
-          buffer.data[i * 4 + 1] / 255,
-          buffer.data[i * 4 + 2] / 255,
-        ]);
-      });
-    const copy = (v: XYZColor) => [...v] as XYZColor,
-      dist = (a: XYZColor, b: XYZColor) => {
-        return vector_dist(a as TVector3, b as TVector3);
-      },
-      average = (a: XYZColor[], w: number[] | null = null) => {
-        const v = [0, 0, 0, 0];
-        a.forEach((_, i) => {
-          const w_ = w ? w[i] : 1;
-          v[0] += a[i][0] * w_;
-          v[1] += a[i][1] * w_;
-          v[2] += a[i][2] * w_;
-          v[3] += w_;
-        });
-        return [v[0] / v[3], v[1] / v[3], v[2] / v[3]] as XYZColor;
-      };
-    return { offscreen, samples, copy, dist, average };
+    return buffer;
   }
   function cluster() {
     if (!isActive || !image) return;
@@ -104,9 +75,6 @@ export default function execute() {
       setPalette([]);
       return;
     }
-    const { samples, copy, dist, average } = getSamples();
-    const N_SAMPLE = samples.length;
-    const max_iter = 1000;
     const closestKey = Object.keys(cache)
       .map((n) => Number.parseInt(n.toString()))
       .reduce((a, b) => {
@@ -116,29 +84,32 @@ export default function execute() {
       }, 0);
     const seed = cache[closestKey] ?? [];
     setPalette(
-      kMeans(samples, N_SAMPLE, n_colors, max_iter, seed, copy, dist, average),
+      extractPalette(downSample(), n_colors, seed.map(xyz2hex)).map((c) =>
+        str2xyz(c),
+      ),
     );
   }
   function snap() {
     if (!isActive || !image) return;
-    const { samples, dist } = getSamples(),
-      palette = getPalette().map((c) =>
-        sample(
-          samples,
-          softargmax(
-            samples.map((sample) => -dist(c, sample)),
-            1 / 100000,
-          ),
-        ),
+    const buffer = downSample(),
+      samples = new Array(buffer.width * buffer.height).fill(0).map((_, i) => {
+        return srgb2xyz([
+          buffer.data[i * 4 + 0] / 255,
+          buffer.data[i * 4 + 1] / 255,
+          buffer.data[i * 4 + 2] / 255,
+        ]);
+      }),
+      palette = getPalette().map(
+        (c) =>
+          samples[argmax(samples.map((sample) => -color_distance(c, sample)))],
       );
     setPalette(palette);
   }
   function updateScore() {
     if (!isActive || !image) return;
-    const { samples, dist } = getSamples(),
-      palette = getPalette();
+    const palette = getPalette();
     if (palette.length === 0) return;
-    const score = getSilhouetteScore(samples, palette, dist);
+    const score = evaluatePalette(downSample(), palette.map(xyz2hex));
     form.querySelector<HTMLInputElement>("#palette-score")!.valueAsNumber =
       score;
   }
@@ -149,7 +120,6 @@ export default function execute() {
       requestAnimationFrame(() => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-        getSamples();
       });
       return;
     }
@@ -163,16 +133,10 @@ export default function execute() {
       ctx.putImageData(imageData, 0, 0);
     });
   }
-  function extendPalette(n_colors: number) {
+  function extend(n_colors: number) {
     if (!image) return;
-    const { samples, copy, dist } = getSamples();
-    palette.value = extendCentroids(
-      samples,
-      n_colors,
-      palette.value.map(str2xyz),
-      dist,
-      copy,
-    ).map(xyz2hex);
+    const buffer = downSample();
+    palette.value = extendPalette(buffer, n_colors, palette.value);
   }
 
   function lock() {
@@ -200,7 +164,7 @@ export default function execute() {
     lock();
     try {
       for (let n_colors = 0; isAuto; n_colors++) {
-        extendPalette(n_colors);
+        extend(n_colors);
         cluster();
         updateScore();
         console.log(
@@ -256,7 +220,7 @@ export default function execute() {
       form
         .querySelector<HTMLInputElement>("#palette-count")!
         .addEventListener("change", function () {
-          extendPalette(this.valueAsNumber);
+          extend(this.valueAsNumber);
         });
       palette.addChangeHandler((palette) => {
         form.querySelector<HTMLInputElement>("#palette-score")!.value = "";

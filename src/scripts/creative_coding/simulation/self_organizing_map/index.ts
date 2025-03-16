@@ -1,11 +1,8 @@
 import { generate } from "@/scripts/creative_coding/generation/perlin_noise/pipeline.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import { onImageChange } from "@/scripts/utils/dom/image.js";
-import {
-  TVector2,
-  TVector3,
-  vector_dist,
-} from "@/scripts/utils/math/vector.js";
+import type { TVector2 } from "@/scripts/utils/math/vector.js";
+import { vector_dist } from "@/scripts/utils/math/vector.js";
 import { constrainLerp, gaus, softargmax } from "@/scripts/utils/math/utils.js";
 import { randomGaussian, randomUniform } from "@/scripts/utils/math/random.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.js";
@@ -13,40 +10,50 @@ import {
   getPaletteAccentColors,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
+import type {
+  ColorSpace,
+  ColorSpaceMap,
+  SRGBColor,
+} from "@/scripts/utils/color/conversion.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
-import { getPalette } from "../../image_processing/palette_extraction/pipeline.js";
+import { extractPalette } from "../../image_processing/palette_extraction/pipeline.js";
 import { applyDithering_ErrorDiffusion } from "../../image_processing/dithering/pipeline.js";
+import { DistanceE94 } from "@/scripts/utils/color/distance.js";
+import { iterate_all } from "@/scripts/utils/utils.js";
+
+const embed: ColorSpace = "xyz";
+type EmbedColor = ColorSpaceMap[typeof embed];
 
 const str2srgb = convert_color("str", "srgb")!,
-  srgb2oklab = convert_color("srgb", "oklab")!,
+  srgb2embed = convert_color("srgb", embed)!,
   srgb2okhcl = convert_color("srgb", "okhcl")!,
   okhcl2srgb = convert_color("okhcl", "srgb")!,
-  oklab2srgb = convert_color("oklab", "srgb")!;
+  embed2lab = convert_color(embed, "lab")!,
+  embed2srgb = convert_color(embed, "srgb")!;
+const embed_distance = (c1: EmbedColor, c2: EmbedColor) =>
+  DistanceE94(embed2lab(c1), embed2lab(c2));
+
 export default function execute() {
   let isActive = false;
   const scale = 1;
   let ctx: CanvasRenderingContext2D;
   let handlerId: number | null = null;
   let buffer: ImageData;
-  let generator: Generator<TVector3, never, void>;
+  let generator: Generator<SRGBColor, never, void>;
   let renderer: ReturnType<
     typeof kernelGenerator<
-      IConstants,
-      [best_matching: TVector2, element: TVector3, iter: number]
+      Record<string, never>,
+      [
+        best_matching: TVector2,
+        element: SRGBColor,
+        learning_rate: number,
+        range: number,
+      ]
     >
   >;
   let i = 0;
 
-  interface IConstants {
-    range: number;
-    learning_rate: number;
-    range_decay_rate: number;
-    learning_decay_rate: number;
-    color_choices: number;
-    weight_positions: number;
-    weight_colors: number;
-  }
-  const constants: IConstants = {
+  const constants = {
     range: 0.125,
     learning_rate: 0.125,
     range_decay_rate: 1e-3,
@@ -56,9 +63,9 @@ export default function execute() {
     weight_colors: -1,
   };
 
-  function* elementGenerator(
+  function* targetGenerator(
     image: CanvasImageSource,
-  ): Generator<TVector3, never, void> {
+  ): Generator<SRGBColor, never, void> {
     const offscreen = new OffscreenCanvas(100, 100);
     const offscreenCtx = offscreen.getContext("2d", { alpha: false })!;
     offscreenCtx.drawImage(image, 0, 0, offscreen.width, offscreen.height);
@@ -68,14 +75,14 @@ export default function execute() {
       offscreen.width,
       offscreen.height,
     );
-    const auto_palette = getPalette(buffer, 16).map((c) => str2srgb(c));
+    const auto_palette = extractPalette(buffer, 16).map((c) => str2srgb(c));
     const auto_palette_weight = auto_palette.map(() => 1 / auto_palette.length);
     {
       applyDithering_ErrorDiffusion(buffer, auto_palette);
       const ind = new Array(buffer.width * buffer.height)
         .fill(0)
         .map((_, i) => {
-          return srgb2oklab([
+          return srgb2embed([
             buffer.data[i * 4 + 0] / 255,
             buffer.data[i * 4 + 1] / 255,
             buffer.data[i * 4 + 2] / 255,
@@ -85,7 +92,7 @@ export default function execute() {
           let min_dist = Infinity,
             min_ind = -1;
           for (let j = 0; j < auto_palette.length; j++) {
-            const dist = vector_dist(v, srgb2oklab(auto_palette[j]));
+            const dist = embed_distance(v, srgb2embed(auto_palette[j]));
             if (dist < min_dist) {
               min_dist = dist;
               min_ind = j;
@@ -135,7 +142,7 @@ export default function execute() {
       fac_xc = cov_lc / fac_xl,
       fac_yc = Math.sqrt(cov_cc - fac_xc * fac_xc);
     while (true) {
-      let c: TVector3;
+      let c: SRGBColor;
 
       if (Math.random() < 0.0025)
         c = [
@@ -193,33 +200,32 @@ export default function execute() {
     }
   }
 
-  function main(
-    this: IKernelFunctionThis<IConstants>,
+  function apply_step(
+    this: IKernelFunctionThis<Record<string, never>>,
     best_matching: TVector2,
-    element: TVector3,
-    iter: number,
+    element: SRGBColor,
+    learning_rate: number,
+    range: number,
   ) {
     const ratio =
-      this.constants.learning_rate *
-      Math.exp(-this.constants.learning_decay_rate * iter) *
+      learning_rate *
       gaus(
         vector_dist([this.thread.x, this.thread.y], best_matching) /
-          (this.output.x *
-            this.constants.range *
-            Math.exp(-this.constants.range_decay_rate * iter)),
+          (this.output.x * range),
       );
-    const current = srgb2oklab(this.getColor().slice(0, 3) as TVector3);
-    const target = srgb2oklab(element);
-    const l_ = constrainLerp(ratio, current[0], target[0]),
-      a_ = constrainLerp(ratio, current[1], target[1]),
-      b_ = constrainLerp(ratio, current[2], target[2]);
-    const [r, g, b] = oklab2srgb([l_, a_, b_]);
+    const current = srgb2embed(this.getColor().slice(0, 3) as SRGBColor);
+    const target = srgb2embed(element);
+    const [r, g, b] = embed2srgb([
+      constrainLerp(ratio, current[0], target[0]),
+      constrainLerp(ratio, current[1], target[1]),
+      constrainLerp(ratio, current[2], target[2]),
+    ]);
     this.color(r, g, b, 1);
   }
 
   function setup(config: HTMLFormElement, image: CanvasImageSource) {
     if (handlerId != null) cancelAnimationFrame(handlerId);
-    generator = elementGenerator(image);
+    generator = targetGenerator(image);
     constants.range =
       +config.querySelector<HTMLInputElement>("input#range")!.value;
     constants.learning_rate = +config.querySelector<HTMLInputElement>(
@@ -242,14 +248,14 @@ export default function execute() {
     )!.value;
     config.querySelector<HTMLInputElement>("input#iteration-count")!.value =
       "0";
-    renderer = kernelGenerator(main, constants, buffer!);
+    renderer = kernelGenerator(apply_step, {}, buffer!);
     i = 0;
     handlerId = requestAnimationFrame(function draw() {
       if (!isActive) return;
       createImageBitmap(buffer).then((bmp) =>
         ctx.drawImage(bmp, 0, 0, ctx.canvas.width, ctx.canvas.height),
       );
-      new Promise<void>((resolve) => resolve(render())).then(() => {
+      new Promise<void>((resolve) => resolve(step())).then(() => {
         config.querySelector<HTMLInputElement>("input#iteration-count")!.value =
           (
             1 +
@@ -260,7 +266,7 @@ export default function execute() {
       });
     });
   }
-  function render() {
+  function step() {
     const values = new Array(constants.color_choices)
       .fill(0)
       .map(() => generator.next().value);
@@ -273,9 +279,9 @@ export default function execute() {
         let pos = [];
         for (let i = 0; i < buffer.width; i++) {
           for (let j = 0; j < buffer.height; j++) {
-            const dist = vector_dist(
-              srgb2oklab(values[k]),
-              srgb2oklab([
+            const dist = embed_distance(
+              srgb2embed(values[k]),
+              srgb2embed([
                 buffer.data[
                   4 * buffer.width * (buffer.height - j - 1) + 4 * i + 0
                 ] / 255,
@@ -320,9 +326,11 @@ export default function execute() {
       x = col[c].x;
       y = col[c].y;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-empty
-    for (const _ in renderer([x, y], values[c], i++)) {
-    }
+    const learning_rate =
+        constants.learning_rate * Math.exp(-constants.learning_decay_rate * i),
+      range = constants.range * Math.exp(-constants.range_decay_rate * i);
+    iterate_all(renderer([x, y], values[c], learning_rate, range));
+    i++;
   }
 
   return {
