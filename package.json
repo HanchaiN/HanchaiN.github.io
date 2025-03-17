@@ -6,7 +6,7 @@
     "serve-handler": "^6.1.6",
     "ts-patch": "^3.3.0",
     "typescript": "^5.8.2",
-    "typescript-transform-paths": "^3.5.3"
+    "typescript-transform-paths": "^3.5.5"
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.4",

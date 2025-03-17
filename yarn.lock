@@ -1638,7 +1638,7 @@ __metadata:
     three: "npm:^0.174.0"
     ts-patch: "npm:^3.3.0"
     typescript: "npm:^5.8.2"
-    typescript-transform-paths: "npm:^3.5.3"
+    typescript-transform-paths: "npm:^3.5.5"
   languageName: unknown
   linkType: soft
 
@@ -2798,14 +2798,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript-transform-paths@npm:^3.5.3":
-  version: 3.5.3
-  resolution: "typescript-transform-paths@npm:3.5.3"
+"typescript-transform-paths@npm:^3.5.5":
+  version: 3.5.5
+  resolution: "typescript-transform-paths@npm:3.5.5"
   dependencies:
     minimatch: "npm:^9.0.5"
   peerDependencies:
     typescript: ">=3.6.5"
-  checksum: 10c0/9b4a82b3fbba7f3c4cac16aae48ce891651526c46c68999d13194e62478d96ef915dd214f51d76cc59b3396c0db2cb7abda751235663b4a4aca6fb8992fe3b54
+  checksum: 10c0/253aa063b43588753ac651c12b22e1e2ce32273a0b5a59be038de7aba70b95e3363461bc2cc6ad5244525890c90f3ee350fe70fa0680846614eadf92738a87ed
   languageName: node
   linkType: hard
 
