@@ -1,0 +1,69 @@
+extends /components/layout.pug
+
+block title
+  title Color Difference
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/visualization/color_difference/index.js';
+
+    const root = document.getElementById('color-difference');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#config'),
+    );
+
+block content
+  h1 Color Difference
+  #color-difference.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='1000', height='1000')
+    form.data-container#config
+      label(for='lightness') Lightness:
+      input#lightness(type='number', min='0', max='1', value='0.5' step='0.01')
+      input#snap-lightness(type='checkbox', checked)
+      label(for='snap-lightness') Snap
+      br
+      label(for='chroma') Chroma:
+      input#chroma(type='number', min='0', max='1', value='0.5' step='0.01')
+      input#snap-chroma(type='checkbox', checked)
+      label(for='snap-chroma') Snap
+      br
+      label(for='range-i') Range (inner):
+      input#range-i(type='number', min='0', max='1', value='0.01' step='0.01')
+      br
+      label(for='algorithm-i') Algorithm (inner):
+      select#algorithm-i
+        option(value='red-mean') Red Mean
+        option(value='hybrid-ab') Hybrid AB
+        option(value='cie76') CIE76
+        option(value='cie2:1', selected) CIE 2:1
+        option(value='cie1:1') CIE 1:1
+        option(value='cie94-graphics') CIE94 (Graphic Arts)
+        option(value='cie94-textiles') CIE94 (Textiles)
+        option(value='cie00') CIEDE2000
+      br
+      label(for='range-o') Range (outer):
+      input#range-o(type='number', min='0', max='1', value='0.02' step='0.01')
+      br
+      label(for='algorithm-o') Algorithm (outer):
+      select#algorithm-o
+        option(value='inner', selected) (Same as Inner)
+        option(value='red-mean') Red Mean
+        option(value='hybrid-ab') Hybrid AB
+        option(value='cie76') CIE76
+        option(value='cie2:1') CIE 2:1
+        option(value='cie1:1') CIE 1:1
+        option(value='cie94-graphics') CIE94 (Graphic Arts)
+        option(value='cie94-textiles') CIE94 (Textiles)
+        option(value='cie00') CIEDE2000
+      br
+      input#bound(type='checkbox', selected)
+      label(for='bound') Bounded
+      br
+      button#apply(type='button') Execute
+      br
+      textarea#palette-text
+      br
+      div#palette
+  p.
+    In color science, color difference or color distance is the separation between two colors.

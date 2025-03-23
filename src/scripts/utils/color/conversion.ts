@@ -292,6 +292,10 @@ function cubehelix2rgb(hsl: CubehelixColor): RGBColor {
   return [l + a * (A * c + B * s), l + a * (C * c + D * s), l + a * (E * c)];
 }
 
+export function rgb2lum(rgb: RGBColor): number {
+  return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+}
+
 export default function convert_color<
   T1 extends keyof ColorSpaceMapExt,
   T2 extends keyof ColorSpaceMapExt,
