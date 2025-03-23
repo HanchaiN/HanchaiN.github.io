@@ -6,7 +6,7 @@
     "serve-handler": "^6.1.6",
     "ts-patch": "^3.3.0",
     "typescript": "^5.8.2",
-    "typescript-transform-paths": "^3.5.3"
+    "typescript-transform-paths": "^3.5.5"
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.4",
@@ -18,8 +18,8 @@
     "@types/potrace": "^2.1.5",
     "@types/serve-handler": "^6",
     "@types/three": "^0.174.0",
-    "@typescript-eslint/eslint-plugin": "^8.26.0",
-    "@typescript-eslint/parser": "^8.26.0",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
+    "@typescript-eslint/parser": "^8.26.1",
     "eslint": "^9.22.0",
     "katex": "^0.16.21",
     "mathjs": "^14.3.1",
