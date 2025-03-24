@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.4",
-    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.23.0",
     "@types/eslint": "^9.6.1",
     "@types/katex": "^0.16.7",
