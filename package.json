@@ -22,7 +22,7 @@
     "@typescript-eslint/parser": "^8.27.0",
     "eslint": "^9.23.0",
     "katex": "^0.16.21",
-    "mathjs": "^14.3.1",
+    "mathjs": "^14.4.0",
     "p5": "^1.11.1",
     "prettier": "^3.5.3",
     "three": "^0.174.0"
