@@ -17,7 +17,7 @@
     "@types/p5": "^1.7.6",
     "@types/potrace": "^2.1.5",
     "@types/serve-handler": "^6",
-    "@types/three": "^0.174.0",
+    "@types/three": "^0.175.0",
     "@typescript-eslint/eslint-plugin": "^8.27.0",
     "@typescript-eslint/parser": "^8.27.0",
     "eslint": "^9.23.0",
@@ -25,7 +25,7 @@
     "mathjs": "^14.3.1",
     "p5": "^1.11.1",
     "prettier": "^3.5.3",
-    "three": "^0.174.0"
+    "three": "^0.175.0"
   },
   "scripts": {
     "build:script": "tspc",
