@@ -15,7 +15,6 @@
     "@types/eslint": "^9.6.1",
     "@types/katex": "^0.16.7",
     "@types/p5": "^1.7.6",
-    "@types/potrace": "^2.1.5",
     "@types/serve-handler": "^6",
     "@types/three": "^0.175.0",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
