@@ -4,6 +4,7 @@ import { softargmax } from "@/scripts/utils/math/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import type {
   ColorSpace,
+  ColorSpaceMap,
   SRGBColor,
   XYZColor,
 } from "@/scripts/utils/color/conversion.js";
@@ -12,9 +13,10 @@ import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
 import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 
 const mode: ColorSpace = "xyz";
+type EmbedColor = ColorSpaceMap[typeof mode];
 const srgb2embed = convert_color("srgb", mode)!,
   embed2lab = convert_color(mode, "lab")!;
-const color_distance = (a: XYZColor, b: XYZColor) =>
+const color_distance = (a: EmbedColor, b: EmbedColor) =>
   DistanceE94(embed2lab(a), embed2lab(b));
 
 function validate_map(map: number[][]) {

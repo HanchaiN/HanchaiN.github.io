@@ -26,9 +26,35 @@ block content
         option(value='nearest') Nearest
         option(value='gaussian') Gaussian radial basis
         option(value='inverse') Inverse distance weighting
+        option(value='rbf') Custom RBF
+        option(value='map') Custom Mapping
       #algorithm-options
+        div(data-select='gaussian')
+          label(for='temperature') Temperature:
+          input#temperature(type='number', value='0.05', min='0', step='1e-5')
+        div(data-select='gaussian,inverse,rbf')
+          label(for='count') Color Count:
+          input#count(type='number', value='3', min='0', step='1')
+        div(data-select='rbf')
+          label(for='rbf') RBF:
+          input#rbf(type='text', value='(d) => Math.exp(-Math.pow(d, 2) / 0.05)', placeholder='(distance) => weight')
+        div(data-select='nearest,gaussian,inverse,rbf')
+          textarea#palette-text
+          div#palette
+        div(data-select='map')
+          label(for='color-space') Color Space:
+          select#color-space
+            option(value='srgb') sRGB
+            option(value='rgb') RGB
+            option(value='xyz') CIE XYZ
+            option(value='lms') CIE LMS
+            option(value='lab' selected) CIE Lab
+            option(value='hcl') CIE HCL
+            option(value='oklab') OKLab
+            option(value='okhcl') OKHCL
+        div(data-select='map')
+          label(for='mapper') Mapper:
+          input#mapper(type='text', value='([l, a, b]) => [l, a, b]', placeholder='([c1, c2, c3]) => [c1, c2, c3]')
       button#apply(type='button') Execute
-      textarea#palette-text
-      div#palette
   p.
     A 3D LUT is a 3D lattice of output RGB color values that can be indexed by sets of input RGB colour values. Each axis of the lattice represents one of the three input color components and the input color thus defines a point inside the lattice.

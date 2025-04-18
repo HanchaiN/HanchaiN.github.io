@@ -15,7 +15,7 @@ type EmbedColor = ColorSpaceMap[typeof mode];
 const srgb2embed = convert_color("srgb", mode)!,
   str2embed = convert_color("str", mode)!,
   embed2hex = convert_color(mode, "hex")!;
-const color_distance = DistanceE94;
+const color_distance: (c1: EmbedColor, c2: EmbedColor) => number = DistanceE94;
 const copy = (a: EmbedColor) => a.slice() as EmbedColor;
 
 export function extractPalette(

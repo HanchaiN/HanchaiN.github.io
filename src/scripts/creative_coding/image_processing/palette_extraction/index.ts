@@ -2,18 +2,23 @@ import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
 import { getImageData, onImageChange } from "@/scripts/utils/dom/image.js";
 import { argmax } from "@/scripts/utils/math/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
-import type { XYZColor } from "@/scripts/utils/color/conversion.js";
+import type {
+  ColorSpace,
+  ColorSpaceMap,
+} from "@/scripts/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { applyColorMapping } from "../color_grading/pipeline.js";
 import { _applyClosest } from "../clut_generation/pipeline.js";
 import { evaluatePalette, extractPalette, extendPalette } from "./pipeline.js";
 import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 
-const str2xyz = convert_color("str", "xyz")!,
-  xyz2hex = convert_color("xyz", "hex")!,
-  srgb2xyz = convert_color("srgb", "xyz")!,
-  xyz2srgb = convert_color("xyz", "srgb")!;
-const color_distance = DistanceE94;
+const mode: ColorSpace = "lab";
+type EmbedColor = ColorSpaceMap[typeof mode];
+const srgb2embed = convert_color("srgb", mode)!,
+  embed2srgb = convert_color(mode, "srgb")!,
+  str2embed = convert_color("str", mode)!,
+  embed2hex = convert_color(mode, "hex")!;
+const color_distance: (c1: EmbedColor, c2: EmbedColor) => number = DistanceE94;
 
 export default function execute() {
   let canvas: HTMLCanvasElement;
@@ -24,10 +29,10 @@ export default function execute() {
   let isAuto = false;
   let image: HTMLImageElement;
   let form: HTMLFormElement;
-  let cache: { [n: number]: XYZColor[] } = {};
-  const getPalette = () => palette.value.map((c) => str2xyz(c));
-  const setPalette = (cs: XYZColor[]) => {
-    palette.value = cs.map((c) => xyz2hex(c));
+  let cache: { [n: number]: EmbedColor[] } = {};
+  const getPalette = () => palette.value.map((c) => str2embed(c));
+  const setPalette = (cs: EmbedColor[]) => {
+    palette.value = cs.map((c) => embed2hex(c));
   };
 
   function setup() {
@@ -84,8 +89,8 @@ export default function execute() {
       }, 0);
     const seed = cache[closestKey] ?? [];
     setPalette(
-      extractPalette(downSample(), n_colors, seed.map(xyz2hex)).map((c) =>
-        str2xyz(c),
+      extractPalette(downSample(), n_colors, seed.map(embed2hex)).map((c) =>
+        str2embed(c),
       ),
     );
   }
@@ -93,7 +98,7 @@ export default function execute() {
     if (!isActive || !image) return;
     const buffer = downSample(),
       samples = new Array(buffer.width * buffer.height).fill(0).map((_, i) => {
-        return srgb2xyz([
+        return srgb2embed([
           buffer.data[i * 4 + 0] / 255,
           buffer.data[i * 4 + 1] / 255,
           buffer.data[i * 4 + 2] / 255,
@@ -109,7 +114,7 @@ export default function execute() {
     if (!isActive || !image) return;
     const palette = getPalette();
     if (palette.length === 0) return;
-    const score = evaluatePalette(downSample(), palette.map(xyz2hex));
+    const score = evaluatePalette(downSample(), palette.map(embed2hex));
     form.querySelector<HTMLInputElement>("#palette-score")!.valueAsNumber =
       score;
   }
@@ -127,7 +132,7 @@ export default function execute() {
       const imageData = getImageData(image, ctx.canvas);
       const palette = getPalette();
       applyColorMapping(imageData, _applyClosest, {
-        color_palette: palette.map(xyz2srgb),
+        color_palette: palette.map(embed2srgb),
         embed_palette: palette,
       });
       ctx.putImageData(imageData, 0, 0);
@@ -226,7 +231,7 @@ export default function execute() {
         form.querySelector<HTMLInputElement>("#palette-score")!.value = "";
         form.querySelector<HTMLInputElement>("#palette-count")!.value =
           palette.length.toString();
-        cache[palette.length] = palette.map((c) => str2xyz(c));
+        cache[palette.length] = palette.map((c) => str2embed(c));
       });
       form
         .querySelector<HTMLButtonElement>("#autorun")!

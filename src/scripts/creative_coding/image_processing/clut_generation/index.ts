@@ -1,12 +1,16 @@
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
-import convert_color from "@/scripts/utils/color/conversion.js";
+import convert_color, { ColorSpace } from "@/scripts/utils/color/conversion.js";
 import {
   getBaseLUT,
   applyClosest,
   applyGaussianRBF,
   applyInverseRBF,
+  applyCustomMap,
+  applyCustomRBF,
 } from "./pipeline.js";
 import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
+import { SelectDisplay } from "@/scripts/utils/dom/element/SelectDisplay.js";
+import { try_catch } from "@/scripts/utils/utils.js";
 
 const str2srgb = convert_color("str", "srgb")!;
 
@@ -14,7 +18,6 @@ export default function execute() {
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
   let palette: PaletteInput;
-  let algo_conf: HTMLElement;
   const getBackground = () => getPaletteBaseColor(0);
   let isActive = false;
 
@@ -23,6 +26,8 @@ export default function execute() {
     NEAREST = "nearest",
     GAUSSIAN = "gaussian",
     INVERSE = "inverse",
+    RBF = "rbf",
+    MAP = "map",
   }
 
   function clear() {
@@ -32,7 +37,7 @@ export default function execute() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  function generate(level: number, algo: Algorithm) {
+  function generate(level: number, algo_view: SelectDisplay<Algorithm>) {
     if (!isActive) return;
     canvas.width = canvas.height = level * level * level;
     clear();
@@ -41,7 +46,7 @@ export default function execute() {
     });
     getBaseLUT(buffer);
     const palette_ = palette.value.map(str2srgb);
-    switch (algo) {
+    switch (algo_view.value) {
       case Algorithm.NEAREST:
         applyClosest(buffer, palette_);
         break;
@@ -50,73 +55,66 @@ export default function execute() {
         applyGaussianRBF(
           buffer,
           palette_,
-          algo_conf.querySelector<HTMLInputElement>("#temperature")!
+          algo_view.display.querySelector<HTMLInputElement>("#temperature")!
             .valueAsNumber,
-          algo_conf.querySelector<HTMLInputElement>("#count")!.valueAsNumber,
+          algo_view.display.querySelector<HTMLInputElement>("#count")!
+            .valueAsNumber,
         );
         break;
+
       case Algorithm.INVERSE:
         applyInverseRBF(
           buffer,
           palette_,
-          algo_conf.querySelector<HTMLInputElement>("#temperature")!
+          algo_view.display.querySelector<HTMLInputElement>("#count")!
             .valueAsNumber,
-          algo_conf.querySelector<HTMLInputElement>("#count")!.valueAsNumber,
         );
         break;
 
-      default:
+      case Algorithm.RBF:
+        applyCustomRBF(
+          buffer,
+          palette_,
+          algo_view.display.querySelector<HTMLInputElement>("#count")!
+            .valueAsNumber,
+          try_catch<(d: number) => number>(
+            () =>
+              eval?.(
+                `"use strict";(${algo_view.display.querySelector<HTMLInputElement>("#rbf")!.value})`,
+              ),
+            (d) => Math.exp(-Math.pow(d, 2) / 0.05),
+            (e) => {
+              console.error("Error in rbf function", e);
+            },
+          ),
+        );
         break;
+
+      case Algorithm.MAP:
+        applyCustomMap(
+          buffer,
+          algo_view.display.querySelector<HTMLSelectElement>("#color-space")!
+            .value as ColorSpace,
+          try_catch<(c: [number, number, number]) => [number, number, number]>(
+            () =>
+              eval?.(
+                `"use strict";(${algo_view.display.querySelector<HTMLInputElement>("#mapper")!.value})`,
+              ),
+            ([c1, c2, c3]) => [c1, c2, c3],
+            (e) => {
+              console.error("Error in mapper function", e);
+            },
+          ),
+        );
+        break;
+
+      case Algorithm.NONE:
+        break;
+
+      default:
+        throw new Error("Unknown algorithm", algo_view.value);
     }
     ctx.putImageData(buffer, 0, 0);
-  }
-
-  function updateAlgoConfig(algo: Algorithm) {
-    function hideAll() {
-      algo_conf.innerHTML = "";
-    }
-    function addNumberInput(
-      label: string,
-      id: string,
-      min: number | null = null,
-      max: number | null = null,
-      step: number | null = null,
-      value: number | null = null,
-    ) {
-      const lebelElem = document.createElement("label");
-      lebelElem.htmlFor = id;
-      lebelElem.textContent = label;
-      const inputElem = document.createElement("input");
-      inputElem.type = "number";
-      inputElem.id = id;
-      if (min !== null) inputElem.min = min.toString();
-      if (max !== null) inputElem.max = max.toString();
-      if (step !== null) inputElem.step = step.toString();
-      if (value !== null) inputElem.value = value.toString();
-      return [lebelElem, inputElem];
-    }
-    hideAll();
-    switch (algo) {
-      case Algorithm.GAUSSIAN:
-        algo_conf.append(
-          ...addNumberInput("Temperature", "temperature", 0, null, 1e-5, 0.05),
-        );
-        algo_conf.append(
-          ...addNumberInput("Color Count", "count", 0, null, 1, 3),
-        );
-        break;
-      case Algorithm.INVERSE:
-        algo_conf.append(
-          ...addNumberInput("Temperature", "temperature", 0, null, 1e-5, 0.05),
-        );
-        algo_conf.append(
-          ...addNumberInput("Color Count", "count", 0, null, 1, 3),
-        );
-        break;
-
-      default:
-        break;
-    }
   }
 
   return {
@@ -127,17 +125,15 @@ export default function execute() {
         config.querySelector<HTMLDivElement>("#palette")!,
         config.querySelector<HTMLTextAreaElement>("#palette-text")!,
       );
-      algo_conf = config.querySelector<HTMLDivElement>("#algorithm-options")!;
-      const algo = config.querySelector<HTMLSelectElement>("#algorithm")!;
+      const algo_view = new SelectDisplay<Algorithm>(
+        config.querySelector<HTMLSelectElement>("#algorithm")!,
+        config.querySelector<HTMLDivElement>("#algorithm-options")!,
+      );
       const level = config.querySelector<HTMLInputElement>("#level")!;
-      algo.addEventListener("change", function () {
-        updateAlgoConfig(this.value as Algorithm);
-      });
-      updateAlgoConfig(algo.value as Algorithm);
       config
         .querySelector<HTMLButtonElement>("#apply")!
         .addEventListener("click", () => {
-          generate(level.valueAsNumber, algo.value as Algorithm);
+          generate(level.valueAsNumber, algo_view);
         });
       clear();
       isActive = true;

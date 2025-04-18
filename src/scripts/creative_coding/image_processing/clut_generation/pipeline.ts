@@ -18,7 +18,7 @@ const mode: ColorSpace = "lab";
 type EmbedColor = ColorSpaceMap[typeof mode];
 const srgb2embed = convert_color("srgb", mode)!,
   embed2srgb = convert_color(mode, "srgb")!;
-const color_distance = DistanceE94;
+const color_distance: (c1: EmbedColor, c2: EmbedColor) => number = DistanceE94;
 
 export function detectLevel(width: number, height: number) {
   if (width !== height) {
@@ -138,7 +138,6 @@ export function applyGaussianRBF(
 export function applyInverseRBF(
   img: ImageData,
   palette: SRGBColor[],
-  temperature: number = 1,
   color_count: number = 0,
 ) {
   const embed_palette = palette.map(srgb2embed);
@@ -147,7 +146,26 @@ export function applyInverseRBF(
     {
       embed_palette,
       color_count,
-      rbf: (distance) => 1 / distance / temperature,
+      rbf: (distance) => 1 / distance,
+    },
+    img,
+  );
+  return runner();
+}
+
+export function applyCustomRBF(
+  img: ImageData,
+  palette: SRGBColor[],
+  color_count: number = 0,
+  rbf: (distance: number) => number,
+) {
+  const embed_palette = palette.map(srgb2embed);
+  const runner = kernelRunner(
+    _applyRBF,
+    {
+      embed_palette,
+      color_count,
+      rbf,
     },
     img,
   );
@@ -172,6 +190,34 @@ export function applySibson(
   const runner = kernelRunner(
     _applySibson,
     { embed_palette, color_count },
+    img,
+  );
+  return runner();
+}
+
+export function _applyMap<EmbedColor extends ColorSpaceMap[ColorSpace]>(
+  this: IKernelFunctionThis_CMap<{
+    srgb2embed: (color: SRGBColor) => EmbedColor;
+    embed2srgb: (color: EmbedColor) => SRGBColor;
+    mapper: (color: EmbedColor) => EmbedColor;
+  }>,
+) {
+  const { srgb2embed, embed2srgb, mapper } = this.constants;
+  const [r, g, b, a] = this.getColor();
+  const [r_, g_, b_] = embed2srgb(mapper(srgb2embed([r, g, b])));
+  this.color(r_, g_, b_, a);
+}
+
+export function applyCustomMap(
+  img: ImageData,
+  mode: ColorSpace,
+  mapper: (color: ColorSpaceMap[typeof mode]) => ColorSpaceMap[typeof mode],
+) {
+  const srgb2embed = convert_color("srgb", mode)!,
+    embed2srgb = convert_color(mode, "srgb")!;
+  const runner = kernelRunner(
+    _applyMap,
+    { mapper, srgb2embed, embed2srgb },
     img,
   );
   return runner();

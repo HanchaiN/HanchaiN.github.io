@@ -88,20 +88,26 @@ function debounce(fn, delay) {
 function main() {
   buildAll();
   if (process.argv.includes("--watch")) {
-    const _buildAll = debounce(buildAll, 30000);
+    const _buildAll = debounce((event, filename) => {
+      buildAll();
+      console.log(`Sync all complete`);
+    }, 30000);
     const _buildPublic = debounce((event, filename) => {
       console.log(`Sync: ${filename} ${event}`);
       buildPublic();
+      console.log(`Sync complete`);
       _buildAll();
     }, 1000);
     const _buildPages = debounce((event, filename) => {
       console.log(`Sync: ${filename} ${event}`);
       buildPages();
+      console.log(`Sync complete`);
       _buildAll();
     }, 1000);
     const _buildScripts = debounce((event, filename) => {
       console.log(`Sync: ${filename} ${event}`);
       buildScripts();
+      console.log(`Sync complete`);
       _buildAll();
     }, 1000);
     fs.watch(
