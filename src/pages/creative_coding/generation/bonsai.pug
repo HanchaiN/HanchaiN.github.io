@@ -1,0 +1,20 @@
+extends /components/layout.pug
+
+block title
+  title Bonsai
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/generation/bonsai/index.js';
+
+    const root = document.getElementById('bonsai');
+    execute().start(
+      root.querySelector('#canvas'),
+    );
+
+block content
+  h1 Bonsai
+  #bonsai.preview-container
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+  p.
+    <code>cbonsai</code> is a bonsai tree generator, written in <code>C</code> using <code>ncurses</code>.
