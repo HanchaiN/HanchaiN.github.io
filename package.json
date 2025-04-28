@@ -16,7 +16,7 @@
     "@types/katex": "^0.16.7",
     "@types/p5": "^1.7.6",
     "@types/serve-handler": "^6",
-    "@types/three": "^0.175.0",
+    "@types/three": "^0.176.0",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.29.1",
     "eslint": "^9.25.0",
@@ -24,7 +24,7 @@
     "mathjs": "^14.4.0",
     "p5": "^2.0.0",
     "prettier": "^3.5.3",
-    "three": "^0.175.0"
+    "three": "^0.176.0"
   },
   "scripts": {
     "build:script": "tspc",
