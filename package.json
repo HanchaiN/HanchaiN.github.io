@@ -18,7 +18,7 @@
     "@types/serve-handler": "^6",
     "@types/three": "^0.176.0",
     "@typescript-eslint/eslint-plugin": "^8.31.0",
-    "@typescript-eslint/parser": "^8.31.0",
+    "@typescript-eslint/parser": "^8.31.1",
     "eslint": "^9.25.1",
     "katex": "^0.16.22",
     "mathjs": "^14.4.0",
