@@ -24,7 +24,7 @@
     "mathjs": "^14.6.0",
     "p5": "^2.0.3",
     "prettier": "^3.6.2",
-    "three": "^0.178.0"
+    "three": "^0.179.1"
   },
   "scripts": {
     "build:script": "tspc",
