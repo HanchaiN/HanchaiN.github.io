@@ -4,7 +4,7 @@ import { constrain, map } from "@/scripts/utils/math/utils.js";
 import { PerlinNoise } from "@/scripts/utils/math/noise.js";
 import { randomGaussian } from "@/scripts/utils/math/random.js";
 import { delaunay_triangulation_step } from "@/scripts/utils/algo/delaunay_triangulation.js";
-import { minimum_spanning_tree_step } from "@/scripts/utils/algo/minimum_spanning_tree";
+import { minimum_spanning_tree_step } from "@/scripts/utils/algo/minimum_spanning_tree.js";
 
 function* shortest_path<T>(
   nodes: T[],

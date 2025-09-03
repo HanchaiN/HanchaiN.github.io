@@ -1,5 +1,5 @@
 import { sample } from "@/scripts/utils/math/random.js";
-import type { NCursesScreen, NCursesWindow } from "./ncurses.js";
+import type { NCursesScreen, NCursesWindow } from "./ncurses.ts";
 
 enum BaseType {
   none = 0,

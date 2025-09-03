@@ -2,7 +2,7 @@ import { maxWorkers } from "@/scripts/utils/dom/utils.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
 import { constrainMap } from "@/scripts/utils/math/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
-import type { MessageResponse } from "./worker.js";
+import type { MessageResponse } from "./worker.ts";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 
 const okhcl2hex = convert_color("okhcl", "hex")!;

@@ -2,7 +2,7 @@ import {
   getNoteColor,
   getNoteString,
 } from "@/scripts/utils/audio_processing.js";
-import type { TNote } from "@/scripts/utils/audio_processing.js";
+import type { TNote } from "@/scripts/utils/audio_processing.ts";
 import { map } from "@/scripts/utils/math/utils.js";
 import {
   autocorrelation,
@@ -15,7 +15,7 @@ export default function execute() {
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
   let isActive = false;
-  let bufferArray: Float32Array;
+  let bufferArray: Float32Array<ArrayBuffer>;
   let audioCtx: AudioContext;
   let audioSource: MediaStreamAudioSourceNode;
   let analyser: AnalyserNode;
@@ -41,9 +41,9 @@ export default function execute() {
       audio: true,
     });
     audioSource = audioCtx.createMediaStreamSource(stream);
-    sampleRate = audioSource.mediaStream
-      .getAudioTracks()[0]
-      .getSettings().sampleRate!;
+    sampleRate =
+      audioSource.mediaStream.getAudioTracks()[0].getSettings().sampleRate ??
+      44100;
     gainNode = audioCtx.createGain();
     analyser = audioCtx.createAnalyser();
     audioSource.connect(gainNode);

@@ -1,11 +1,11 @@
 import { generate } from "@/scripts/creative_coding/generation/perlin_noise/pipeline.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import { onImageChange } from "@/scripts/utils/dom/image.js";
-import type { TVector2 } from "@/scripts/utils/math/vector.js";
+import type { TVector2 } from "@/scripts/utils/math/vector.ts";
 import { vector_dist } from "@/scripts/utils/math/vector.js";
 import { constrainLerp, gaus, softargmax } from "@/scripts/utils/math/utils.js";
 import { randomGaussian, randomUniform } from "@/scripts/utils/math/random.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import {
   getPaletteAccentColors,
   getPaletteBaseColor,

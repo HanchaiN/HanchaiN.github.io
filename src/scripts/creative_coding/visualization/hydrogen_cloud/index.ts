@@ -1,8 +1,8 @@
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
-import type { TComplex } from "@/scripts/utils/math/complex";
-import type { TVector3 } from "@/scripts/utils/math/vector";
+import type { TComplex } from "@/scripts/utils/math/complex.ts";
+import type { TVector3 } from "@/scripts/utils/math/vector.ts";
 import { constrain, fpart, map } from "@/scripts/utils/math/utils.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import { psi_orbital_superposition } from "./psi.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { getPaletteAccentColor } from "@/scripts/utils/color/palette.js";

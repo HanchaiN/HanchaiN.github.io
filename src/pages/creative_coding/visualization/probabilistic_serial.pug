@@ -1,0 +1,31 @@
+extends /components/layout.pug
+
+block title
+  title Probabilistic Serial
+
+block append script
+  script(type='module').
+    import execute from '/static/scripts/creative_coding/visualization/probabilistic_serial/index.js';
+
+    const root = document.getElementById('probabilistic_serial');
+    execute().start(
+      root.querySelector('#canvas'),
+      root.querySelector('#config'),
+    );
+
+block content
+  h1 Probabilistic Serial
+  #probabilistic_serial.preview-container
+    .sketch
+      canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    form.data-container#config
+      label(for='count') Agent Count:
+      input#count(type='number', value='3', min='2', step='1')
+      label(for='lists') Preferences:
+      div(id='lists')
+      button#apply(type='button') Execute
+      label(for='time') Progress:
+      input#time(type='range', value='0', min='0', max='1', step='1e-16')
+  p.
+    A simultaneous eating algorithm (SE) is an algorithm for allocating divisible objects among agents with ordinal preferences.
+    If all agents are given the same eating speed, then the SE allocation satisfies SD-envy-freeness. This particular variant of SE is called the Probabilistic Serial rule (PS).

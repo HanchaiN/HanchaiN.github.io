@@ -1,8 +1,8 @@
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
-import type { TComplex } from "@/scripts/utils/math/complex";
+import type { TComplex } from "@/scripts/utils/math/complex.ts";
 import { complex_absSq, complex_zeta } from "@/scripts/utils/math/complex.js";
 import { fpart, map } from "@/scripts/utils/math/utils.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 

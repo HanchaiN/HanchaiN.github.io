@@ -3,7 +3,7 @@ import {
   getNoteColor,
   getNoteString,
 } from "@/scripts/utils/audio_processing.js";
-import type { TNote } from "@/scripts/utils/audio_processing.js";
+import type { TNote } from "@/scripts/utils/audio_processing.ts";
 import {
   constrain,
   constrainMap,
@@ -15,7 +15,7 @@ export default function execute() {
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
   let isActive = false;
-  let bufferArray: Float32Array;
+  let bufferArray: Float32Array<ArrayBuffer>;
   let audioCtx: AudioContext;
   let audioSource: MediaStreamAudioSourceNode;
   let analyser: AnalyserNode;
@@ -45,9 +45,9 @@ export default function execute() {
       audio: true,
     });
     audioSource = audioCtx.createMediaStreamSource(stream);
-    sampleRate = audioSource.mediaStream
-      .getAudioTracks()[0]
-      .getSettings().sampleRate!;
+    sampleRate =
+      audioSource.mediaStream.getAudioTracks()[0].getSettings().sampleRate ??
+      44100;
     gainNode = audioCtx.createGain();
     analyser = audioCtx.createAnalyser();
     audioSource.connect(gainNode);
@@ -65,15 +65,15 @@ export default function execute() {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     const maxDb_ = constrain(
-        bufferArray.reduce((a, b) => Math.max(a, b)),
-        MIN_DB,
-        MAX_DB,
-      ),
-      minDb_ = constrain(
-        bufferArray.reduce((a, b) => Math.min(a, b)),
-        MIN_DB,
-        MAX_DB,
-      );
+      bufferArray.reduce((a, b) => Math.max(a, b)),
+      MIN_DB,
+      MAX_DB,
+    );
+    const minDb_ = constrain(
+      bufferArray.reduce((a, b) => Math.min(a, b)),
+      MIN_DB,
+      MAX_DB,
+    );
     maxDb = lerp(maxDb_ > maxDb ? 0.5 : 0.01, maxDb, maxDb_);
     minDb = lerp(minDb_ < minDb ? 0.5 : 0.01, minDb, minDb_);
     const mapDb = (db: number) => constrainMap(db, minDb, maxDb, 0, 1);

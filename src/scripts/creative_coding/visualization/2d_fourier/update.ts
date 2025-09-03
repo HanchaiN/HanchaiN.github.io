@@ -78,7 +78,7 @@ vec3 rgb2srgb(in vec3 c)
 
 void main() {
     vec2 uv = texCoords;
-    float phase = 2.0 * PI * (k.x * uv.x * resolution.x - k.y * uv.y * resolution.y);
+    float phase = 2.0 * PI * (k.x * uv.x * resioluton.x - k.y * uv.y * resolution.y);
     float amplitude = cos(phase + atan2(v)) * 0.25 + 0.5;
     gl_FragColor.xyz = rgb2srgb(mix(
       texture2D(texture, texCoords).xyz,

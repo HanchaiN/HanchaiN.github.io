@@ -1,7 +1,7 @@
 import { getMousePos } from "@/scripts/utils/dom/utils.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import { lerp } from "@/scripts/utils/math/utils.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { rot_hilbert as rot, xy2d } from "./hilbert.js";
 import {

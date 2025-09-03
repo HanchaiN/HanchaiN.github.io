@@ -1,8 +1,8 @@
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import { map } from "@/scripts/utils/math/utils.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import convert_color from "@/scripts/utils/color/conversion.js";
-import type { LABColor } from "@/scripts/utils/color/conversion.js";
+import type { LABColor } from "@/scripts/utils/color/conversion.ts";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import {
   DistanceCMC,

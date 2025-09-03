@@ -1,6 +1,6 @@
 // https://github.com/ozwaldorf/lutgen-rs
 
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis_CMap } from "../color_grading/pipeline.js";
 import type {

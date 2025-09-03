@@ -2,7 +2,7 @@ import { maxWorkers } from "@/scripts/utils/dom/utils.js";
 import { constrain } from "@/scripts/utils/math/utils.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import type { MessageResponse } from "./worker.js";
+import type { MessageResponse } from "./worker.ts";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import {
   getChroma,

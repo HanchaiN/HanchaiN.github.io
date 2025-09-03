@@ -5,7 +5,7 @@ import {
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
 import p5 from "p5";
-import type { Rule } from "./turing.js";
+import type { Rule } from "./turing.ts";
 import { TuringMachine } from "./turing.js";
 export default function execute() {
   let parent: HTMLElement;

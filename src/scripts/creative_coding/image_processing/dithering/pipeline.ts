@@ -7,8 +7,8 @@ import type {
   ColorSpaceMap,
   SRGBColor,
   XYZColor,
-} from "@/scripts/utils/color/conversion.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.js";
+} from "@/scripts/utils/color/conversion.ts";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
 import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 

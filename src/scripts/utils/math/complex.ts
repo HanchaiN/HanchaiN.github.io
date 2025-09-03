@@ -191,7 +191,7 @@ export class Complex {
   private _re!: number;
   private _im!: number;
   static get I() {
-    return new this().set(0, 1);
+    return new Complex().set(0, 1);
   }
   constructor() {}
   get re() {
@@ -212,7 +212,7 @@ export class Complex {
     return this;
   }
   static fromCartesian(re = 0, im = 0) {
-    return new this().set(re, im);
+    return new Complex().set(re, im);
   }
   setPolar(r = 0, theta = 0) {
     this._re = r * Math.cos(theta);
@@ -220,17 +220,17 @@ export class Complex {
     return this;
   }
   static fromPolar(r = 0, theta = 0) {
-    return new this().setPolar(r, theta);
+    return new Complex().setPolar(r, theta);
   }
   copy() {
     return Complex.copy(this);
   }
   static copy(v: Complex | number) {
-    if (v instanceof this) {
-      return new this().set(v.re, v.im);
+    if (v instanceof Complex) {
+      return new Complex().set(v.re, v.im);
     }
     if (typeof v === "number") {
-      return this.fromCartesian(v);
+      return Complex.fromCartesian(v);
     }
     throw new TypeError();
   }
@@ -238,19 +238,19 @@ export class Complex {
     return Complex.fromCartesian(this.re, -this.im);
   }
   static conj(v: number | Complex) {
-    return this.copy(v).conj();
+    return Complex.copy(v).conj();
   }
   absSq() {
     return this.conj().mult(this).re;
   }
   static absSq(v: number | Complex) {
-    return this.copy(v).absSq();
+    return Complex.copy(v).absSq();
   }
   abs() {
     return Math.sqrt(this.absSq());
   }
   static abs(v: number | Complex) {
-    return this.copy(v).abs();
+    return Complex.copy(v).abs();
   }
   add(v: Complex | number) {
     if (v instanceof Complex) {
@@ -262,7 +262,7 @@ export class Complex {
     return this;
   }
   static add(...args: (Complex | number)[]) {
-    const z = this.fromCartesian(0, 0);
+    const z = Complex.fromCartesian(0, 0);
     for (const v of args) z.add(v);
     return z;
   }
@@ -276,7 +276,7 @@ export class Complex {
     return this;
   }
   static sub(a: Complex | number, b: Complex | number) {
-    return this.copy(a).sub(b);
+    return Complex.copy(a).sub(b);
   }
   mult(v: number | Complex) {
     if (v instanceof Complex) {
@@ -291,7 +291,7 @@ export class Complex {
     return this;
   }
   static mult(...args: (number | Complex)[]) {
-    const z = this.fromCartesian(1, 0);
+    const z = Complex.fromCartesian(1, 0);
     for (const v of args) z.mult(v);
     return z;
   }
@@ -305,27 +305,27 @@ export class Complex {
     return this;
   }
   static div(a: number | Complex, b: number | Complex) {
-    return this.copy(a).div(b);
+    return Complex.copy(a).div(b);
   }
   exp() {
     return Complex.fromPolar(Math.exp(this.re), this.im);
   }
   static exp(z: number | Complex) {
-    return this.copy(z).exp();
+    return Complex.copy(z).exp();
   }
   log() {
     return Complex.fromCartesian(Math.log(this.r), this.theta);
   }
   static log(z: number | Complex) {
-    return this.copy(z).log();
+    return Complex.copy(z).log();
   }
   pow(v: number) {
     return Complex.fromPolar(Math.pow(this.r, v), this.theta * v);
   }
   static pow(a: number | Complex, b: number | Complex) {
-    if (b instanceof this) return this.mult(b, this.log(a)).exp();
-    if (a instanceof this) return a.pow(b);
-    if (typeof a === "number") return this.copy(Math.pow(a, b));
+    if (b instanceof Complex) return Complex.mult(b, Complex.log(a)).exp();
+    if (a instanceof Complex) return a.pow(b);
+    if (typeof a === "number") return Complex.copy(Math.pow(a, b));
     throw new TypeError();
   }
   sinh() {

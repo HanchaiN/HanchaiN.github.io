@@ -180,3 +180,10 @@
   --bs-font-sans-serif: "Monaspace Neon", monospace, "Symbols Nerd Font";
   --bs-font-monospace: "Monaspace Xenon", monospace, "Symbols Nerd Font";
 }
+
+.preview-container {
+  /* display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 50%)); */
+  display: flex;
+  flex-wrap: wrap;
+}

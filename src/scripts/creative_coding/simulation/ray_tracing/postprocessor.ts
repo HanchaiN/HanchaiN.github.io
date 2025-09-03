@@ -1,6 +1,6 @@
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { constrain, constrainLerp, lerp } from "@/scripts/utils/math/utils.js";
-import type { TColorRGB } from "./colors.js";
+import type { TColorRGB } from "./colors.ts";
 
 const rgb2srgb = convert_color("rgb", "srgb")!,
   rgb2xyz = convert_color("rgb", "xyz")!,
