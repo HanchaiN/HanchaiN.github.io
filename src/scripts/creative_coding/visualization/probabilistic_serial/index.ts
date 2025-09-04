@@ -1,20 +1,22 @@
 import convert_color from "@/scripts/utils/color/conversion.js";
-import type { OKHCLColor } from "@/scripts/utils/color/conversion.ts";
+import type { HCLColor } from "@/scripts/utils/color/conversion.ts";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { DragListY } from "@/scripts/utils/dom/element/DragListY.js";
 import { Fraction } from "@/scripts/utils/math/fraction.js";
 
-const okhcl2str = convert_color("okhcl", "hex")!;
+const hcl2str = convert_color("hcl", "hex")!;
 
 export default function execute() {
   let isActive: boolean = false;
-  const agent_hcl: OKHCLColor = [0, 0.2, 0.6];
-  const item_hcl: OKHCLColor = [0, 0.4, 0.4];
+  const agent_hcl: HCLColor = [0, 0.7, 0.7];
+  const item_hcl: HCLColor = [0, 0.7, 0.3];
   const fg_col: string = getPaletteBaseColor(1);
   let do_shift: boolean = false;
   let dragLists: DragListY[] = [];
-  let distribution: Map<number, { id: number; value: Fraction }[]> | null =
-    null;
+  const preference: Map<number, number[]> = new Map();
+  let baseDistribution: Map<number, { id: number; value: Fraction }[]> =
+    new Map();
+  let baseDecomposition: [Fraction, number[]][] = [];
   const selected: Map<number, number> = new Map();
 
   function refresh_list(config: HTMLFormElement) {
@@ -32,7 +34,7 @@ export default function execute() {
       const ol = document.createElement("ol");
       ol.id = label.htmlFor = `list-a${i}`;
       label.textContent = `Agent ${i}:`;
-      label.style.color = okhcl2str([i / count, agent_hcl[1], agent_hcl[2]]);
+      label.style.color = hcl2str([i / count, agent_hcl[1], agent_hcl[2]]);
       list.appendChild(label);
       const dragList = new DragListY(
         ol,
@@ -40,7 +42,7 @@ export default function execute() {
         (id) => {
           const item = document.createElement("li");
           item.textContent = `Item ${id}`;
-          item.style.color = okhcl2str([
+          item.style.color = hcl2str([
             (0.5 + id) / count,
             item_hcl[1],
             item_hcl[2],
@@ -57,59 +59,98 @@ export default function execute() {
       option.textContent = `Item ${i}`;
       select.appendChild(option);
     }
-    setStep(config, ["1"]);
+    initStep(config, "1");
   }
 
-  function setStep(config: HTMLFormElement, step: string[]) {
+  function showSteps(config: HTMLFormElement, step: string[]) {
     config
       .querySelectorAll<HTMLDivElement>("div[data-js-step]")
       .forEach((el) => {
         el.hidden = !step.includes(el.dataset.jsStep!);
-        if (el.hidden) return;
-        switch (el.dataset.jsStep!) {
-          case "1":
-            break;
-          case "2": {
-            const time = config.querySelector<HTMLInputElement>("input#time")!;
-            time.valueAsNumber = 0;
-            time.disabled = false;
-            break;
-          }
-          case "3": {
-            selected.clear();
-            const do_shift_input =
-              config.querySelector<HTMLInputElement>("input#shift")!;
-            do_shift = do_shift_input.checked = false;
-            do_shift_input.disabled = false;
-            break;
-          }
-          default:
-            break;
-        }
       });
   }
+  function initStep(config: HTMLFormElement, step: string) {
+    switch (step) {
+      case "1": {
+        showSteps(config, ["1"]);
+        break;
+      }
+      case "2": {
+        clearStep(config, "3");
+        showSteps(config, ["1", "2"]);
+        const time = config.querySelector<HTMLInputElement>("input#time")!;
+        time.valueAsNumber = 0;
+        time.disabled = false;
+        time.dispatchEvent(new Event("input"));
+        break;
+      }
+      case "3": {
+        clearStep(config, "3");
+        showSteps(config, ["1", "3"]);
+        const do_shift_input =
+          config.querySelector<HTMLInputElement>("input#shift")!;
+        do_shift = do_shift_input.checked = false;
+        do_shift_input.disabled = false;
+        const seed = config.querySelector<HTMLInputElement>("input#seed")!;
+        seed.valueAsNumber = Math.random();
+        seed.dispatchEvent(new Event("input"));
+        break;
+      }
+      default:
+        break;
+    }
+  }
+  function clearStep(config: HTMLFormElement, step: string) {
+    switch (step) {
+      case "1": {
+        clearStep(config, "2");
+        preference.clear();
+        baseDistribution = new Map();
+        initStep(config, "1");
+        break;
+      }
+      case "2": {
+        clearStep(config, "3");
+        const time = config.querySelector<HTMLInputElement>("input#time")!;
+        time.valueAsNumber = 0;
+        break;
+      }
+      case "3": {
+        selected.clear();
+        const do_shift_input =
+          config.querySelector<HTMLInputElement>("input#shift")!;
+        do_shift = do_shift_input.checked = false;
+        break;
+      }
+      default:
+        break;
+    }
+  }
 
-  function getDistribution(
-    preference: Map<number, number[]>,
-  ): Map<number, { id: number; value: Fraction }[]> {
+  function _getBaseDistribution(): Map<
+    number,
+    { id: number; value: Fraction }[]
+  > {
     // Solve simultaneous eating algorithm
-    const prefs = [...preference.entries()];
+    const prefs: [number, number[]][] = [
+      ...preference.entries().map<[number, number[]]>(([k, v]) => [k, [...v]]),
+    ];
     const dist = new Map<number, { id: number; value: Fraction }[]>();
-    const leftover = new Array(prefs.length)
-      .fill(1)
-      .map((v) => new Fraction(v));
-    while (leftover.some((v) => v.compare() > 0)) {
-      const share = leftover.map(() => 0);
+    const leftover = new Map<number, Fraction>(
+      prefs.flatMap(([, items]) => items.map((id) => [id, new Fraction(1)])),
+    );
+    while (!leftover.values().every((v) => v.compare() <= 0)) {
+      const share = new Map(leftover.entries().map(([k]) => [k, 0]));
       const stepsize = prefs.reduce<Fraction>((min, [, items]) => {
         if (items.length === 0) return min;
-        while (leftover[items[0]].compare() <= 0) {
+        while (leftover.get(items[0])!.compare() <= 0) {
           items.shift();
           if (items.length === 0) return min;
         }
-        share[items[0]]++;
+        share.set(items[0], (share.get(items[0]) || 0) + 1);
         const step = Fraction.div(
-          leftover[items[0]],
-          new Fraction(share[items[0]]),
+          leftover.get(items[0])!,
+          new Fraction(share.get(items[0])!),
         );
         if (step.compare(min) < 0) {
           min = step;
@@ -123,7 +164,7 @@ export default function execute() {
           dist.set(agent, []);
         }
         dist.get(agent)!.push({ id: item, value: stepsize });
-        leftover[item].sub(stepsize);
+        leftover.set(item, leftover.get(item)!.sub(stepsize));
       }
     }
     const distribution = new Map<number, { id: number; value: Fraction }[]>();
@@ -160,31 +201,220 @@ export default function execute() {
     });
     return distribution;
   }
+  function getBaseDistribution(
+    override: boolean = false,
+  ): Map<number, { id: number; value: Fraction }[]> {
+    if (!override && baseDistribution) {
+      return baseDistribution;
+    }
+    return (baseDistribution = _getBaseDistribution());
+  }
+
+  function toMatrix(
+    map: Map<number, { id: number; value: Fraction }[]>,
+  ): Fraction[][] {
+    const n = map.size;
+    const matrix: Fraction[][] = Array.from({ length: n }, () =>
+      Array.from({ length: n }, () => new Fraction(0)),
+    );
+    map.forEach((dist, agent) => {
+      dist.forEach((item) => {
+        matrix[agent][item.id] = item.value.copy();
+      });
+    });
+    return matrix;
+  }
+  function fromMatrix(
+    matrix: Fraction[][],
+    sort_id: (i: number, a: number, b: number) => number = (_, a, b) => a - b,
+  ): Map<number, { id: number; value: Fraction }[]> {
+    const map = new Map<number, { id: number; value: Fraction }[]>();
+    matrix.forEach((row, agent) => {
+      map.set(
+        agent,
+        row
+          .map((value, id) => ({ id, value: value.copy() }))
+          .toSorted((a, b) => sort_id(agent, a.id, b.id)),
+      );
+    });
+    return map;
+  }
+
+  function HopcroftKarp(n: number, adj: number[][]) {
+    const pair_u = new Array<number>(n).fill(n);
+    const pair_v = new Array<number>(n).fill(n);
+    const dist = new Array<number>(n + 1).fill(Infinity);
+    function bfs(): boolean {
+      const q = [];
+      for (let u = 0; u < n; u++) {
+        if (pair_u[u] === n) {
+          dist[u] = 0;
+          q.push(u);
+        } else {
+          dist[u] = Infinity;
+        }
+      }
+      dist[n] = Infinity;
+      while (q.length > 0) {
+        const u = q.shift()!;
+        if (dist[u] < dist[n]) {
+          adj[u].forEach((v) => {
+            if (dist[pair_v[v]] === Infinity) {
+              dist[pair_v[v]] = dist[u]! + 1;
+              q.push(pair_v[v]!);
+            }
+          });
+        }
+      }
+      return dist[n] !== Infinity;
+    }
+    function dfs(u: number): boolean {
+      if (u !== n) {
+        for (const v of adj[u]) {
+          if (dist[pair_v[v]] === dist[u] + 1) {
+            if (dfs(pair_v[v])) {
+              pair_v[v] = u;
+              pair_u[u] = v;
+              return true;
+            }
+          }
+        }
+        dist[u] = Infinity;
+        return false;
+      }
+      return true;
+    }
+    let matching = 0;
+    while (bfs()) {
+      for (let u = 0; u < n; u++) {
+        if (pair_u[u] === n) {
+          if (dfs(u)) {
+            matching++;
+          }
+        }
+      }
+    }
+    if (matching !== n) return null; // No perfect matching
+    return { pair_u, pair_v };
+  }
+
+  function BvNDecompose(matrix: Fraction[][]): [Fraction, number[]][] {
+    // Birkhoff-von Neumann decomposition
+    // TODO: Maximize entropy of the permutations
+    // Alternatively, calculate permanent to check the number of perfect matchings then calculate per item per agent probabilities
+    const n = matrix.length;
+    if (!matrix.every((row) => row.length === n))
+      throw new Error("Matrix must be square");
+    if (
+      !matrix.every(
+        (row) =>
+          row
+            .reduce((sum, v) => sum.add(v), new Fraction(0))
+            .compare(new Fraction(1)) === 0,
+      )
+    )
+      throw new Error("Row sums must be 1");
+    if (
+      !matrix[0].every(
+        (_, j) =>
+          matrix
+            .reduce((sum, row) => sum.add(row[j]), new Fraction(0))
+            .compare(new Fraction(1)) === 0,
+      )
+    )
+      throw new Error("Column sums must be 1");
+    const A = matrix.map((row) => row.map((v) => v.copy()));
+    const decomposition: [Fraction, number[]][] = []; // List of permutation matrices
+    while (A.some((row) => row.some((v) => v.compare() > 0))) {
+      const { pair_u } = HopcroftKarp(
+        n,
+        A.map((row) =>
+          row.map((v, j) => (v.compare() > 0 ? j : -1)).filter((j) => j >= 0),
+        ),
+      )!;
+      const P: number[] = [];
+      for (let row = 0; row < n; row++) {
+        if (pair_u[row] === n) {
+          throw new Error("No perfect matching found");
+        }
+        P.push(pair_u[row]!);
+      }
+
+      let lambda = new Fraction(1);
+      for (let row = 0; row < n; row++) {
+        const col = P[row];
+        if (A[row][col].compare(lambda) < 0) {
+          lambda = A[row][col].copy();
+        }
+      }
+      for (let row = 0; row < n; row++) {
+        const col = P[row];
+        A[row][col] = A[row][col].sub(lambda);
+      }
+      decomposition.push([lambda, P]);
+    }
+    return decomposition;
+  }
+
+  function weightedSum(entries: [Fraction, number[]][]): Fraction[][] {
+    if (entries.length === 0) throw new Error("No entries to sum");
+    const n = entries[0][1].length;
+    const matrix: Fraction[][] = Array.from({ length: n }, () =>
+      Array.from({ length: n }, () => new Fraction(0)),
+    );
+    for (const [weight, perm] of entries) {
+      for (let i = 0; i < n; i++) {
+        matrix[i][perm[i]] = matrix[i][perm[i]].add(weight);
+      }
+    }
+    return matrix;
+  }
+
+  function getDistribution() {
+    if (baseDecomposition.length === 0) {
+      return getBaseDistribution();
+    }
+    const dec = baseDecomposition
+      .filter(([, perm]) =>
+        perm.every((v, i) => !selected.has(i) || selected.get(i) === v),
+      )
+      .map(
+        ([weight, perm]) => [weight.copy(), [...perm]] as [Fraction, number[]],
+      );
+    const total = dec.reduce(
+      (sum, [weight]) => sum.add(weight),
+      new Fraction(0),
+    );
+    if (total.compare() <= 0) {
+      return getBaseDistribution();
+    }
+    dec.forEach((entry) => (entry[0] = entry[0].copy().div(total)));
+    return fromMatrix(
+      weightedSum(dec),
+      (i, a, b) =>
+        preference.get(i)!.indexOf(a) - preference.get(i)!.indexOf(b),
+    );
+  }
 
   function drawAll(
     ctx: CanvasRenderingContext2D,
     value: number = 1,
     index: number | null = null,
   ) {
-    if (!isActive || distribution === null) return null;
+    // TODO: Smooth animation
+    // TODO: Represent each permutation and update the probability accordingly
+    if (!isActive) return null;
+    const distribution = getDistribution();
     const count = distribution.size;
     const n_col = 2 * Math.ceil(Math.sqrt(count / 2));
     const r = (0.5 * Math.min(ctx.canvas.width, ctx.canvas.height)) / n_col;
     const forward = new Map(
-      distribution.entries().map(([k, v]) => {
-        const v_ = v
-          .filter((item) =>
-            selected.has(k)
-              ? item.id === selected.get(k)
-              : selected.values().every((id) => item.id !== id),
-          )
-          .map((item) => ({ id: item.id, value: item.value.number }));
-        const total = v_.reduce((sum, item) => sum + item.value, 0);
-        if (total > 0) {
-          v_.forEach((item) => (item.value /= total));
-        }
-        return [k, v_];
-      }),
+      distribution
+        .entries()
+        .map(([k, v]) => [
+          k,
+          v.map((item) => ({ id: item.id, value: item.value.number })),
+        ]),
     );
     const forward_elements: Map<
       number,
@@ -200,7 +430,7 @@ export default function execute() {
 
     for (let agent_id = 0; agent_id < count; agent_id++) {
       let check_select = index !== null;
-      const agent_color = okhcl2str([
+      const agent_color = hcl2str([
         agent_id / forward.size,
         agent_hcl[1],
         agent_hcl[2],
@@ -210,7 +440,7 @@ export default function execute() {
       const elements: { color: string; value: number }[] = [];
       const dist = forward.get(agent_id) ?? [];
       for (const item of dist) {
-        const item_color = okhcl2str([
+        const item_color = hcl2str([
           (0.5 + item.id) / forward.size,
           item_hcl[1],
           item_hcl[2],
@@ -248,7 +478,7 @@ export default function execute() {
       const i_col = item_id % n_col;
       const x = (i_col + 0.5) * (ctx.canvas.width / n_col);
       const y = (i_row + 0.5) * (ctx.canvas.height / n_col);
-      const item_color = okhcl2str([
+      const item_color = hcl2str([
         (0.5 + item_id) / forward.size,
         item_hcl[1],
         item_hcl[2],
@@ -258,7 +488,7 @@ export default function execute() {
       const dist = reverse.get(item_id) ?? [];
       dist.sort((a, b) => a.at - b.at);
       for (const agent of dist) {
-        const agent_color = okhcl2str([
+        const agent_color = hcl2str([
           agent.id / forward.size,
           agent_hcl[1],
           agent_hcl[2],
@@ -267,7 +497,10 @@ export default function execute() {
         if (index === item_id) {
           forward_elements.get(agent.id)!.shift += acc;
         }
-        if (check_select && acc + agent.value > value) {
+        if (
+          check_select &&
+          (acc + agent.value > value || acc + agent.value >= 1)
+        ) {
           selected_agent = agent.id;
           angle += value - acc;
           check_select = false;
@@ -293,7 +526,7 @@ export default function execute() {
       const i_col = agent_id % n_col;
       const x = (i_col + 0.5) * (ctx.canvas.width / n_col);
       const y = (i_row + 0.5) * (ctx.canvas.height / n_col);
-      const agent_color = okhcl2str([
+      const agent_color = hcl2str([
         agent_id / forward.size,
         agent_hcl[1],
         agent_hcl[2],
@@ -312,7 +545,7 @@ export default function execute() {
         shift,
       );
     }
-    return selected_agent;
+    return { distribution, selected_agent };
   }
   function drawItem(
     ctx: CanvasRenderingContext2D,
@@ -376,19 +609,16 @@ export default function execute() {
         step
           .querySelector<HTMLButtonElement>("button#calculate")!
           .addEventListener("click", () => {
-            const preference: Map<number, number[]> = new Map();
+            preference.clear();
             for (const dragList of dragLists) {
               preference.set(dragList.id, dragList.ids);
+              console.log(`Agent ${dragList.id}:`, dragList.ids);
             }
-            distribution = getDistribution(preference);
-            console.log(distribution, preference);
-            setStep(config, ["1", "2"]);
-            const value = (
-              config.querySelector<HTMLInputElement>(
-                "#time",
-              ) as HTMLInputElement
-            ).valueAsNumber;
-            drawAll(ctx, value);
+            console.log("Preference:", preference);
+
+            baseDistribution = getBaseDistribution(true);
+            console.log("Distribution:", baseDistribution);
+            initStep(config, "2");
           });
       }
       {
@@ -396,7 +626,6 @@ export default function execute() {
           config.querySelector<HTMLDivElement>("[data-js-step='2']")!;
         const time = step.querySelector<HTMLInputElement>("#time")!;
         time.addEventListener("input", () => {
-          if (distribution === null) return;
           const value = time.valueAsNumber;
           drawAll(ctx, value);
         });
@@ -404,9 +633,9 @@ export default function execute() {
           .querySelector<HTMLButtonElement>("button#done")!
           .addEventListener("click", () => {
             time.disabled = true;
-            if (distribution === null) return;
-            setStep(config, ["1", "3"]);
-            drawAll(ctx);
+            baseDecomposition = BvNDecompose(toMatrix(baseDistribution));
+            console.log("BvN Decomposition:", baseDecomposition);
+            initStep(config, "3");
           });
       }
       {
@@ -429,28 +658,45 @@ export default function execute() {
         step
           .querySelector<HTMLButtonElement>("button#reset")!
           .addEventListener("click", () => {
-            setStep(config, ["1", "3"]);
-            drawAll(ctx);
+            clearStep(config, "3");
+            const { distribution } = drawAll(
+              ctx,
+              seed.valueAsNumber,
+              parseInt(select.value),
+            )!;
+            console.log("Distribution:", distribution);
           });
         step
           .querySelector<HTMLButtonElement>("button#apply")!
           .addEventListener("click", () => {
             const selected_item = parseInt(select.value);
-            const selected_agent = drawAll(
+            const { selected_agent } = drawAll(
               ctx,
               seed.valueAsNumber,
               selected_item,
-            );
+            )!;
             if (selected_agent !== null) {
               selected.set(selected_agent, selected_item);
             }
-            drawAll(ctx);
+            console.log("Selected:", selected);
+            console.log(
+              "Decomposition:",
+              baseDecomposition.filter(([, perm]) =>
+                perm.every((v, i) => !selected.has(i) || selected.get(i) === v),
+              ),
+            );
+            const { distribution } = drawAll(
+              ctx,
+              seed.valueAsNumber,
+              selected_item,
+            )!;
+            console.log("Distribution:", distribution);
           });
         step
           .querySelector<HTMLInputElement>("input#shift")!
           .addEventListener("change", (e) => {
             do_shift = (e.target as HTMLInputElement).checked;
-            drawAll(ctx);
+            drawAll(ctx, seed.valueAsNumber, parseInt(select.value));
           });
       }
     },
