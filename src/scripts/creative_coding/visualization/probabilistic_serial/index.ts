@@ -11,12 +11,15 @@ export default function execute() {
   const agent_hcl: HCLColor = [0, 0.7, 0.7];
   const item_hcl: HCLColor = [0, 0.7, 0.3];
   const fg_col: string = getPaletteBaseColor(1);
+  let mode: "exact" | "greedy" = "exact";
   let do_shift: boolean = false;
   let dragLists: DragListY[] = [];
   const preference: Map<number, number[]> = new Map();
-  let baseDistribution: Map<number, { id: number; value: Fraction }[]> =
-    new Map();
+  let baseDistribution: Map<number, { id: number; value: Fraction }[]> | null =
+    null;
   let baseDecomposition: [Fraction, number[]][] = [];
+  let distribution: Map<number, { id: number; value: Fraction }[]> | null =
+    null;
   const selected: Map<number, number> = new Map();
 
   function refresh_list(config: HTMLFormElement) {
@@ -117,6 +120,7 @@ export default function execute() {
       }
       case "3": {
         selected.clear();
+        distribution = null;
         const do_shift_input =
           config.querySelector<HTMLInputElement>("input#shift")!;
         do_shift = do_shift_input.checked = false;
@@ -297,11 +301,9 @@ export default function execute() {
     if (matching !== n) return null; // No perfect matching
     return { pair_u, pair_v };
   }
-
   function BvNDecompose(matrix: Fraction[][]): [Fraction, number[]][] {
     // Birkhoff-von Neumann decomposition
     // TODO: Maximize entropy of the permutations
-    // Alternatively, calculate permanent to check the number of perfect matchings then calculate per item per agent probabilities
     const n = matrix.length;
     if (!matrix.every((row) => row.length === n))
       throw new Error("Matrix must be square");
@@ -355,7 +357,6 @@ export default function execute() {
     }
     return decomposition;
   }
-
   function weightedSum(entries: [Fraction, number[]][]): Fraction[][] {
     if (entries.length === 0) throw new Error("No entries to sum");
     const n = entries[0][1].length;
@@ -370,30 +371,123 @@ export default function execute() {
     return matrix;
   }
 
-  function getDistribution() {
-    if (baseDecomposition.length === 0) {
+  function permanent(matrix: boolean[][]): number {
+    const n = matrix.length;
+    if (!matrix.every((row) => row.length === n))
+      throw new Error("Matrix must be square");
+    let perm = 0;
+    for (let s = 0; s < 1 << n; s++) {
+      let prod = 1;
+      for (let i = 0; i < n; i++) {
+        let sum = 0;
+        for (let j = 0; j < n; j++) {
+          if ((s & (1 << j)) !== 0) {
+            sum += matrix[i][j] ? 1 : 0;
+          }
+        }
+        prod *= sum;
+        if (prod === 0) break;
+      }
+      if (prod === 0) continue;
+      const bits = s.toString(2).replaceAll("0", "").length;
+      if (bits % 2 === 0) {
+        perm += prod;
+      } else {
+        perm -= prod;
+      }
+    }
+    if (n % 2 === 1) perm = -perm;
+    return perm;
+  }
+
+  function getBaseDecomposition(override: boolean = false) {
+    if (!override && baseDecomposition) return baseDecomposition;
+    baseDecomposition = BvNDecompose(toMatrix(getBaseDistribution()));
+    console.log("BvN Decomposition:", baseDecomposition);
+    return baseDecomposition;
+  }
+
+  function _getDistribution() {
+    if (selected.size === 0) {
       return getBaseDistribution();
     }
-    const dec = baseDecomposition
-      .filter(([, perm]) =>
-        perm.every((v, i) => !selected.has(i) || selected.get(i) === v),
-      )
-      .map(
-        ([weight, perm]) => [weight.copy(), [...perm]] as [Fraction, number[]],
-      );
-    const total = dec.reduce(
-      (sum, [weight]) => sum.add(weight),
-      new Fraction(0),
-    );
-    if (total.compare() <= 0) {
-      return getBaseDistribution();
+
+    switch (mode) {
+      case "exact": {
+        const dist = toMatrix(getBaseDistribution());
+        const matrix: boolean[][] = dist.map((row) =>
+          row.map((v) => v.compare() > 0),
+        );
+        matrix.forEach((_, i) => {
+          _.forEach((_, j) => {
+            if (selected.has(i) && selected.get(i) === j) {
+              matrix[i][j] = true;
+            } else if (
+              (selected.has(i) && selected.get(i) !== j) ||
+              (!selected.has(i) && selected.values().some((v) => v === j))
+            ) {
+              matrix[i][j] = false;
+            }
+            dist[i][j] = new Fraction(0);
+          });
+        });
+        const sample_space = permanent(matrix);
+        matrix.forEach((_, i) => {
+          _.forEach((is_edge, j) => {
+            if (!is_edge) return;
+            const _matrix = matrix.map((row) => [...row]);
+            _matrix.forEach((_, ii) => {
+              _.forEach((__, jj) => {
+                if (ii === i && jj === j) return;
+                if (ii === i || jj === j) {
+                  _matrix[ii][jj] = false;
+                }
+              });
+            });
+            const sub_space = permanent(_matrix);
+            dist[i][j] = new Fraction(sub_space, sample_space);
+          });
+        });
+        return fromMatrix(dist, (i, a, b) => {
+          const pref = preference.get(i)!;
+          return pref.indexOf(a) - pref.indexOf(b);
+        });
+      }
+      case "greedy": {
+        const dec = getBaseDecomposition()
+          .filter(([, perm]) =>
+            perm.every((v, i) => !selected.has(i) || selected.get(i) === v),
+          )
+          .map(
+            ([weight, perm]) =>
+              [weight.copy(), [...perm]] as [Fraction, number[]],
+          );
+
+        console.log("BvN Decomposition:", dec);
+        const total = dec.reduce(
+          (sum, [weight]) => sum.add(weight),
+          new Fraction(0),
+        );
+        if (total.compare() <= 0) {
+          return getBaseDistribution();
+        }
+        dec.forEach((entry) => (entry[0] = entry[0].copy().div(total)));
+        return fromMatrix(
+          weightedSum(dec),
+          (i, a, b) =>
+            preference.get(i)!.indexOf(a) - preference.get(i)!.indexOf(b),
+        );
+      }
+      default:
+        throw new Error(`Unknown mode: ${mode}`);
+        break;
     }
-    dec.forEach((entry) => (entry[0] = entry[0].copy().div(total)));
-    return fromMatrix(
-      weightedSum(dec),
-      (i, a, b) =>
-        preference.get(i)!.indexOf(a) - preference.get(i)!.indexOf(b),
-    );
+  }
+  function getDistribution(override: boolean = false) {
+    if (!override && distribution) return distribution;
+    distribution = _getDistribution();
+    console.log("Distribution:", distribution);
+    return distribution;
   }
 
   function drawAll(
@@ -545,7 +639,7 @@ export default function execute() {
         shift,
       );
     }
-    return { distribution, selected_agent };
+    return { selected_agent };
   }
   function drawItem(
     ctx: CanvasRenderingContext2D,
@@ -600,8 +694,14 @@ export default function execute() {
       refresh_list(config);
       config
         .querySelector<HTMLInputElement>("#count")!
-        .addEventListener("change", () => {
+        .addEventListener("change", (e) => {
           refresh_list(config);
+          const count = (e.target as HTMLInputElement).valueAsNumber;
+          if (count <= 16) {
+            mode = "exact";
+          } else {
+            mode = "greedy";
+          }
         });
       {
         const step =
@@ -612,12 +712,10 @@ export default function execute() {
             preference.clear();
             for (const dragList of dragLists) {
               preference.set(dragList.id, dragList.ids);
-              console.log(`Agent ${dragList.id}:`, dragList.ids);
             }
             console.log("Preference:", preference);
 
-            baseDistribution = getBaseDistribution(true);
-            console.log("Distribution:", baseDistribution);
+            getBaseDistribution(true);
             initStep(config, "2");
           });
       }
@@ -633,8 +731,7 @@ export default function execute() {
           .querySelector<HTMLButtonElement>("button#done")!
           .addEventListener("click", () => {
             time.disabled = true;
-            baseDecomposition = BvNDecompose(toMatrix(baseDistribution));
-            console.log("BvN Decomposition:", baseDecomposition);
+            getBaseDecomposition(true);
             initStep(config, "3");
           });
       }
@@ -659,12 +756,7 @@ export default function execute() {
           .querySelector<HTMLButtonElement>("button#reset")!
           .addEventListener("click", () => {
             clearStep(config, "3");
-            const { distribution } = drawAll(
-              ctx,
-              seed.valueAsNumber,
-              parseInt(select.value),
-            )!;
-            console.log("Distribution:", distribution);
+            drawAll(ctx, seed.valueAsNumber, parseInt(select.value));
           });
         step
           .querySelector<HTMLButtonElement>("button#apply")!
@@ -677,20 +769,19 @@ export default function execute() {
             )!;
             if (selected_agent !== null) {
               selected.set(selected_agent, selected_item);
+              console.log("Selected:", selected);
+              distribution = null;
             }
-            console.log("Selected:", selected);
-            console.log(
-              "Decomposition:",
-              baseDecomposition.filter(([, perm]) =>
-                perm.every((v, i) => !selected.has(i) || selected.get(i) === v),
-              ),
-            );
-            const { distribution } = drawAll(
-              ctx,
-              seed.valueAsNumber,
-              selected_item,
-            )!;
-            console.log("Distribution:", distribution);
+            drawAll(ctx, seed.valueAsNumber, selected_item)!;
+          });
+        step
+          .querySelector<HTMLButtonElement>("button#apply-all")!
+          .addEventListener("click", () => {
+            for (let i = 0; i < select.options.length; i++) {
+              select.selectedIndex = i;
+              step.querySelector<HTMLButtonElement>("button#random")!.click();
+              step.querySelector<HTMLButtonElement>("button#apply")!.click();
+            }
           });
         step
           .querySelector<HTMLInputElement>("input#shift")!
