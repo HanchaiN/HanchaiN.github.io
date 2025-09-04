@@ -220,7 +220,7 @@ export function getPaletteBaseColor(
   const palettes = getPalette(isDark);
   return str2hex(
     palettes.base[
-      Math.floor(constrainLerp(index, 0, palettes.accent.length - 0.99))
+      Math.floor(constrainLerp(index, 0, palettes.base.length - 0.99))
     ],
   );
 }

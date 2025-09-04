@@ -21,11 +21,27 @@ block content
     form.data-container#config
       label(for='count') Agent Count:
       input#count(type='number', value='3', min='2', step='1')
+      div(hidden data-js-step='1')
+        button#calculate(type='button') Calculate
+      div(hidden data-js-step='2')
+        button#done(type='button') Done
+        label(for='time') Progress:
+        input#time(type='range', value='0', min='0', max='1', step='1e-16')
+      div(hidden data-js-step='3')
+        select#item
+        br
+        button#random(type='button') Randomize
+        label(for='seed') Seed:
+        input#seed(type='range', value='0', min='0', max='1', step='1e-16')
+        br
+        button#apply(type='button') Apply
+        button#reset(type='button') Reset
+        br
+        label(for='shift') Shift agent's pie to match the selected item
+        input#shift(type='checkbox')
+      br
       label(for='lists') Preferences:
-      div(id='lists')
-      button#apply(type='button') Execute
-      label(for='time') Progress:
-      input#time(type='range', value='0', min='0', max='1', step='1e-16')
+      div#lists.row
   p.
     A simultaneous eating algorithm (SE) is an algorithm for allocating divisible objects among agents with ordinal preferences.
     If all agents are given the same eating speed, then the SE allocation satisfies SD-envy-freeness. This particular variant of SE is called the Probabilistic Serial rule (PS).

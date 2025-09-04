@@ -1,5 +1,6 @@
 import convert_color from "@/scripts/utils/color/conversion.js";
 import type { OKHCLColor } from "@/scripts/utils/color/conversion.ts";
+import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { DragListY } from "@/scripts/utils/dom/element/DragListY.js";
 import { Fraction } from "@/scripts/utils/math/fraction.js";
 
@@ -8,24 +9,31 @@ const okhcl2str = convert_color("okhcl", "hex")!;
 export default function execute() {
   let isActive: boolean = false;
   const agent_hcl: OKHCLColor = [0, 0.2, 0.6];
-  const item_hcl: OKHCLColor = [0, 0.2, 0.4];
+  const item_hcl: OKHCLColor = [0, 0.4, 0.4];
+  const fg_col: string = getPaletteBaseColor(1);
+  let do_shift: boolean = false;
   let dragLists: DragListY[] = [];
   let distribution: Map<number, { id: number; value: Fraction }[]> | null =
     null;
+  const selected: Map<number, number> = new Map();
 
   function refresh_list(config: HTMLFormElement) {
     const count =
       config.querySelector<HTMLInputElement>("#count")!.valueAsNumber;
-    const lists = config.querySelector("#lists")!;
+    const lists = config.querySelector<HTMLDivElement>("div#lists")!;
     lists.innerHTML = "";
+    const select = config.querySelector<HTMLSelectElement>("select#item")!;
+    select.innerHTML = "";
     dragLists = [];
     for (let i = 0; i < count; i++) {
+      const list = document.createElement("div");
+      list.classList.add("col-md-auto");
       const label = document.createElement("label");
       const ol = document.createElement("ol");
       ol.id = label.htmlFor = `list-a${i}`;
       label.textContent = `Agent ${i}:`;
       label.style.color = okhcl2str([i / count, agent_hcl[1], agent_hcl[2]]);
-      lists.appendChild(label);
+      list.appendChild(label);
       const dragList = new DragListY(
         ol,
         count,
@@ -42,8 +50,43 @@ export default function execute() {
         i,
       );
       dragLists.push(dragList);
-      lists.appendChild(ol);
+      list.appendChild(ol);
+      lists.appendChild(list);
+      const option = document.createElement("option");
+      option.value = `${i}`;
+      option.textContent = `Item ${i}`;
+      select.appendChild(option);
     }
+    setStep(config, ["1"]);
+  }
+
+  function setStep(config: HTMLFormElement, step: string[]) {
+    config
+      .querySelectorAll<HTMLDivElement>("div[data-js-step]")
+      .forEach((el) => {
+        el.hidden = !step.includes(el.dataset.jsStep!);
+        if (el.hidden) return;
+        switch (el.dataset.jsStep!) {
+          case "1":
+            break;
+          case "2": {
+            const time = config.querySelector<HTMLInputElement>("input#time")!;
+            time.valueAsNumber = 0;
+            time.disabled = false;
+            break;
+          }
+          case "3": {
+            selected.clear();
+            const do_shift_input =
+              config.querySelector<HTMLInputElement>("input#shift")!;
+            do_shift = do_shift_input.checked = false;
+            do_shift_input.disabled = false;
+            break;
+          }
+          default:
+            break;
+        }
+      });
   }
 
   function getDistribution(
@@ -120,37 +163,50 @@ export default function execute() {
 
   function drawAll(
     ctx: CanvasRenderingContext2D,
-    distribution: Map<number, { id: number; value: Fraction }[]>,
     value: number = 1,
+    index: number | null = null,
   ) {
-    if (!isActive) return;
+    if (!isActive || distribution === null) return null;
     const count = distribution.size;
+    const n_col = 2 * Math.ceil(Math.sqrt(count / 2));
+    const r = (0.5 * Math.min(ctx.canvas.width, ctx.canvas.height)) / n_col;
     const forward = new Map(
-      distribution
-        .entries()
-        .map(([k, v]) => [
-          k,
-          v.map((item) => ({ id: item.id, value: item.value.number })),
-        ]),
+      distribution.entries().map(([k, v]) => {
+        const v_ = v
+          .filter((item) =>
+            selected.has(k)
+              ? item.id === selected.get(k)
+              : selected.values().every((id) => item.id !== id),
+          )
+          .map((item) => ({ id: item.id, value: item.value.number }));
+        const total = v_.reduce((sum, item) => sum + item.value, 0);
+        if (total > 0) {
+          v_.forEach((item) => (item.value /= total));
+        }
+        return [k, v_];
+      }),
     );
+    const forward_elements: Map<
+      number,
+      {
+        offset: number;
+        shift: number;
+        elements: { color: string; value: number }[];
+      }
+    > = new Map();
     const reverse: Map<number, { id: number; value: number; at: number }[]> =
       new Map();
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     for (let agent_id = 0; agent_id < count; agent_id++) {
-      const x = (ctx.canvas.width / forward.size) * (0.5 + agent_id);
-      const y = (ctx.canvas.height / 2) * 0.5;
-      const r =
-        Math.min(
-          (0.5 * ctx.canvas.width) / forward.size,
-          (0.5 * ctx.canvas.height) / 2,
-        ) * 0.8;
+      let check_select = index !== null;
       const agent_color = okhcl2str([
         agent_id / forward.size,
         agent_hcl[1],
         agent_hcl[2],
       ]);
       let acc = 0;
+      let offset = 0;
       const elements: { color: string; value: number }[] = [];
       const dist = forward.get(agent_id) ?? [];
       for (const item of dist) {
@@ -162,7 +218,11 @@ export default function execute() {
         if (!reverse.has(item.id)) {
           reverse.set(item.id, []);
         }
-        if (acc + item.value > value) {
+        if (check_select && item.id === index) {
+          offset += acc;
+          check_select = false;
+        }
+        if (index === null && acc + item.value > value) {
           elements.push({ color: item_color, value: value - acc });
           reverse
             .get(item.id)!
@@ -177,17 +237,17 @@ export default function execute() {
         acc += item.value;
       }
       elements.push({ color: agent_color, value: Math.max(0, 1 - acc) });
-      drawItem(ctx, elements, agent_color, x, y, r * 0.1, r, r * 0.3);
+      forward_elements.set(agent_id, { offset, shift: -offset, elements });
     }
 
+    let selected_agent: number | null = null,
+      angle = 0;
     for (let item_id = 0; item_id < count; item_id++) {
-      const x = (ctx.canvas.width / forward.size) * (0.5 + item_id);
-      const y = (ctx.canvas.height / 2) * 1.5;
-      const r =
-        Math.min(
-          (0.5 * ctx.canvas.width) / forward.size,
-          (0.5 * ctx.canvas.height) / 2,
-        ) * 0.8;
+      let check_select = index === item_id;
+      const i_row = n_col / 2 + Math.floor(item_id / n_col);
+      const i_col = item_id % n_col;
+      const x = (i_col + 0.5) * (ctx.canvas.width / n_col);
+      const y = (i_row + 0.5) * (ctx.canvas.height / n_col);
       const item_color = okhcl2str([
         (0.5 + item_id) / forward.size,
         item_hcl[1],
@@ -204,11 +264,55 @@ export default function execute() {
           agent_hcl[2],
         ]);
         elements.push({ color: agent_color, value: agent.value });
+        if (index === item_id) {
+          forward_elements.get(agent.id)!.shift += acc;
+        }
+        if (check_select && acc + agent.value > value) {
+          selected_agent = agent.id;
+          angle += value - acc;
+          check_select = false;
+        }
         acc += agent.value;
       }
       elements.push({ color: item_color, value: Math.max(0, 1 - acc) });
-      drawItem(ctx, elements, item_color, x, y, r * 0.1, r, r * 0.3);
+      drawItem(
+        ctx,
+        elements,
+        item_color,
+        x,
+        y,
+        r * 0.1,
+        r * 0.3,
+        r * 0.8,
+        index === item_id ? value : null,
+      );
     }
+
+    for (let agent_id = 0; agent_id < count; agent_id++) {
+      const i_row = Math.floor(agent_id / n_col);
+      const i_col = agent_id % n_col;
+      const x = (i_col + 0.5) * (ctx.canvas.width / n_col);
+      const y = (i_row + 0.5) * (ctx.canvas.height / n_col);
+      const agent_color = okhcl2str([
+        agent_id / forward.size,
+        agent_hcl[1],
+        agent_hcl[2],
+      ]);
+      const { offset, shift, elements } = forward_elements.get(agent_id)!;
+      drawItem(
+        ctx,
+        elements,
+        agent_color,
+        x,
+        y,
+        r * 0.1,
+        r * 0.3,
+        r * 0.8,
+        selected_agent === agent_id ? offset + angle : null,
+        shift,
+      );
+    }
+    return selected_agent;
   }
   function drawItem(
     ctx: CanvasRenderingContext2D,
@@ -219,11 +323,14 @@ export default function execute() {
     r0: number,
     r1: number,
     r2: number = 0,
+    a: number | null = null,
+    shift: number = 0,
     clockwise: boolean = true,
   ) {
     const acc = elements.reduce((sum, el) => sum + el.value, 0);
     if (acc === 0) return;
-    let startAngle = 0;
+    if (!do_shift) shift = 0;
+    let startAngle = shift * 2 * Math.PI;
     for (const { color, value } of elements) {
       const sliceAngle = (value / acc) * 2 * Math.PI;
       const endAngle = startAngle + sliceAngle * (clockwise ? 1 : -1);
@@ -241,6 +348,16 @@ export default function execute() {
     ctx.closePath();
     ctx.fillStyle = core_color;
     ctx.fill();
+    if (a !== null) {
+      a += shift;
+      a *= 2 * Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + r2 * Math.cos(a), y + r2 * Math.sin(a));
+      ctx.strokeStyle = fg_col;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
   }
 
   return {
@@ -253,25 +370,89 @@ export default function execute() {
         .addEventListener("change", () => {
           refresh_list(config);
         });
-      config
-        .querySelector<HTMLButtonElement>("#apply")!
-        .addEventListener("click", () => {
-          const preference: Map<number, number[]> = new Map();
-          for (const dragList of dragLists) {
-            preference.set(dragList.id, dragList.ids);
-          }
-          distribution = getDistribution(preference);
-          console.log(distribution, preference);
-          drawAll(ctx, distribution, 0);
-          config.querySelector<HTMLInputElement>("#time")!.valueAsNumber = 0;
-        });
-      config
-        .querySelector<HTMLInputElement>("#time")!
-        .addEventListener("input", (e) => {
-          const value = (e.target as HTMLInputElement).valueAsNumber;
+      {
+        const step =
+          config.querySelector<HTMLDivElement>("[data-js-step='1']")!;
+        step
+          .querySelector<HTMLButtonElement>("button#calculate")!
+          .addEventListener("click", () => {
+            const preference: Map<number, number[]> = new Map();
+            for (const dragList of dragLists) {
+              preference.set(dragList.id, dragList.ids);
+            }
+            distribution = getDistribution(preference);
+            console.log(distribution, preference);
+            setStep(config, ["1", "2"]);
+            const value = (
+              config.querySelector<HTMLInputElement>(
+                "#time",
+              ) as HTMLInputElement
+            ).valueAsNumber;
+            drawAll(ctx, value);
+          });
+      }
+      {
+        const step =
+          config.querySelector<HTMLDivElement>("[data-js-step='2']")!;
+        const time = step.querySelector<HTMLInputElement>("#time")!;
+        time.addEventListener("input", () => {
           if (distribution === null) return;
-          drawAll(ctx, distribution, value);
+          const value = time.valueAsNumber;
+          drawAll(ctx, value);
         });
+        step
+          .querySelector<HTMLButtonElement>("button#done")!
+          .addEventListener("click", () => {
+            time.disabled = true;
+            if (distribution === null) return;
+            setStep(config, ["1", "3"]);
+            drawAll(ctx);
+          });
+      }
+      {
+        const step =
+          config.querySelector<HTMLDivElement>("[data-js-step='3']")!;
+        const select = step.querySelector<HTMLSelectElement>("select#item")!;
+        const seed = step.querySelector<HTMLInputElement>("input#seed")!;
+        select.addEventListener("change", () => {
+          seed.dispatchEvent(new Event("input"));
+        });
+        step
+          .querySelector<HTMLButtonElement>("button#random")!
+          .addEventListener("click", () => {
+            seed.valueAsNumber = Math.random();
+            seed.dispatchEvent(new Event("input"));
+          });
+        seed.addEventListener("input", () => {
+          drawAll(ctx, seed.valueAsNumber, parseInt(select.value));
+        });
+        step
+          .querySelector<HTMLButtonElement>("button#reset")!
+          .addEventListener("click", () => {
+            setStep(config, ["1", "3"]);
+            drawAll(ctx);
+          });
+        step
+          .querySelector<HTMLButtonElement>("button#apply")!
+          .addEventListener("click", () => {
+            const selected_item = parseInt(select.value);
+            const selected_agent = drawAll(
+              ctx,
+              seed.valueAsNumber,
+              selected_item,
+            );
+            if (selected_agent !== null) {
+              selected.set(selected_agent, selected_item);
+            }
+            drawAll(ctx);
+          });
+        step
+          .querySelector<HTMLInputElement>("input#shift")!
+          .addEventListener("change", (e) => {
+            do_shift = (e.target as HTMLInputElement).checked;
+            drawAll(ctx);
+          });
+      }
     },
     stop: () => {
       isActive = false;
