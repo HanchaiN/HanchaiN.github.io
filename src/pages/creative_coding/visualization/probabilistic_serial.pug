@@ -37,11 +37,10 @@ block content
         button#apply(type='button') Apply
         button#apply-all(type='button') Apply All
         button#reset(type='button') Reset
-        br
-        label(for='shift') Shift agent's pie to match the selected item
-        input#shift(type='checkbox')
-      br
-      label(for='lists') Preferences:
+      div#advanced
+        label(for='sample-bvn') Number of samples to estimate BvN decomposition (0 for exact):
+        input#sample-bvn(type='number', value='100', min='0', step='1')
+      label(for='lists') Preferences order:
       div#lists.row
   p.
     A simultaneous eating algorithm (SE) is an algorithm for allocating divisible objects among agents with ordinal preferences.

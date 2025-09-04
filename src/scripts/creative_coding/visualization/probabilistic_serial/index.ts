@@ -11,13 +11,13 @@ export default function execute() {
   const agent_hcl: HCLColor = [0, 0.7, 0.7];
   const item_hcl: HCLColor = [0, 0.7, 0.3];
   const fg_col: string = getPaletteBaseColor(1);
-  let mode: "exact" | "greedy" = "exact";
-  let do_shift: boolean = false;
+  let sample_bvn: number = 100; // Number of samples to estimate BvN decomposition
+  const do_shift: boolean = false;
   let dragLists: DragListY[] = [];
   const preference: Map<number, number[]> = new Map();
   let baseDistribution: Map<number, { id: number; value: Fraction }[]> | null =
     null;
-  let baseDecomposition: [Fraction, number[]][] = [];
+  let baseDecomposition: [Fraction, number[]][] | null = null;
   let distribution: Map<number, { id: number; value: Fraction }[]> | null =
     null;
   const selected: Map<number, number> = new Map();
@@ -90,10 +90,6 @@ export default function execute() {
       case "3": {
         clearStep(config, "3");
         showSteps(config, ["1", "3"]);
-        const do_shift_input =
-          config.querySelector<HTMLInputElement>("input#shift")!;
-        do_shift = do_shift_input.checked = false;
-        do_shift_input.disabled = false;
         const seed = config.querySelector<HTMLInputElement>("input#seed")!;
         seed.valueAsNumber = Math.random();
         seed.dispatchEvent(new Event("input"));
@@ -109,6 +105,8 @@ export default function execute() {
         clearStep(config, "2");
         preference.clear();
         baseDistribution = new Map();
+        baseDecomposition = null;
+        distribution = null;
         initStep(config, "1");
         break;
       }
@@ -121,9 +119,6 @@ export default function execute() {
       case "3": {
         selected.clear();
         distribution = null;
-        const do_shift_input =
-          config.querySelector<HTMLInputElement>("input#shift")!;
-        do_shift = do_shift_input.checked = false;
         break;
       }
       default:
@@ -208,9 +203,9 @@ export default function execute() {
   function getBaseDistribution(
     override: boolean = false,
   ): Map<number, { id: number; value: Fraction }[]> {
-    if (!override && baseDistribution) {
-      return baseDistribution;
-    }
+    if (!override && baseDistribution) return baseDistribution;
+    baseDecomposition = null;
+    distribution = null;
     return (baseDistribution = _getBaseDistribution());
   }
 
@@ -244,6 +239,9 @@ export default function execute() {
     return map;
   }
 
+  function shuffleArray<T>(array: T[]): T[] {
+    return array.sort(() => Math.random() - 0.5);
+  }
   function HopcroftKarp(n: number, adj: number[][]) {
     const pair_u = new Array<number>(n).fill(n);
     const pair_v = new Array<number>(n).fill(n);
@@ -262,7 +260,7 @@ export default function execute() {
       while (q.length > 0) {
         const u = q.shift()!;
         if (dist[u] < dist[n]) {
-          adj[u].forEach((v) => {
+          shuffleArray(adj[u]).forEach((v) => {
             if (dist[pair_v[v]] === Infinity) {
               dist[pair_v[v]] = dist[u]! + 1;
               q.push(pair_v[v]!);
@@ -274,7 +272,7 @@ export default function execute() {
     }
     function dfs(u: number): boolean {
       if (u !== n) {
-        for (const v of adj[u]) {
+        for (const v of shuffleArray(adj[u])) {
           if (dist[pair_v[v]] === dist[u] + 1) {
             if (dfs(pair_v[v])) {
               pair_v[v] = u;
@@ -402,7 +400,13 @@ export default function execute() {
 
   function getBaseDecomposition(override: boolean = false) {
     if (!override && baseDecomposition) return baseDecomposition;
-    baseDecomposition = BvNDecompose(toMatrix(getBaseDistribution()));
+    distribution = null;
+    baseDecomposition = [];
+    for (let i = 0; i < sample_bvn; i++) {
+      const bvn = BvNDecompose(toMatrix(getBaseDistribution()));
+      bvn.forEach(([weight]) => weight.mul(new Fraction(1, sample_bvn)));
+      baseDecomposition.push(...bvn);
+    }
     console.log("BvN Decomposition:", baseDecomposition);
     return baseDecomposition;
   }
@@ -412,6 +416,7 @@ export default function execute() {
       return getBaseDistribution();
     }
 
+    const mode = sample_bvn <= 0 ? "exact" : "greedy";
     switch (mode) {
       case "exact": {
         const dist = toMatrix(getBaseDistribution());
@@ -694,14 +699,8 @@ export default function execute() {
       refresh_list(config);
       config
         .querySelector<HTMLInputElement>("#count")!
-        .addEventListener("change", (e) => {
+        .addEventListener("change", () => {
           refresh_list(config);
-          const count = (e.target as HTMLInputElement).valueAsNumber;
-          if (count <= 16) {
-            mode = "exact";
-          } else {
-            mode = "greedy";
-          }
         });
       {
         const step =
@@ -731,7 +730,7 @@ export default function execute() {
           .querySelector<HTMLButtonElement>("button#done")!
           .addEventListener("click", () => {
             time.disabled = true;
-            getBaseDecomposition(true);
+            baseDecomposition = null;
             initStep(config, "3");
           });
       }
@@ -783,12 +782,21 @@ export default function execute() {
               step.querySelector<HTMLButtonElement>("button#apply")!.click();
             }
           });
-        step
-          .querySelector<HTMLInputElement>("input#shift")!
+      }
+      {
+        const advanced = config.querySelector<HTMLDivElement>("div#advanced")!;
+        advanced
+          .querySelector<HTMLInputElement>("#sample-bvn")!
           .addEventListener("change", (e) => {
-            do_shift = (e.target as HTMLInputElement).checked;
-            drawAll(ctx, seed.valueAsNumber, parseInt(select.value));
+            sample_bvn = (e.target as HTMLInputElement).valueAsNumber;
+            baseDecomposition = null;
+            distribution = null;
+            clearStep(config, "3");
           });
+        sample_bvn =
+          advanced.querySelector<HTMLInputElement>(
+            "#sample-bvn",
+          )!.valueAsNumber;
       }
     },
     stop: () => {
