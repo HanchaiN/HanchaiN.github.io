@@ -38,9 +38,16 @@ block content
         button#apply(type='button') Apply
         button#apply-all(type='button') Apply All
         button#reset(type='button') Reset
-      div#advanced
-        label(for='sample-bvn') Number of samples to estimate BvN decomposition (0 for exact):
-        input#sample-bvn(type='number', value='100', min='0', step='1')
+        details#advanced
+          summary Advanced Options
+          label(for='sample-bvn')
+            details
+              summary Number of samples to estimate BvN decomposition:
+              | If set to 0, the exact algorithm will be used, could be very slow for large problems.
+              | Otherwise, a approximation with greedy BvN will be used.
+              br
+              | Disclaimer: I don't think that this (the exact algorithm) is implemented correctly.
+          input#sample-bvn(type='number', value='100', min='0', step='1')
       label(for='lists') Preferences order:
       div#lists.row
   p.

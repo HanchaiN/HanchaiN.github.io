@@ -442,11 +442,82 @@ export default function execute() {
     return { sample, events };
   }
 
+  function Sinkhorn(matrix: Fraction[][]) {
+    // Technically, the result is likely irrational.
+    // But the approximation process should result in rational numbers.
+    // sum_i ai vij = 1 / bj
+    // sum_j bj vij = 1 / ai
+    // bj = 1 / sum_i ai vij
+    // sum_j(ai vij / (sum_i ai vij)) = 1
+
+    const n = matrix.length;
+    for (let z = 0; z < n ** 2; z++) {
+      let is_fixing = false;
+      for (let i = 0; i < n; i++) {
+        const total = matrix.reduce(
+          (sum, row) => sum.add(row[i]),
+          new Fraction(0),
+        );
+        if (total.compare(new Fraction(1)) !== 0) is_fixing = true;
+        matrix.forEach((r) => r[i].div(total));
+      }
+      for (let j = 0; j < n; j++) {
+        const total = matrix[j].reduce((sum, v) => sum.add(v), new Fraction(0));
+        if (total.compare(new Fraction(1)) !== 0) is_fixing = true;
+        matrix[j].forEach((v) => v.div(total));
+      }
+      if (!is_fixing) break;
+    }
+  }
+
   function _getDistribution() {
     if (selected === null) return getBaseDistribution();
-    const mode = sample_bvn <= 0 ? "exact" : "greedy";
+    const mode: string = sample_bvn <= 0 ? "count" : "greedy";
     switch (mode) {
-      case "exact": {
+      case "naive": {
+        console.warn("Naive mode is incorrect, do not use");
+        const dist = toMatrix(getBaseDistribution());
+        dist.forEach((_, i) => {
+          _.forEach((_, j) => {
+            if (selected!.has(i) && selected!.get(i) === j) {
+              dist[i][j] = new Fraction(1);
+            } else if (
+              (selected!.has(i) && selected!.get(i) !== j) ||
+              (!selected!.has(i) && selected!.values().some((v) => v === j))
+            ) {
+              dist[i][j] = new Fraction(0);
+            }
+          });
+        });
+        Sinkhorn(dist);
+        return fromMatrix(dist, (i, a, b) => {
+          const pref = preference.get(i)!;
+          return pref.indexOf(a) - pref.indexOf(b);
+        });
+      }
+      case "greedy": {
+        const dec = getBaseDecomposition()
+          .filter(([, perm]) =>
+            perm.every((v, i) => !selected!.has(i) || selected!.get(i) === v),
+          )
+          .map(
+            ([weight, perm]) =>
+              [weight.copy(), [...perm]] as [Fraction, number[]],
+          );
+
+        console.log("BvN Decomposition:", dec);
+        const total = dec.reduce(
+          (sum, [weight]) => sum.add(weight),
+          new Fraction(0),
+        );
+        dec.forEach((entry) => (entry[0] = entry[0].copy().div(total)));
+        return fromMatrix(
+          weightedSum(dec),
+          (i, a, b) =>
+            preference.get(i)!.indexOf(a) - preference.get(i)!.indexOf(b),
+        );
+      }
+      case "count": {
         const dist = toMatrix(getBaseDistribution());
         const matrix: Fraction[][] = dist.map((row) =>
           row.map((v) => (v.compare() > 0 ? v.copy() : new Fraction(0))),
@@ -496,62 +567,19 @@ export default function execute() {
           "Pre-distribution:",
           dist.map((r) => r.map((v) => v.toString())),
         );
-        // FIXME: Learn probability theory and make the normalization correct
-        for (let i = 0; i < dist.length; i++) {
-          let is_fixing = false;
-          dist.forEach((_, i) => {
-            const total = dist.reduce(
-              (sum, row) => sum.add(row[i]),
-              new Fraction(0),
-            );
-            if (total.compare(new Fraction(1)) !== 0) is_fixing = true;
-            console.assert(
-              total.compare(new Fraction(1)) === 0,
-              `Item ${i} distribution does not sum to 1 (${total.toString()})`,
-            );
-            dist.forEach((r) => r[i].div(total));
-          });
-          dist.forEach((row, i) => {
-            const total = row.reduce((sum, v) => sum.add(v), new Fraction(0));
-            if (total.compare(new Fraction(1)) !== 0) is_fixing = true;
-            console.assert(
-              total.compare(new Fraction(1)) === 0,
-              `Agent ${i} distribution does not sum to 1 (${total.toString()})`,
-            );
-            row.forEach((v) => v.div(total));
-          });
-          if (!is_fixing) break;
-        }
+        Sinkhorn(dist); // FIXME: Learn probability theory and make the normalization correct in the first place
         return fromMatrix(dist, (i, a, b) => {
           const pref = preference.get(i)!;
           return pref.indexOf(a) - pref.indexOf(b);
         });
       }
-      case "greedy": {
-        const dec = getBaseDecomposition()
-          .filter(([, perm]) =>
-            perm.every((v, i) => !selected!.has(i) || selected!.get(i) === v),
-          )
-          .map(
-            ([weight, perm]) =>
-              [weight.copy(), [...perm]] as [Fraction, number[]],
-          );
-
-        console.log("BvN Decomposition:", dec);
-        const total = dec.reduce(
-          (sum, [weight]) => sum.add(weight),
-          new Fraction(0),
-        );
-        dec.forEach((entry) => (entry[0] = entry[0].copy().div(total)));
-        return fromMatrix(
-          weightedSum(dec),
-          (i, a, b) =>
-            preference.get(i)!.indexOf(a) - preference.get(i)!.indexOf(b),
-        );
+      case "sample": {
+        // TODO: Implement sampling mode
+        // https://faculty.cc.gatech.edu/~vigoda/Permanent.pdf
+        throw new Error("Sampling mode not implemented");
       }
       default:
         throw new Error(`Unknown mode: ${mode}`);
-        break;
     }
   }
   function getDistribution(override: boolean = false) {
@@ -855,21 +883,21 @@ export default function execute() {
               step.querySelector<HTMLButtonElement>("button#apply")!.click();
             }
           });
-      }
-      {
-        const advanced = config.querySelector<HTMLDivElement>("div#advanced")!;
-        advanced
-          .querySelector<HTMLInputElement>("#sample-bvn")!
-          .addEventListener("change", (e) => {
-            sample_bvn = (e.target as HTMLInputElement).valueAsNumber;
-            baseDecomposition = null;
-            distribution = null;
-            clearStep(config, "3");
-          });
-        sample_bvn =
-          advanced.querySelector<HTMLInputElement>(
-            "#sample-bvn",
-          )!.valueAsNumber;
+        {
+          const advanced = config.querySelector("#advanced")!;
+          advanced
+            .querySelector<HTMLInputElement>("#sample-bvn")!
+            .addEventListener("change", (e) => {
+              sample_bvn = (e.target as HTMLInputElement).valueAsNumber;
+              baseDecomposition = null;
+              distribution = null;
+              drawAll(ctx, seed.valueAsNumber, parseInt(select.value))!;
+            });
+          sample_bvn =
+            advanced.querySelector<HTMLInputElement>(
+              "#sample-bvn",
+            )!.valueAsNumber;
+        }
       }
     },
     stop: () => {
