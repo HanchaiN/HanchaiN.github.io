@@ -58,6 +58,7 @@ export class DragListY {
 
     this.elem.addEventListener("dragover", (event) => {
       event.preventDefault();
+      if (!draggedItem) return;
       const afterElement = this.getDragAfterElement(event.clientY);
       if (afterElement == null) {
         this.elem.appendChild(draggedItem!);
@@ -68,6 +69,7 @@ export class DragListY {
 
     this.elem.addEventListener("dragenter", (event) => {
       event.preventDefault();
+      if (!draggedItem) return;
       const afterElement = this.getDragAfterElement(event.clientY);
       if (afterElement == null) {
         this.elem.appendChild(draggedItem!);
@@ -88,5 +90,30 @@ export class DragListY {
       ) as unknown as Iterable<HTMLElement>),
     ];
     return items.map((item) => JSON.parse(item.dataset.jsItem!).itemId);
+  }
+  set ids(v: number[]) {
+    const items = new Map<number, HTMLElement>(
+      Array.from(this.elem.querySelectorAll<HTMLElement>("[data-js-item]")).map(
+        (item) => [JSON.parse(item.dataset.jsItem!).itemId, item],
+      ),
+    );
+    v.forEach((id) => {
+      const item = items.get(id);
+      items.delete(id);
+      if (item) {
+        this.elem.appendChild(item);
+      }
+    });
+  }
+
+  getElement(id: number): HTMLElement | null {
+    for (const item of Array.from(
+      this.elem.querySelectorAll<HTMLElement>("[data-js-item]"),
+    )) {
+      if (JSON.parse(item.dataset.jsItem!).itemId === id) {
+        return item;
+      }
+    }
+    return null;
   }
 }

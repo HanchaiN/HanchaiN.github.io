@@ -17,10 +17,10 @@ export default function execute() {
   const preference: Map<number, number[]> = new Map();
   let baseDistribution: Map<number, { id: number; value: Fraction }[]> | null =
     null;
+  let selected: Map<number, number> | null = null;
   let baseDecomposition: [Fraction, number[]][] | null = null;
   let distribution: Map<number, { id: number; value: Fraction }[]> | null =
     null;
-  const selected: Map<number, number> = new Map();
 
   function refresh_list(config: HTMLFormElement) {
     const count =
@@ -90,6 +90,7 @@ export default function execute() {
       case "3": {
         clearStep(config, "3");
         showSteps(config, ["1", "3"]);
+        selected = new Map();
         const seed = config.querySelector<HTMLInputElement>("input#seed")!;
         seed.valueAsNumber = Math.random();
         seed.dispatchEvent(new Event("input"));
@@ -117,7 +118,7 @@ export default function execute() {
         break;
       }
       case "3": {
-        selected.clear();
+        selected = null;
         distribution = null;
         break;
       }
@@ -369,32 +370,32 @@ export default function execute() {
     return matrix;
   }
 
-  function permanent(matrix: boolean[][]): number {
+  function permanent(matrix: Fraction[][]): Fraction {
     const n = matrix.length;
     if (!matrix.every((row) => row.length === n))
       throw new Error("Matrix must be square");
-    let perm = 0;
+    let perm = new Fraction(0);
     for (let s = 0; s < 1 << n; s++) {
-      let prod = 1;
+      const prod = new Fraction(1);
       for (let i = 0; i < n; i++) {
-        let sum = 0;
+        const sum = new Fraction(0);
         for (let j = 0; j < n; j++) {
           if ((s & (1 << j)) !== 0) {
-            sum += matrix[i][j] ? 1 : 0;
+            sum.add(matrix[i][j]);
           }
         }
-        prod *= sum;
-        if (prod === 0) break;
+        prod.mul(sum);
+        if (prod.compare() === 0) break;
       }
-      if (prod === 0) continue;
+      if (prod.compare() === 0) continue;
       const bits = s.toString(2).replaceAll("0", "").length;
       if (bits % 2 === 0) {
-        perm += prod;
+        perm.add(prod);
       } else {
-        perm -= prod;
+        perm.sub(prod);
       }
     }
-    if (n % 2 === 1) perm = -perm;
+    if (n % 2 === 1) perm = perm.mul(new Fraction(-1));
     return perm;
   }
 
@@ -411,48 +412,116 @@ export default function execute() {
     return baseDecomposition;
   }
 
-  function _getDistribution() {
-    if (selected.size === 0) {
-      return getBaseDistribution();
-    }
+  function count_events(matrix: Fraction[][]) {
+    const sample = permanent(
+      matrix.map((row) =>
+        row.map((v) => (v.compare() > 0 ? new Fraction(1) : new Fraction(0))),
+      ),
+    );
+    const events = matrix.map((row) => row.map(() => new Fraction(0)));
+    matrix.forEach((_, i) => {
+      _.forEach((v, j) => {
+        if (v.compare() <= 0) return;
+        const _matrix = matrix.map((row) => [...row.map((v) => v.copy())]);
+        _matrix.forEach((_, ii) => {
+          _.forEach((__, jj) => {
+            if (ii === i) {
+              _matrix[ii][jj] = jj === j ? new Fraction(1) : new Fraction(0);
+            } else {
+              _matrix[ii][jj] =
+                _matrix[ii][jj].compare() > 0
+                  ? new Fraction(1)
+                  : new Fraction(0);
+            }
+          });
+        });
+        const sub_space = permanent(_matrix);
+        events[i][j] = sub_space;
+      });
+    });
+    return { sample, events };
+  }
 
+  function _getDistribution() {
+    if (selected === null) return getBaseDistribution();
     const mode = sample_bvn <= 0 ? "exact" : "greedy";
     switch (mode) {
       case "exact": {
         const dist = toMatrix(getBaseDistribution());
-        const matrix: boolean[][] = dist.map((row) =>
-          row.map((v) => v.compare() > 0),
+        const matrix: Fraction[][] = dist.map((row) =>
+          row.map((v) => (v.compare() > 0 ? v.copy() : new Fraction(0))),
         );
+        const { sample: n_preselect, events: ns_preselect } =
+          count_events(matrix);
         matrix.forEach((_, i) => {
           _.forEach((_, j) => {
-            if (selected.has(i) && selected.get(i) === j) {
-              matrix[i][j] = true;
+            if (selected!.has(i) && selected!.get(i) === j) {
+              matrix[i][j] = new Fraction(1);
             } else if (
-              (selected.has(i) && selected.get(i) !== j) ||
-              (!selected.has(i) && selected.values().some((v) => v === j))
+              (selected!.has(i) && selected!.get(i) !== j) ||
+              (!selected!.has(i) && selected!.values().some((v) => v === j))
             ) {
-              matrix[i][j] = false;
+              matrix[i][j] = new Fraction(0);
             }
-            dist[i][j] = new Fraction(0);
           });
         });
-        const sample_space = permanent(matrix);
-        matrix.forEach((_, i) => {
-          _.forEach((is_edge, j) => {
-            if (!is_edge) return;
-            const _matrix = matrix.map((row) => [...row]);
-            _matrix.forEach((_, ii) => {
-              _.forEach((__, jj) => {
-                if (ii === i && jj === j) return;
-                if (ii === i || jj === j) {
-                  _matrix[ii][jj] = false;
-                }
-              });
-            });
-            const sub_space = permanent(_matrix);
-            dist[i][j] = new Fraction(sub_space, sample_space);
+        const { sample: n_postselect, events: ns_postselect } =
+          count_events(matrix);
+        console.log("Event counts:", {
+          n_postselect,
+          ns_postselect,
+          n_preselect,
+          ns_preselect,
+        });
+        console.log("Base distribution:", matrix);
+        dist.forEach((row, i) => {
+          row.forEach((_, j) => {
+            if (selected!.has(i) && selected!.get(i) === j) {
+              dist[i][j] = new Fraction(1);
+            } else if (selected!.has(i)) {
+              dist[i][j] = new Fraction(0);
+            } else if (selected!.values().some((v) => v === j)) {
+              dist[i][j] = new Fraction(0);
+            } else if (ns_preselect[i][j].compare() === 0) {
+              dist[i][j] = new Fraction(0);
+            } else {
+              dist[i][j] = Fraction.div(
+                ns_postselect[i][j],
+                ns_preselect[i][j],
+              ).mul(dist[i][j]);
+            }
           });
         });
+        console.log(
+          "Pre-distribution:",
+          dist.map((r) => r.map((v) => v.toString())),
+        );
+        // FIXME: Learn probability theory and make the normalization correct
+        for (let i = 0; i < dist.length; i++) {
+          let is_fixing = false;
+          dist.forEach((_, i) => {
+            const total = dist.reduce(
+              (sum, row) => sum.add(row[i]),
+              new Fraction(0),
+            );
+            if (total.compare(new Fraction(1)) !== 0) is_fixing = true;
+            console.assert(
+              total.compare(new Fraction(1)) === 0,
+              `Item ${i} distribution does not sum to 1 (${total.toString()})`,
+            );
+            dist.forEach((r) => r[i].div(total));
+          });
+          dist.forEach((row, i) => {
+            const total = row.reduce((sum, v) => sum.add(v), new Fraction(0));
+            if (total.compare(new Fraction(1)) !== 0) is_fixing = true;
+            console.assert(
+              total.compare(new Fraction(1)) === 0,
+              `Agent ${i} distribution does not sum to 1 (${total.toString()})`,
+            );
+            row.forEach((v) => v.div(total));
+          });
+          if (!is_fixing) break;
+        }
         return fromMatrix(dist, (i, a, b) => {
           const pref = preference.get(i)!;
           return pref.indexOf(a) - pref.indexOf(b);
@@ -461,7 +530,7 @@ export default function execute() {
       case "greedy": {
         const dec = getBaseDecomposition()
           .filter(([, perm]) =>
-            perm.every((v, i) => !selected.has(i) || selected.get(i) === v),
+            perm.every((v, i) => !selected!.has(i) || selected!.get(i) === v),
           )
           .map(
             ([weight, perm]) =>
@@ -473,9 +542,6 @@ export default function execute() {
           (sum, [weight]) => sum.add(weight),
           new Fraction(0),
         );
-        if (total.compare() <= 0) {
-          return getBaseDistribution();
-        }
         dec.forEach((entry) => (entry[0] = entry[0].copy().div(total)));
         return fromMatrix(
           weightedSum(dec),
@@ -706,6 +772,13 @@ export default function execute() {
         const step =
           config.querySelector<HTMLDivElement>("[data-js-step='1']")!;
         step
+          .querySelector<HTMLButtonElement>("button#shuffle")!
+          .addEventListener("click", () => {
+            dragLists.forEach(
+              (dragList) => (dragList.ids = shuffleArray(dragList.ids)),
+            );
+          });
+        step
           .querySelector<HTMLButtonElement>("button#calculate")!
           .addEventListener("click", () => {
             preference.clear();
@@ -754,7 +827,7 @@ export default function execute() {
         step
           .querySelector<HTMLButtonElement>("button#reset")!
           .addEventListener("click", () => {
-            clearStep(config, "3");
+            initStep(config, "3");
             drawAll(ctx, seed.valueAsNumber, parseInt(select.value));
           });
         step
@@ -767,7 +840,7 @@ export default function execute() {
               selected_item,
             )!;
             if (selected_agent !== null) {
-              selected.set(selected_agent, selected_item);
+              selected!.set(selected_agent, selected_item);
               console.log("Selected:", selected);
               distribution = null;
             }
