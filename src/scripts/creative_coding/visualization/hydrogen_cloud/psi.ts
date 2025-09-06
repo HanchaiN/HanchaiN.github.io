@@ -304,8 +304,8 @@ export function psi_orbital_superposition(
   const total_mag = Math.sqrt(
     state.reduce((prev, { c }) => prev + complex_absSq(c), 0),
   );
+  console.assert(total_mag > 0, "Total magnitute is not non-negative.");
   const normalization = total_mag === 0 ? 0 : 1 / total_mag;
-  if (total_mag === 0) console.warn("Total magnitute is zero");
   const v = state.reduce<TComplex>(
     (prev, { c, n, l, m }) =>
       complex_add(

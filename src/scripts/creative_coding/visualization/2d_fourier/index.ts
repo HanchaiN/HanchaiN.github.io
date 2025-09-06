@@ -2,6 +2,7 @@ import fft from "@/scripts/utils/algo/fft.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { onImageChange } from "@/scripts/utils/dom/image.js";
+import { startAnimationLoop } from "@/scripts/utils/dom/utils.js";
 import { Complex } from "@/scripts/utils/math/complex.js";
 import { constrainMap, symlog } from "@/scripts/utils/math/utils.js";
 
@@ -282,8 +283,8 @@ export default function execute() {
     let total_time = 0;
     let delay = 0;
     const frames = draw();
-    requestAnimationFrame(function draw() {
-      if (!isActive || img.src != src) return;
+    startAnimationLoop(function draw() {
+      if (!isActive || img.src != src) return false;
       const res = frames.next();
       display_ctx.drawImage(
         render_canvas,
@@ -311,8 +312,9 @@ export default function execute() {
         total_time += delay;
         delay = 0;
       }
-      if (!res.done) return requestAnimationFrame(draw);
-      console.log(total_time);
+      if (!res.done) return true;
+      console.info(total_time);
+      return false;
     });
   }
 

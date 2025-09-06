@@ -2,6 +2,7 @@ import convert_color from "@/scripts/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
+import { startAnimationLoop, startLoop } from "@/scripts/utils/dom/utils.js";
 import { constrain, constrainLerp } from "@/scripts/utils/math/utils.js";
 
 const str2xyz = convert_color("str", "xyz")!;
@@ -13,8 +14,8 @@ export default function execute() {
   const REMOVER = 0.062;
   const scale = 1;
   const time_step = 1;
-  const time_scale = 1 / 60;
-  const time_step_norm = time_step / time_scale;
+  const time_scale = 1000 / 60;
+  const time_step_norm = time_step * time_scale;
 
   interface IUpdateConstants {
     ADDER: number;
@@ -153,12 +154,25 @@ export default function execute() {
         while (!res.done);
         return res.value;
       })();
+
       let deltaTime = 0;
-      requestAnimationFrame(async function draw(dt: number) {
-        if (!isActive) return;
-        deltaTime += dt;
-        const isDrawing = time_step_norm * 1000 < deltaTime;
-        while (deltaTime > time_step_norm * 1000) {
+      let preTime = 0;
+      startAnimationLoop(async function drawLoop() {
+        if (!isActive) return false;
+        const step = draw_kernel(grid);
+        let res;
+        do res = step.next();
+        while (!res.done);
+        const bmp = await createImageBitmap(buffer);
+        ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+        return true;
+      });
+      startLoop(async function update(t: number) {
+        if (!isActive) return false;
+        if (!preTime) preTime = t;
+        deltaTime += t - preTime;
+        preTime = t;
+        if (deltaTime > time_step_norm) {
           grid = (() => {
             const step = update_kernel(grid, time_step);
             let res;
@@ -166,17 +180,9 @@ export default function execute() {
             while (!res.done);
             return res.value;
           })();
-          deltaTime -= time_step_norm * 1000;
+          deltaTime = 0;
         }
-        if (isDrawing) {
-          const step = draw_kernel(grid);
-          let res;
-          do res = step.next();
-          while (!res.done);
-          const bmp = await createImageBitmap(buffer);
-          ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
-        }
-        requestAnimationFrame(draw);
+        return true;
       });
     },
     stop: () => {

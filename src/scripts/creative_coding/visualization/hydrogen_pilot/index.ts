@@ -7,7 +7,7 @@ import {
   getLightness,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
-import { maxWorkers } from "@/scripts/utils/dom/utils.js";
+import { maxWorkers, startAnimationLoop } from "@/scripts/utils/dom/utils.js";
 import { constrain } from "@/scripts/utils/math/utils.js";
 
 import type { MessageResponse } from "./worker.ts";
@@ -130,11 +130,11 @@ export default function execute() {
     });
   }
   function animate() {
-    if (ended) return;
+    if (ended) return false;
     scene.background = new THREE.Color(getPaletteBaseColor(0));
     controls.update();
     renderer.render(scene, camera);
-    window.requestAnimationFrame(animate);
+    return true;
   }
   function dispose() {
     ended = true;
@@ -146,7 +146,7 @@ export default function execute() {
   return {
     start: (canvas: HTMLCanvasElement) => {
       init(canvas);
-      animate();
+      startAnimationLoop(animate);
     },
     stop: () => {
       dispose();

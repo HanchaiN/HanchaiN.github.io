@@ -1,6 +1,10 @@
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
-import { maxWorkers } from "@/scripts/utils/dom/utils.js";
+import {
+  maxWorkers,
+  startAnimationLoop,
+  startLoop,
+} from "@/scripts/utils/dom/utils.js";
 import { constrainMap } from "@/scripts/utils/math/utils.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
 
@@ -22,6 +26,7 @@ export default function execute() {
   const err = 1e-5;
   const count = 2048;
   const time_scale = 5e-4;
+  let result: MessageResponse[] = [];
 
   function setup() {
     if (!canvas) return;
@@ -30,37 +35,9 @@ export default function execute() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  async function draw(time: number) {
-    if (!isActive) return;
-    const aspect = canvas.width / canvas.height;
-    const center = new Vector(0, 0, param.rho - 1),
-      limit = new Vector(
-        3 * Math.sqrt(param.beta * (param.rho - 1)),
-        3 * Math.sqrt(param.beta * (param.rho - 1)),
-        3 * Math.sqrt(param.beta * (param.rho - 1)),
-      );
-    function project(...val: number[]) {
-      const p = (v: Vector) => new Vector(v.x, v.y);
-      const pos = p(new Vector(...val).sub(center));
-      const lim = p(limit);
-      return new Vector(
-        constrainMap(
-          pos.x,
-          -Math.max(lim.x, lim.y * aspect),
-          +Math.max(lim.x, lim.y * aspect),
-          0,
-          canvas.width,
-        ),
-        constrainMap(
-          pos.y,
-          +Math.max(lim.y, lim.x / aspect),
-          -Math.max(lim.y, lim.x / aspect),
-          0,
-          canvas.height,
-        ),
-      );
-    }
-    const result = await Promise.all(
+  async function update(time: number) {
+    if (!isActive) return false;
+    result = await Promise.all(
       workers.map((worker) => {
         return new Promise<MessageResponse>((resolve) => {
           worker.postMessage({ time });
@@ -71,6 +48,38 @@ export default function execute() {
         });
       }),
     );
+    return true;
+  }
+
+  function project(...val: number[]) {
+    const aspect = canvas.width / canvas.height;
+    const center = new Vector(0, 0, param.rho - 1),
+      limit = new Vector(
+        3 * Math.sqrt(param.beta * (param.rho - 1)),
+        3 * Math.sqrt(param.beta * (param.rho - 1)),
+        3 * Math.sqrt(param.beta * (param.rho - 1)),
+      );
+    const p = (v: Vector) => new Vector(v.x, v.y);
+    const pos = p(new Vector(...val).sub(center));
+    const lim = p(limit);
+    return new Vector(
+      constrainMap(
+        pos.x,
+        -Math.max(lim.x, lim.y * aspect),
+        +Math.max(lim.x, lim.y * aspect),
+        0,
+        canvas.width,
+      ),
+      constrainMap(
+        pos.y,
+        +Math.max(lim.y, lim.x / aspect),
+        -Math.max(lim.y, lim.x / aspect),
+        0,
+        canvas.height,
+      ),
+    );
+  }
+  function draw() {
     const r = 1;
     ctx.lineWidth = 0;
     ctx.fillStyle = getBackground();
@@ -84,7 +93,7 @@ export default function execute() {
         ctx.fill();
       });
     });
-    requestAnimationFrame(draw);
+    return true;
   }
 
   return {
@@ -114,7 +123,8 @@ export default function execute() {
         });
       });
       isActive = true;
-      requestAnimationFrame(draw);
+      startAnimationLoop(draw);
+      startLoop(update);
     },
     stop: () => {
       isActive = false;

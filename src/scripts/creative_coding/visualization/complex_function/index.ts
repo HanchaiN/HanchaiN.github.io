@@ -2,6 +2,7 @@ import convert_color from "@/scripts/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
+import { startAnimationLoop, startLoop } from "@/scripts/utils/dom/utils.js";
 import { complex_absSq, complex_zeta } from "@/scripts/utils/math/complex.js";
 import type { TComplex } from "@/scripts/utils/math/complex.ts";
 import { fpart, map } from "@/scripts/utils/math/utils.js";
@@ -78,9 +79,16 @@ export default function execute() {
       });
       const renderer = kernelGenerator(main, { R, l0, l1, s0, s1 }, buffer);
       const step = renderer();
-      requestAnimationFrame(function draw() {
-        if (!isActive) return;
-        let done = false;
+      let done = false;
+      startAnimationLoop(async function draw() {
+        if (!isActive) return false;
+        await createImageBitmap(buffer).then((bmp) =>
+          ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height),
+        );
+        return !done;
+      });
+      startLoop(function update() {
+        if (!isActive) return true;
         for (let _ = 0; _ < iter; _++) {
           const res = step.next();
           if (res.done) {
@@ -88,10 +96,7 @@ export default function execute() {
             break;
           }
         }
-        createImageBitmap(buffer).then((bmp) =>
-          ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height),
-        );
-        if (!done) requestAnimationFrame(draw);
+        return !done;
       });
     },
     stop: () => {

@@ -4,6 +4,7 @@ import {
   getLightness,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
+import { startAnimationLoop, startLoop } from "@/scripts/utils/dom/utils.js";
 
 import { BoidSystem, SETTING } from "./boid.js";
 
@@ -39,19 +40,22 @@ export default function execute() {
     system.wall.bottom = canvas.height / scale;
   }
 
-  function draw(time: number) {
-    if (!isActive) return;
+  function update(time: number) {
+    if (!isActive) return false;
     if (pretime) {
       const deltaTime = (time - pretime) * time_scale;
       system.update(Math.min(deltaTime, 500), 1);
       // const subdivide = Math.ceil(deltaTime / 500);
       // system.update(deltaTime, subdivide);
     }
+    pretime = time;
+    return true;
+  }
+  function draw() {
     const background = getBackground(),
       foreground = getForeground(),
       lightness = getLightness(),
       saturation = getChroma();
-    pretime = time;
     ctx.lineWidth = 0;
     ctx.fillStyle = background;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -84,7 +88,7 @@ export default function execute() {
       ctx.arc(p.x * scale, p.y * scale, 3, 0, 2 * Math.PI);
       ctx.fill();
     });
-    requestAnimationFrame(draw);
+    return true;
   }
 
   return {
@@ -94,7 +98,8 @@ export default function execute() {
       system = new BoidSystem(canvas.width / scale, canvas.height / scale, 256);
       setup();
       isActive = true;
-      requestAnimationFrame(draw);
+      startLoop(update);
+      startAnimationLoop(draw);
     },
     stop: () => {
       isActive = false;

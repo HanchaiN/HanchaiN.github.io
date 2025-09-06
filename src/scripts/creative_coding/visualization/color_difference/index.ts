@@ -12,6 +12,7 @@ import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
+import { startAnimationLoop, startLoop } from "@/scripts/utils/dom/utils.js";
 import { map } from "@/scripts/utils/math/utils.js";
 
 const lab2srgb = convert_color("lab", "srgb")!,
@@ -163,18 +164,9 @@ export default function execute() {
               _distance_o === "inner" ? distance_i : distance_fn[_distance_o];
           redraw(distance_i, distance_o);
         });
-      requestAnimationFrame(function draw() {
-        if (!isActive) return;
-        if (step !== null) {
-          for (let _ = 0; _ < iter; _++) {
-            const res = step.next();
-            if (res.done) {
-              step = null;
-              break;
-            }
-          }
-        }
-        createImageBitmap(buffer).then((bmp) => {
+      startAnimationLoop(async function draw() {
+        if (!isActive) return false;
+        await createImageBitmap(buffer).then((bmp) => {
           ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
           for (const c of palette.value) {
             const [l0, a0, b0] = remapColor(str2lab(c));
@@ -194,7 +186,20 @@ export default function execute() {
             ctx.closePath();
           }
         });
-        requestAnimationFrame(draw);
+        return true;
+      });
+      startLoop(function update() {
+        if (!isActive) return false;
+        if (step !== null) {
+          for (let _ = 0; _ < iter; _++) {
+            const res = step.next();
+            if (res.done) {
+              step = null;
+              break;
+            }
+          }
+        }
+        return true;
       });
     },
     stop: () => {

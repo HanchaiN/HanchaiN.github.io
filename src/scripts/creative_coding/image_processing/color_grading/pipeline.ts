@@ -39,9 +39,10 @@ export function mapColor(
   lut: ImageData,
   temperature: number = 1,
 ) {
-  if (lut.colorSpace !== "srgb") {
-    console.warn("CLUT should be in sRGB color space");
-  }
+  console.assert(
+    lut.colorSpace === "srgb",
+    "CLUT should be in sRGB color space",
+  );
   const level = detectLevel(lut.width, lut.height);
   const cube_size = level * level;
   const [r0, g0, b0] = [

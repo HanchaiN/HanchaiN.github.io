@@ -4,6 +4,7 @@ import {
   getPaletteAccentColor,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
+import { startAnimationLoop, startLoop } from "@/scripts/utils/dom/utils.js";
 import {
   constrainMap,
   gamma,
@@ -81,13 +82,16 @@ export default function execute() {
     entropy_slider.value = system.Entropy.toString();
   }
 
-  function draw(time: number) {
-    if (!isActive) return;
+  function update(time: number) {
+    if (!isActive) return false;
     if (pretime) {
       const deltaTime = ((time - pretime) * time_scale) / 1000;
       system.update(Math.min(deltaTime, max_dt), 4);
     }
     pretime = time;
+    return true;
+  }
+  function draw() {
     ctx.lineWidth = 0;
     ctx.fillStyle = getBackground();
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -125,7 +129,7 @@ export default function execute() {
     pressure_value.innerText = system.Pressure.toExponential(2);
     entropy_slider.value = system.Entropy.toString();
     entropy_value.innerText = system.Entropy.toExponential(2);
-    requestAnimationFrame(draw);
+    return true;
   }
 
   function volume_handler() {
@@ -173,7 +177,8 @@ export default function execute() {
       volume_handler();
       temperature_handler();
       isActive = true;
-      requestAnimationFrame(draw);
+      startAnimationLoop(draw);
+      startLoop(update);
     },
     stop: () => {
       isActive = false;

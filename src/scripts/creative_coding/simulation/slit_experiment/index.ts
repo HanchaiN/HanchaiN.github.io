@@ -1,5 +1,8 @@
 import convert_color, { srgba2hex } from "@/scripts/utils/color/conversion.js";
-import { getParentSize } from "@/scripts/utils/dom/utils.js";
+import {
+  getParentSize,
+  startAnimationLoop,
+} from "@/scripts/utils/dom/utils.js";
 import { constrain, fpart, lerp, map } from "@/scripts/utils/math/utils.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
 
@@ -293,7 +296,7 @@ export default function execute() {
     return Vector.fromPolar(1, phaseShift);
   }
   function draw(t: number) {
-    if (!canvas) return;
+    if (!canvas) return false;
     const foreground_ctx = (
       canvas.querySelector("#foreground")! as HTMLCanvasElement
     ).getContext("2d")!;
@@ -341,7 +344,7 @@ export default function execute() {
     );
     mag_plot_ctx.lineTo(scan_x * size.width, PLOT_RATIO * size.height);
     mag_plot_ctx.stroke();
-    requestAnimationFrame(draw);
+    return true;
   }
   function parentResized() {
     if (!canvas) return;
@@ -427,7 +430,7 @@ export default function execute() {
       );
       background_ctx.fill();
 
-      requestAnimationFrame(draw);
+      startAnimationLoop(draw);
     },
     stop: () => {
       canvas?.remove();

@@ -1,6 +1,7 @@
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
+import { startAnimationLoop, startLoop } from "@/scripts/utils/dom/utils.js";
 import { map } from "@/scripts/utils/math/utils.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
 
@@ -122,30 +123,25 @@ export default function execute() {
         ++i,
         postProcessorGen_(color.bright, color.white),
       );
-      requestAnimationFrame(function draw() {
-        if (!isActive) return;
-        createImageBitmap(buffer).then((bmp) =>
+      startAnimationLoop(async function draw() {
+        if (!isActive) return false;
+        await createImageBitmap(buffer).then((bmp) =>
           ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height),
         );
-        requestAnimationFrame(draw);
+        return true;
       });
-      requestIdleCallback(
-        function update() {
-          if (!isActive) return;
-          const res = step.next();
-          if (res.done) {
-            step = renderer(
-              acc,
-              ++i,
-              postProcessorGen_(color.bright, color.white),
-            );
-          }
-          requestIdleCallback(update);
-        },
-        {
-          timeout: 50,
-        },
-      );
+      startLoop(function update() {
+        if (!isActive) return false;
+        const res = step.next();
+        if (res.done) {
+          step = renderer(
+            acc,
+            ++i,
+            postProcessorGen_(color.bright, color.white),
+          );
+        }
+        return true;
+      });
     },
     stop: () => {
       isActive = false;

@@ -2,6 +2,7 @@ import {
   getPaletteAccentColor,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
+import { startAnimationLoop } from "@/scripts/utils/dom/utils.js";
 
 import { DungeonGenerator, IPalette, drawDungeon } from "./generator.js";
 
@@ -31,15 +32,14 @@ export default function execute() {
   }
 
   function drawStep() {
-    if (!canvas) return;
+    if (!canvas) return false;
     const { done } = gen.next();
     drawDungeon(dungeon, ctx, unit, getPalette());
-    if (done) return;
-    setTimeout(() => requestAnimationFrame(drawStep), 0);
+    return !done;
   }
   function redraw() {
     generate_and_draw(size);
-    requestAnimationFrame(drawStep);
+    startAnimationLoop(drawStep);
   }
   function setup() {
     if (!canvas) return;

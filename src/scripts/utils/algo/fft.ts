@@ -9,15 +9,6 @@ export function fft<T extends Tensor>(arr: T): T {
 }
 export default fft;
 
-console.log(
-  fft([
-    Complex.fromCartesian(1, 0),
-    Complex.fromCartesian(2, -1),
-    Complex.fromCartesian(0, -1),
-    Complex.fromCartesian(-1, 2),
-  ]),
-);
-
 function _arraySize(arr: Tensor | Complex): number[] {
   if (!Array.isArray(arr) || arr.length === 0) return [];
   return [arr.length, ..._arraySize(arr[0])];

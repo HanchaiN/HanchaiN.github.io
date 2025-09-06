@@ -38,3 +38,23 @@ export function getMousePos(canvas: HTMLCanvasElement, evt: MouseEvent) {
 export const maxWorkers = window.navigator.hardwareConcurrency
   ? Math.floor(window.navigator.hardwareConcurrency)
   : 1;
+
+export function startLoop(
+  callback: (t: DOMHighResTimeStamp) => Promise<boolean> | boolean,
+) {
+  const t: DOMHighResTimeStamp = performance.now();
+  requestIdleCallback(
+    async () => {
+      if (await callback(t)) startLoop(callback);
+    },
+    { timeout: 1 },
+  );
+}
+
+export function startAnimationLoop(
+  callback: (t: DOMHighResTimeStamp) => Promise<boolean> | boolean,
+) {
+  requestAnimationFrame(async function loop(t: DOMHighResTimeStamp) {
+    if (await callback(t)) requestAnimationFrame(loop);
+  });
+}

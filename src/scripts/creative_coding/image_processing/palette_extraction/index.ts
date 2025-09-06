@@ -173,13 +173,12 @@ export default function execute() {
         extend(n_colors);
         cluster();
         updateScore();
-        console.log(
+        console.info(
           n_colors,
           palette.value,
           form.querySelector<HTMLInputElement>("#palette-score")!.value,
         );
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        await new Promise((resolve) => requestAnimationFrame(resolve));
+        await new Promise((resolve) => requestIdleCallback(resolve));
       }
     } finally {
       unlock();

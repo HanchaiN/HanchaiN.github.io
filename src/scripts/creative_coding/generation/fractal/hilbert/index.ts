@@ -5,7 +5,11 @@ import {
 } from "@/scripts/utils/color/palette.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
-import { getMousePos } from "@/scripts/utils/dom/utils.js";
+import {
+  getMousePos,
+  startAnimationLoop,
+  startLoop,
+} from "@/scripts/utils/dom/utils.js";
 import { lerp } from "@/scripts/utils/math/utils.js";
 
 import { rot_hilbert as rot, xy2d } from "./hilbert.js";
@@ -62,9 +66,9 @@ export default function execute() {
         buffer,
       );
       const step = renderer(n);
-      requestAnimationFrame(function draw() {
-        if (!isActive) return;
-        let done = false;
+      let done = false;
+      startLoop(function update() {
+        if (!isActive) return false;
         for (let _ = 0; _ < iter; _++) {
           const res = step.next();
           if (res.done) {
@@ -72,10 +76,14 @@ export default function execute() {
             break;
           }
         }
-        createImageBitmap(buffer).then((bmp) =>
+        return !done;
+      });
+      startAnimationLoop(async function draw() {
+        if (!isActive) return false;
+        await createImageBitmap(buffer).then((bmp) =>
           ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height),
         );
-        if (!done) requestAnimationFrame(draw);
+        return !done;
       });
       canvas.addEventListener("mousedown", (e) => {
         if (typeof audioContext === "undefined") {

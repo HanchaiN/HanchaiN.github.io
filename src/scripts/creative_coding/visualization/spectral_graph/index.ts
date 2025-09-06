@@ -3,6 +3,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { Grid2D } from "@/scripts/utils/dom/element/Grid.js";
+import { startAnimationLoop } from "@/scripts/utils/dom/utils.js";
 
 import { Graph } from "./graph.js";
 
@@ -129,11 +130,11 @@ export default function execute() {
     scene.add(axesHelper);
   }
   function animate() {
-    if (ended) return;
+    if (ended) return false;
     scene.background = new THREE.Color(getPaletteBaseColor(0));
     controls.update();
     renderer.render(scene, camera);
-    window.requestAnimationFrame(animate);
+    return true;
   }
   function dispose() {
     ended = true;
@@ -198,7 +199,7 @@ export default function execute() {
         });
       init(canvas);
       setScene(mainelem);
-      animate();
+      startAnimationLoop(animate);
     },
     stop: () => {
       dispose();

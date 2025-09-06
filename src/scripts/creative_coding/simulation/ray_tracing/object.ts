@@ -116,10 +116,10 @@ export class SceneObject {
     const x_ = x.normalize(),
       y_ = y.normalize(),
       z_ = z.normalize();
-    if (Math.abs(x_.dot(y_.cross(z_))) !== 1)
-      console.warn(
-        "The transformation might contains skewing (not pure rotation).",
-      );
+    console.assert(
+      Math.abs(x_.dot(y_.cross(z_))) === 1,
+      "The transformation might contains skewing (not pure rotation).",
+    );
     const inv_transformation = (pos: Vector) =>
       new Vector(
         pos.x * x_.x + pos.y * x_.y + pos.z * x_.z,

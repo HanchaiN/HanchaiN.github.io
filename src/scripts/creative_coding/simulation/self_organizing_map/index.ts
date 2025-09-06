@@ -107,7 +107,7 @@ export default function execute() {
       );
       softargmax(freq).forEach((v, i) => (auto_palette_weight[i] = v));
     }
-    console.log(auto_palette.map((v, i) => [v, auto_palette_weight[i]]));
+    console.info(auto_palette.map((v, i) => [v, auto_palette_weight[i]]));
     const palette = getPaletteAccentColors().map((v) => {
       return str2srgb(v);
     });

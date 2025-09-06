@@ -4,6 +4,7 @@ import {
   getNoteString,
 } from "@/scripts/utils/audio_processing.js";
 import type { TNote } from "@/scripts/utils/audio_processing.ts";
+import { startAnimationLoop } from "@/scripts/utils/dom/utils.js";
 import {
   constrain,
   constrainMap,
@@ -60,7 +61,7 @@ export default function execute() {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   }
   function draw() {
-    if (!isActive) return;
+    if (!isActive) return false;
     analyser.getFloatFrequencyData(bufferArray);
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -176,7 +177,7 @@ export default function execute() {
         ctx.stroke();
       }
     }
-    requestAnimationFrame(draw);
+    return true;
   }
 
   return {
@@ -189,7 +190,7 @@ export default function execute() {
         .addEventListener("click", async function start() {
           await setup();
           isActive = true;
-          requestAnimationFrame(draw);
+          startAnimationLoop(draw);
         });
     },
     stop: () => {

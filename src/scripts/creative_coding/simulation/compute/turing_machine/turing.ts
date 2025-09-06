@@ -70,7 +70,7 @@ export class TuringMachine<State, Entry> {
       .get(this.state)
       ?.get(this.read(this.pointer));
     if (!ins) {
-      console.log("HALTED");
+      console.info("HALTED");
       return false;
     }
     if (

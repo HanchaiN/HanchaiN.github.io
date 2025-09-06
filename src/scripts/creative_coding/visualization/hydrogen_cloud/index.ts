@@ -2,6 +2,7 @@ import convert_color from "@/scripts/utils/color/conversion.js";
 import { getPaletteAccentColor } from "@/scripts/utils/color/palette.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
+import { startAnimationLoop, startLoop } from "@/scripts/utils/dom/utils.js";
 import type { TComplex } from "@/scripts/utils/math/complex.ts";
 import { constrain, fpart, map } from "@/scripts/utils/math/utils.js";
 import type { TVector3 } from "@/scripts/utils/math/vector.ts";
@@ -71,16 +72,20 @@ export default function execute() {
           canvas.height / scale,
         );
         const renderer = kernelGenerator(main, { R }, buffer);
-        requestAnimationFrame(function draw(t) {
-          if (!isActive) return;
+        startAnimationLoop(async function draw() {
+          if (!isActive) return false;
+          await createImageBitmap(buffer).then((bmp) =>
+            ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height),
+          );
+          return true;
+        });
+        startLoop(function update(t) {
+          if (!isActive) return false;
           const z = map(fpart(t / T), 0, 1, -R, +R);
           // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-empty
           for (const _ of renderer(z, 0.0)) {
           }
-          createImageBitmap(buffer).then((bmp) =>
-            ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height),
-          );
-          requestAnimationFrame(draw);
+          return true;
         });
       }
       {
@@ -88,8 +93,8 @@ export default function execute() {
           alpha: true,
           desynchronized: true,
         })!;
-        requestAnimationFrame(function draw(t) {
-          if (!isActive) return;
+        startAnimationLoop(function draw(t) {
+          if (!isActive) return false;
           const z = map(fpart(t / T), 0, 1, -R, +R);
           ctx.clearRect(0, 0, foreground.width, foreground.height);
           for (let i = 0; i <= R; i++) {
@@ -112,7 +117,7 @@ export default function execute() {
             );
             ctx.stroke();
           }
-          requestAnimationFrame(draw);
+          return true;
         });
       }
     },
