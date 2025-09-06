@@ -1,10 +1,4 @@
 import {
-  combination,
-  factorial,
-  permutation,
-  product,
-} from "@/scripts/utils/math/utils.js";
-import {
   TComplex,
   complex_absSq,
   complex_add,
@@ -16,12 +10,19 @@ import {
   complex_scale,
 } from "@/scripts/utils/math/complex.js";
 import {
+  combination,
+  factorial,
+  permutation,
+  product,
+} from "@/scripts/utils/math/utils.js";
+import {
   TCVector3,
   TVector3,
   vector_alzimuth,
   vector_fromSphere,
   vector_inclination,
 } from "@/scripts/utils/math/vector.js";
+
 export const RADIUS_REDUCED = 1.0;
 export const MASS_REDUCED = 9.109e-31;
 export const H_BAR = 1.054e-34;

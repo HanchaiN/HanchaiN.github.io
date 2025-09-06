@@ -5,7 +5,7 @@ block title
 
 block append script
   script(type='module').
-    import execute from '/static/scripts/creative_coding/simulation/reaction_diffusion/index.js';
+    import execute from '@/scripts/creative_coding/simulation/reaction_diffusion/index.js';
 
     const root = document.getElementById('reaction-diffusion');
     execute().start(

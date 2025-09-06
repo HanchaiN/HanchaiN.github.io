@@ -64,15 +64,16 @@ export function argmax(x: number[]) {
   return x.indexOf(Math.max(...x));
 }
 export function softargmax(x: number[], temperature = 1): number[] {
-  if (temperature != 0) {
-    const exps = x.map((v) => Math.exp(v / temperature));
-    const ret = normalize(exps, 1);
-    if (ret.every((v) => Number.isFinite(v) && !Number.isNaN(v))) return ret;
-  }
-  {
-    const max = x.reduce((acc, v) => Math.max(acc, v), -Infinity);
-    if (max !== -Infinity) {
-      const argmax: number[] = x.map((v) => (v === max ? 1 : 0));
+  const max = x.reduce((acc, v) => Math.max(acc, v), -Infinity);
+  if (Number.isFinite(max) && !Number.isNaN(max)) {
+    const x_ = x.map((v) => v - max);
+    if (temperature != 0) {
+      const exps = x_.map((v) => Math.exp(v / temperature));
+      const ret = normalize(exps, 1);
+      if (ret.every((v) => Number.isFinite(v) && !Number.isNaN(v))) return ret;
+    }
+    {
+      const argmax: number[] = x_.map((v) => (v === 0 ? 1 : 0));
       const ret = normalize(argmax);
       if (ret.every((v) => Number.isFinite(v) && !Number.isNaN(v))) return ret;
     }

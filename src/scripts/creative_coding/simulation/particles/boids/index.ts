@@ -1,10 +1,11 @@
 import convert_color, { srgba2css } from "@/scripts/utils/color/conversion.js";
-import { BoidSystem, SETTING } from "./boid.js";
 import {
   getChroma,
   getLightness,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
+
+import { BoidSystem, SETTING } from "./boid.js";
 
 const str2srgb = convert_color("str", "srgb")!,
   okhcl2hex = convert_color("okhcl", "hex")!;

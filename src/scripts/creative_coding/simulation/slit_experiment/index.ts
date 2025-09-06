@@ -1,12 +1,12 @@
-import { getParentSize } from "@/scripts/utils/dom/utils.js";
-import { Vector } from "@/scripts/utils/math/vector.js";
-import { constrain, fpart, lerp, map } from "@/scripts/utils/math/utils.js";
 import convert_color, { srgba2hex } from "@/scripts/utils/color/conversion.js";
+import { getParentSize } from "@/scripts/utils/dom/utils.js";
+import { constrain, fpart, lerp, map } from "@/scripts/utils/math/utils.js";
+import { Vector } from "@/scripts/utils/math/vector.js";
 
 const okhcl2srgb = convert_color("hcl", "srgb")!;
 
 export default function execute() {
-  let parent: HTMLDivElement;
+  let root_: HTMLDivElement;
   let canvas: HTMLDivElement;
   const size = {
     width: 0,
@@ -345,7 +345,7 @@ export default function execute() {
   }
   function parentResized() {
     if (!canvas) return;
-    const { width, height } = getParentSize(parent, canvas);
+    const { width, height } = getParentSize(root_, canvas);
     size.width = width;
     size.height = height;
     canvas.style.minWidth = `${size.width}px`;
@@ -377,11 +377,11 @@ export default function execute() {
   }
 
   return {
-    start: (node: HTMLDivElement) => {
-      parent = node;
+    start: (root: HTMLDivElement) => {
+      root_ = root;
       resizeObserver = new ResizeObserver(parentResized);
-      resizeObserver.observe(parent);
-      const { width, height } = getParentSize(parent, canvas);
+      resizeObserver.observe(root_);
+      const { width, height } = getParentSize(root_, canvas);
       size.width = width;
       size.height = height;
       canvas = document.createElement("div");
@@ -404,10 +404,10 @@ export default function execute() {
       mag_plot.style.bottom = (0).toString();
       mag_plot.style.zIndex = (-4).toString();
       canvas.append(foreground, middleground, background, mag_plot);
-      parent.appendChild(canvas);
-      parent.style.display = "flex";
-      parent.style.justifyContent = "center";
-      parent.style.alignItems = "center";
+      root_.appendChild(canvas);
+      root_.style.display = "flex";
+      root_.style.justifyContent = "center";
+      root_.style.alignItems = "center";
       canvas.style.display = "block";
 
       scaler.set(width, height);

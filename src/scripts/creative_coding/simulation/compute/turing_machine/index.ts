@@ -1,15 +1,17 @@
-import { getParentSize } from "@/scripts/utils/dom/utils.js";
-import type { p5Extension } from "@/scripts/utils/types.ts";
+import p5 from "p5";
+
 import {
   getPaletteAccentColor,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
-import p5 from "p5";
-import type { Rule } from "./turing.ts";
+import { getParentSize } from "@/scripts/utils/dom/utils.js";
+
 import { TuringMachine } from "./turing.js";
+import type { Rule } from "./turing.ts";
+
 export default function execute() {
-  let parent: HTMLElement;
-  let canvas: HTMLCanvasElement;
+  let root_: HTMLElement;
+  let canvas_: HTMLCanvasElement;
   let resizeObserver: ResizeObserver;
 
   const sketch = (p: p5) => {
@@ -116,7 +118,7 @@ export default function execute() {
     const tm = new TuringMachine(notation);
 
     function parentResized() {
-      const { width } = getParentSize(parent, canvas);
+      const { width } = getParentSize(root_, canvas_);
       viewrange = p.constrain(
         viewrange,
         Math.floor(width / min_resolution),
@@ -127,19 +129,19 @@ export default function execute() {
     }
     p.setup = function () {
       tm.init(inp);
-      const { width } = getParentSize(parent, canvas);
+      const { width } = getParentSize(root_, canvas_);
       viewrange = p.constrain(
         viewrange,
         Math.floor(width / min_resolution),
         Math.ceil(width / max_resolution),
       );
       resolution = width / viewrange;
-      p.createCanvas(width, resolution * 3);
+      p.createCanvas(width, resolution * 3, "p2d", canvas_);
       if (_fr > 0) {
         p.frameRate(_fr);
       }
       resizeObserver = new ResizeObserver(parentResized);
-      resizeObserver.observe(parent);
+      resizeObserver.observe(root_);
     };
 
     p.draw = function () {
@@ -160,16 +162,16 @@ export default function execute() {
     };
   };
 
-  let instance: p5Extension;
+  let instance: p5;
   return {
-    start: (node: HTMLElement) => {
-      parent = node;
-      instance = new p5(sketch, node) as p5Extension;
-      canvas ??= instance.canvas;
+    start: (root: HTMLElement, canvas: HTMLCanvasElement) => {
+      root_ = root;
+      canvas_ = canvas;
+      instance = new p5(sketch, root_);
     },
     stop: () => {
       instance?.remove();
-      canvas?.remove();
+      canvas_?.remove();
       resizeObserver?.disconnect();
     },
   };

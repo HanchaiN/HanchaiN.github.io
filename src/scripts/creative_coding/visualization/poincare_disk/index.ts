@@ -1,17 +1,17 @@
-import { getParentSize } from "@/scripts/utils/dom/utils.js";
-import { Complex } from "@/scripts/utils/math/complex.js";
-import type { p5Extension } from "@/scripts/utils/types.ts";
 import p5 from "p5";
-import { Draggable } from "./draggable.js";
-import { Gyrovector } from "./gyrovector.js";
+
 import {
   getPaletteAccentColor,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
+import { Complex } from "@/scripts/utils/math/complex.js";
+
+import { Draggable } from "./draggable.js";
+import { Gyrovector } from "./gyrovector.js";
+
 export default function execute() {
-  let parent: HTMLElement;
-  let canvas: HTMLCanvasElement;
-  let resizeObserver: ResizeObserver;
+  let root_: HTMLElement;
+  let canvas_: HTMLCanvasElement;
 
   const sketch = (p: p5) => {
     let r: number, Ox: number, Oy: number;
@@ -33,19 +33,11 @@ export default function execute() {
     function calculateposition(x: number, y: number): [number, number] {
       return [(x - Ox) / r, (-y + Oy) / r];
     }
-    function parentResized() {
-      const { width, height } = getParentSize(parent, canvas);
-      p.resizeCanvas(width, height);
-      setOffset();
-    }
     p.setup = function () {
-      const { width, height } = getParentSize(parent, canvas);
-      p.createCanvas(width, height);
+      p.createCanvas(canvas_.width, canvas_.height, "p2d", canvas_);
       setOffset();
       A.setPosition(...canvasposition(0, 0.975));
       B.setPosition(...canvasposition(0.1, -0.99));
-      resizeObserver = new ResizeObserver(parentResized);
-      resizeObserver.observe(parent);
     };
     p.draw = function () {
       p.clear(0, 0, 0, 0);
@@ -121,18 +113,15 @@ export default function execute() {
     };
   };
 
-  let instance: p5Extension;
+  let instance: p5;
   return {
-    start: (node: HTMLElement) => {
-      parent = node;
-      instance = new p5(sketch, node) as p5Extension;
-      canvas ??= instance.canvas;
+    start: (root: HTMLElement, canvas: HTMLCanvasElement) => {
+      root_ = root;
+      canvas_ = canvas;
+      instance = new p5(sketch, root_);
     },
     stop: () => {
       instance?.remove();
-      canvas?.remove();
-      resizeObserver?.disconnect();
-      // parent = canvas = instance = resizeObserver = null;
     },
   };
 }

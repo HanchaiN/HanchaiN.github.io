@@ -1,5 +1,6 @@
 import { lerp } from "./utils.js";
 import { vector_fromPolar, vector_fromSphere } from "./vector.js";
+
 export function randomUniform(l = 0, h = 1) {
   return lerp(Math.random(), l, h);
 }

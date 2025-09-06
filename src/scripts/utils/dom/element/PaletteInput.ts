@@ -1,18 +1,17 @@
-import { throttle } from "@/scripts/utils/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
+import { throttle } from "@/scripts/utils/utils.js";
 
 const str2hex = convert_color("str", "hex")!;
 
 export class PaletteInput {
-  private inputContainer: HTMLElement;
-  private textInput: HTMLTextAreaElement;
-  private listeners: ((palette: string[]) => void)[] = [];
+  private listeners: ((palette: string[]) => void)[];
   private _textListener: () => void;
-  private palette_: string[] = [];
+  private palette_: string[];
 
-  constructor(inputContainer: HTMLElement, textInput: HTMLTextAreaElement) {
-    this.inputContainer = inputContainer;
-    this.textInput = textInput;
+  constructor(
+    private inputContainer: HTMLElement,
+    private textInput: HTMLTextAreaElement,
+  ) {
     this._textListener = throttle(() => PaletteInput.setFromText(this), 1000);
     this.textInput.addEventListener("change", this._textListener);
     this.listeners = [];

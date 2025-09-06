@@ -1,6 +1,3 @@
-import { sample } from "@/scripts/utils/math/random.js";
-import { vector_mult, vector_sub } from "@/scripts/utils/math/vector.js";
-import { softargmax } from "@/scripts/utils/math/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import type {
   ColorSpace,
@@ -8,9 +5,17 @@ import type {
   SRGBColor,
   XYZColor,
 } from "@/scripts/utils/color/conversion.ts";
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
-import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
 import { DistanceE94 } from "@/scripts/utils/color/distance.js";
+import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
+import { sample } from "@/scripts/utils/math/random.js";
+import { softargmax } from "@/scripts/utils/math/utils.js";
+import {
+  vector_add,
+  vector_dot,
+  vector_mult,
+  vector_sub,
+} from "@/scripts/utils/math/vector.js";
 
 const mode: ColorSpace = "xyz";
 type EmbedColor = ColorSpaceMap[typeof mode];
@@ -71,63 +76,77 @@ function threshold_map(n: number, base: number[][]): number[][] {
     );
 }
 
-export function _applyDithering_Ordered(
+function _applyDithering_Ordered(
   this: IKernelFunctionThis<{
     cmap: number[][];
     color_palette: SRGBColor[];
     embed_palette: XYZColor[];
+    embed_avg: [number, number, XYZColor][];
     temperature: number;
   }>,
 ) {
   const n = this.constants.cmap.length;
   const { x, y } = this.thread;
-  const threshold = this.constants.cmap[x % n][y % n] + 0.5;
+  const seed = this.constants.cmap[x % n][y % n] + 0.5;
   const [r, g, b, a] = this.getColor();
   const target_color = srgb2embed([r, g, b]);
-  const weight = softargmax(
-    this.constants.embed_palette.map(
-      (color) => -Math.log(1e-20 + color_distance(color, target_color)),
+  const pair_index = sample(
+    this.constants.embed_avg.map(([i, j]) => [i, j] as [number, number]),
+    softargmax(
+      this.constants.embed_avg.map(
+        ([, , color]) => -color_distance(color, target_color),
+      ),
+      this.constants.temperature,
     ),
-    this.constants.temperature,
   );
-  const color_ind = weight.map((w, i) => [w, i] as [number, number]);
-  color_ind.sort((a, b) => b[0] - a[0]);
-  let sum = 0,
-    color_index = -1;
-  for (let k = 0; k < color_ind.length; k++) {
-    sum += color_ind[k][0];
-    if (sum >= threshold) {
-      color_index = color_ind[k][1];
-      break;
-    }
-  }
-  if (color_index === -1) {
-    console.warn("color_index is -1");
-    color_index = color_ind[color_ind.length - 1][1];
-  }
-  const color = this.constants.color_palette[color_index];
+  const c1 = this.constants.embed_palette[pair_index[0]];
+  const c2 = this.constants.embed_palette[pair_index[1]];
+  const c12 = vector_sub(c2, c1);
+  const c10 = vector_sub(target_color, c1);
+  const threshold = vector_dot(c12, c10) / vector_dot(c12, c12);
+  const color =
+    this.constants.color_palette[pair_index[seed < threshold ? 1 : 0]];
   this.color(color[0], color[1], color[2], a);
 }
 
 export function applyDithering_Ordered(
   buffer: ImageData,
   color_palette: SRGBColor[],
-  temperature = 0,
-  n: number = 16,
+  {
+    temperature = 0,
+    mask_size = 16,
+  }: {
+    temperature?: number;
+    mask_size?: number;
+  } = {},
 ) {
   const cmap = normalize_map(
-    threshold_map(n, [
+    threshold_map(mask_size, [
       [0, 2],
       [3, 1],
     ]),
   );
   const embed_palette = color_palette.map(srgb2embed);
+  const embed_avg: [number, number, XYZColor][] = embed_palette
+    .map((c1, i) =>
+      embed_palette.map(
+        (c2, j) =>
+          [i, j, vector_mult(vector_add(c1, c2), 2)] as [
+            number,
+            number,
+            XYZColor,
+          ],
+      ),
+    )
+    .flat()
+    .filter(([i, j]) => i > j);
   const runner = kernelRunner(
     _applyDithering_Ordered,
     {
       cmap,
       color_palette,
       embed_palette,
+      embed_avg,
       temperature,
     },
     buffer,
@@ -138,7 +157,13 @@ export function applyDithering_Ordered(
 export function applyDithering_ErrorDiffusion(
   buffer: ImageData,
   color_palette: SRGBColor[],
-  temperature = 0,
+  {
+    temperature = 0,
+    err_decay = 1.0,
+  }: {
+    temperature?: number;
+    err_decay?: number;
+  } = {},
 ) {
   const color_palette_ = color_palette.map(srgb2embed);
   const err_diffusion: [[number, number], number][] = [
@@ -196,7 +221,7 @@ export function applyDithering_ErrorDiffusion(
         if (0 > i_ || i_ >= buffer.width || 0 > j_ || j_ >= buffer.height)
           return;
         const index = j_ * buffer.width + i_;
-        const diff = vector_mult(err, w);
+        const diff = vector_mult(err, w * err_decay);
         for (let k = 0; k < 3; k++) buffer_[index][k] += diff[k];
       });
       buffer.data[index * 4 + 0] = color_palette[color_index][0] * 255;

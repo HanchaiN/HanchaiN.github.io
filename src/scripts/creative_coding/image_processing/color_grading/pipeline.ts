@@ -1,6 +1,7 @@
-import type { SRGBColor, XYZColor } from "@/scripts/utils/color/conversion.ts";
 import convert_color from "@/scripts/utils/color/conversion.js";
+import type { SRGBColor, XYZColor } from "@/scripts/utils/color/conversion.ts";
 import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import { softargmax } from "@/scripts/utils/math/utils.js";
 import {
   vector_add,
@@ -8,9 +9,9 @@ import {
   vector_mult,
   vector_sub,
 } from "@/scripts/utils/math/vector.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
-import { detectLevel, getBaseLUT } from "../clut_generation/pipeline.js";
 import type { ExcludeKeys } from "@/scripts/utils/types.ts";
+
+import { detectLevel, getBaseLUT } from "../clut_generation/pipeline.js";
 
 const srgb2xyz = convert_color("srgb", "xyz")!;
 const xyz2srgb = convert_color("xyz", "srgb")!;

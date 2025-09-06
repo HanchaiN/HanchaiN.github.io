@@ -1,4 +1,5 @@
 import { Vector } from "@/scripts/utils/math/vector.js";
+
 import { HigherOrderState } from "./dynamic.js";
 
 export type MessageRequest = {
@@ -55,6 +56,6 @@ export function main(data: MessageRequest) {
   }));
   return response;
 }
-self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) =>
-  self.postMessage(main(data)),
-);
+self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) => {
+  return self.postMessage(main(data));
+});

@@ -1,16 +1,17 @@
-import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import convert_color, { ColorSpace } from "@/scripts/utils/color/conversion.js";
-import {
-  getBaseLUT,
-  applyClosest,
-  applyGaussianRBF,
-  applyInverseRBF,
-  applyCustomMap,
-  applyCustomRBF,
-} from "./pipeline.js";
+import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
 import { SelectDisplay } from "@/scripts/utils/dom/element/SelectDisplay.js";
 import { try_catch } from "@/scripts/utils/utils.js";
+
+import {
+  applyClosest,
+  applyCustomMap,
+  applyCustomRBF,
+  applyGaussianRBF,
+  applyInverseRBF,
+  getBaseLUT,
+} from "./pipeline.js";
 
 const str2srgb = convert_color("str", "srgb")!;
 

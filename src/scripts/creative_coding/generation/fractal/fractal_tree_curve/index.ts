@@ -1,8 +1,8 @@
-import { PHI } from "@/scripts/utils/math/constants.js";
 import {
   getPaletteAccentColor,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
+import { PHI } from "@/scripts/utils/math/constants.js";
 
 export default function execute() {
   let canvas: HTMLCanvasElement;

@@ -1,25 +1,26 @@
 import { generate } from "@/scripts/creative_coding/generation/perlin_noise/pipeline.js";
-import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
-import { onImageChange } from "@/scripts/utils/dom/image.js";
-import type { TVector2 } from "@/scripts/utils/math/vector.ts";
-import { vector_dist } from "@/scripts/utils/math/vector.js";
-import { constrainLerp, gaus, softargmax } from "@/scripts/utils/math/utils.js";
-import { randomGaussian, randomUniform } from "@/scripts/utils/math/random.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
-import {
-  getPaletteAccentColors,
-  getPaletteBaseColor,
-} from "@/scripts/utils/color/palette.js";
 import type {
   ColorSpace,
   ColorSpaceMap,
   SRGBColor,
 } from "@/scripts/utils/color/conversion.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
-import { extractPalette } from "../../image_processing/palette_extraction/pipeline.js";
-import { applyDithering_ErrorDiffusion } from "../../image_processing/dithering/pipeline.js";
 import { DistanceE94 } from "@/scripts/utils/color/distance.js";
+import {
+  getPaletteAccentColors,
+  getPaletteBaseColor,
+} from "@/scripts/utils/color/palette.js";
+import { onImageChange } from "@/scripts/utils/dom/image.js";
+import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
+import { randomGaussian, randomUniform } from "@/scripts/utils/math/random.js";
+import { constrainLerp, gaus, softargmax } from "@/scripts/utils/math/utils.js";
+import { vector_dist } from "@/scripts/utils/math/vector.js";
+import type { TVector2 } from "@/scripts/utils/math/vector.ts";
 import { iterate_all } from "@/scripts/utils/utils.js";
+
+import { applyDithering_Ordered } from "../../image_processing/dithering/pipeline.js";
+import { extractPalette } from "../../image_processing/palette_extraction/pipeline.js";
 
 const embed: ColorSpace = "xyz";
 type EmbedColor = ColorSpaceMap[typeof embed];
@@ -37,7 +38,7 @@ export default function execute() {
   let isActive = false;
   const scale = 1;
   let ctx: CanvasRenderingContext2D;
-  let handlerId: number | null = null;
+  let handlerId: ReturnType<typeof setTimeout> | null = null;
   let buffer: ImageData;
   let generator: Generator<SRGBColor, never, void>;
   let renderer: ReturnType<
@@ -78,7 +79,7 @@ export default function execute() {
     const auto_palette = extractPalette(buffer, 16).map((c) => str2srgb(c));
     const auto_palette_weight = auto_palette.map(() => 1 / auto_palette.length);
     {
-      applyDithering_ErrorDiffusion(buffer, auto_palette);
+      applyDithering_Ordered(buffer, auto_palette);
       const ind = new Array(buffer.width * buffer.height)
         .fill(0)
         .map((_, i) => {
@@ -224,7 +225,7 @@ export default function execute() {
   }
 
   function setup(config: HTMLFormElement, image: CanvasImageSource) {
-    if (handlerId != null) cancelAnimationFrame(handlerId);
+    if (handlerId != null) clearTimeout(handlerId);
     generator = targetGenerator(image);
     constants.range =
       +config.querySelector<HTMLInputElement>("input#range")!.value;
@@ -250,21 +251,18 @@ export default function execute() {
       "0";
     renderer = kernelGenerator(apply_step, {}, buffer!);
     i = 0;
-    handlerId = requestAnimationFrame(function draw() {
+    handlerId = setTimeout(async function update() {
       if (!isActive) return;
-      createImageBitmap(buffer).then((bmp) =>
+      await createImageBitmap(buffer).then((bmp) =>
         ctx.drawImage(bmp, 0, 0, ctx.canvas.width, ctx.canvas.height),
       );
-      new Promise<void>((resolve) => resolve(step())).then(() => {
-        config.querySelector<HTMLInputElement>("input#iteration-count")!.value =
-          (
-            1 +
-            +config.querySelector<HTMLInputElement>("input#iteration-count")!
-              .value
-          ).toString();
-        requestAnimationFrame(draw);
-      });
-    });
+      step();
+      config.querySelector<HTMLInputElement>("input#iteration-count")!.value = (
+        1 +
+        +config.querySelector<HTMLInputElement>("input#iteration-count")!.value
+      ).toString();
+      handlerId = setTimeout(update, 0);
+    }, 0);
   }
   function step() {
     const values = new Array(constants.color_choices)

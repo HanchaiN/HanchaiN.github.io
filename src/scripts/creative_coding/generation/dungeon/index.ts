@@ -1,8 +1,10 @@
 import {
-  getPaletteBaseColor,
   getPaletteAccentColor,
+  getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
+
 import { DungeonGenerator, IPalette, drawDungeon } from "./generator.js";
+
 export default function execute() {
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;

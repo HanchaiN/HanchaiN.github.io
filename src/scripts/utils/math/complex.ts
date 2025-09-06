@@ -193,7 +193,7 @@ export class Complex {
   static get I() {
     return new Complex().set(0, 1);
   }
-  constructor() {}
+  private constructor() {}
   get re() {
     return this._re;
   }

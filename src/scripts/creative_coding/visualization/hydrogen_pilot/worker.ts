@@ -1,7 +1,8 @@
 import type { TComplex } from "@/scripts/utils/math/complex.ts";
-import type { TVector3 } from "@/scripts/utils/math/vector.ts";
-import { Vector } from "@/scripts/utils/math/vector.js";
 import { constrainMap } from "@/scripts/utils/math/utils.js";
+import { Vector } from "@/scripts/utils/math/vector.js";
+import type { TVector3 } from "@/scripts/utils/math/vector.ts";
+
 import { HigherOrderState } from "../../simulation/particles/dynamical_system/dynamic.js";
 import {
   psi_getvel,
@@ -85,6 +86,6 @@ export function main(data: MessageRequest) {
     }));
   return response;
 }
-self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) =>
-  self.postMessage(main(data)),
-);
+self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) => {
+  return self.postMessage(main(data));
+});

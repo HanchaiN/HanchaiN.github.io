@@ -1,6 +1,6 @@
-import { map } from "@/scripts/utils/math/utils.js";
-import { PerlinNoise } from "@/scripts/utils/math/noise.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
+import { PerlinNoise } from "@/scripts/utils/math/noise.js";
+import { map } from "@/scripts/utils/math/utils.js";
 
 const okhcl2srgb = convert_color("okhcl", "srgb")!;
 

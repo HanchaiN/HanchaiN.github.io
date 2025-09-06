@@ -1,10 +1,11 @@
 import p5 from "p5";
+
 import { CA } from "./ca.js";
 import { BinaryToGray } from "./gray.js";
-import type { p5Extension } from "@/scripts/utils/types.ts";
+
 export default function execute() {
-  let parent: HTMLElement;
-  let canvas: HTMLCanvasElement;
+  let root_: HTMLElement;
+  let canvas_: HTMLCanvasElement;
 
   const sketch = (p: p5) => {
     const forward = 1;
@@ -24,8 +25,13 @@ export default function execute() {
 
     p.setup = function () {
       const canvas = looped
-        ? p.createCanvas(size * bit, size * gen * forward)
-        : p.createCanvas(size * (bit + 2 * gen), size * gen * forward);
+        ? p.createCanvas(size * bit, size * gen * forward, "p2d", canvas_)
+        : p.createCanvas(
+            size * (bit + 2 * gen),
+            size * gen * forward,
+            "p2d",
+            canvas_,
+          );
       canvas.mouseClicked(nextRule);
       p.background(100);
       ca.rule = BinaryToGray(rule);
@@ -43,20 +49,18 @@ export default function execute() {
     };
   };
 
-  let instance: p5Extension;
+  let instance: p5;
   return {
-    start: (node: HTMLElement) => {
-      parent = node;
-      instance = new p5(sketch, node) as p5Extension;
-      canvas ??= instance.canvas;
-      parent.style.display = "flex";
-      parent.style.justifyContent = "center";
-      parent.style.alignItems = "center";
+    start: (root: HTMLElement, canvas: HTMLCanvasElement) => {
+      root_ = root;
+      canvas_ = canvas;
+      instance = new p5(sketch, root_);
+      root_.style.display = "flex";
+      root_.style.justifyContent = "center";
+      root_.style.alignItems = "center";
     },
     stop: () => {
       instance?.remove();
-      canvas?.remove();
-      // parent = canvas = instance = null;
     },
   };
 }

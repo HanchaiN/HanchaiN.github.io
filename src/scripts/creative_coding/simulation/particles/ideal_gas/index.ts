@@ -1,16 +1,17 @@
+import convert_color from "@/scripts/utils/color/conversion.js";
+import { generateGradient } from "@/scripts/utils/color/interpl.js";
+import {
+  getPaletteAccentColor,
+  getPaletteBaseColor,
+} from "@/scripts/utils/color/palette.js";
 import {
   constrainMap,
   gamma,
   symlog,
   symlog_inv,
 } from "@/scripts/utils/math/utils.js";
+
 import { ParticleSystem, SETTING } from "./particles.js";
-import {
-  getPaletteAccentColor,
-  getPaletteBaseColor,
-} from "@/scripts/utils/color/palette.js";
-import { generateGradient } from "@/scripts/utils/color/interpl.js";
-import convert_color from "@/scripts/utils/color/conversion.js";
 
 const str2oklab = convert_color("str", "oklab")!,
   oklab2hex = convert_color("oklab", "hex")!;

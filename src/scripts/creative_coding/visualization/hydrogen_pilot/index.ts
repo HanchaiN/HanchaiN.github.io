@@ -1,14 +1,16 @@
-import { maxWorkers } from "@/scripts/utils/dom/utils.js";
-import { constrain } from "@/scripts/utils/math/utils.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import type { MessageResponse } from "./worker.ts";
+
 import convert_color from "@/scripts/utils/color/conversion.js";
 import {
   getChroma,
   getLightness,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
+import { maxWorkers } from "@/scripts/utils/dom/utils.js";
+import { constrain } from "@/scripts/utils/math/utils.js";
+
+import type { MessageResponse } from "./worker.ts";
 
 const okhcl2hex = convert_color("okhcl", "hex")!;
 

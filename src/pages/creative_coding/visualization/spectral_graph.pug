@@ -5,16 +5,24 @@ block title
 
 block append script
   script(type='module').
-    import execute from '/static/scripts/creative_coding/visualization/spectral_graph/index.js';
+    import execute from '@/scripts/creative_coding/visualization/spectral_graph/index.js';
 
-    const root = document.getElementById('poincare');
+    const root = document.getElementById('spectral-graph');
     execute().start(
       root.querySelector('#canvas'),
+      root.querySelector('#config'),
     );
 
 block content
   h1 Spectral Graph
-  #poincare.preview-container
+  #spectral-graph.preview-container
     canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    form.data-container#config
+      label(for='count') Node Count:
+      input#count(type='number', value='3', min='1', step='1')
+      label(for='edge-weight') Edge count:
+      table#edge-weight
+      button#read-table(type='button') Read Table
+      button#simplify(type='button') Simplify
   p.
     Spectral layout is a class of algorithm for drawing graphs. The layout uses the eigenvectors of a matrix, such as the Laplace matrix of the graph, as Cartesian coordinates of the graph's vertices.

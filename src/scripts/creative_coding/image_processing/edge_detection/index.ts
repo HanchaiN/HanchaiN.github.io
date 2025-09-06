@@ -1,11 +1,12 @@
-import { onImageChange } from "@/scripts/utils/dom/image.js";
-import { map } from "@/scripts/utils/math/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
-import { getEdgeMask } from "./pipeline.js";
 import {
   getChroma,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
+import { onImageChange } from "@/scripts/utils/dom/image.js";
+import { map } from "@/scripts/utils/math/utils.js";
+
+import { getEdgeMask } from "./pipeline.js";
 
 const okhcl2srgb = convert_color("okhcl", "srgb")!,
   str2srgb = convert_color("str", "srgb")!,

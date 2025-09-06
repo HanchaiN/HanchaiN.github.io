@@ -1,9 +1,12 @@
-import { getParentSize } from "@/scripts/utils/dom/utils.js";
 import p5 from "p5";
+
+import { getParentSize } from "@/scripts/utils/dom/utils.js";
+
 import { BrainfuckEngine } from "./bf.js";
+
 export default function execute() {
-  let parent: HTMLElement;
-  let canvas: HTMLCanvasElement;
+  let root_: HTMLElement;
+  let canvas_: HTMLCanvasElement;
   let resizeObserver: ResizeObserver;
 
   const sketch = (p: p5) => {
@@ -30,7 +33,7 @@ export default function execute() {
     let ram: p5.Image, ram_filter: p5.Image;
 
     function updateResolution() {
-      const { width } = getParentSize(parent, canvas);
+      const { width } = getParentSize(root_, canvas_);
       viewrange = p.constrain(
         _viewrange,
         width / min_resolution,
@@ -94,7 +97,7 @@ export default function execute() {
     function parentResized() {
       const r = running;
       running = false;
-      const { width } = getParentSize(parent, canvas);
+      const { width } = getParentSize(root_, canvas_);
       updateResolution();
       p.resizeCanvas(width, resolution * 15);
       ram_filter = p.createImage(6 * viewrange, 1);
@@ -103,9 +106,9 @@ export default function execute() {
       p.redraw();
     }
     p.setup = function () {
-      const { width } = getParentSize(parent, canvas);
+      const { width } = getParentSize(root_, canvas_);
       updateResolution();
-      p.createCanvas(width, resolution * 15);
+      p.createCanvas(width, resolution * 15, "p2d", canvas_);
       ram = p.createImage(
         (sys.ram.length + 2) * graphicsResolution,
         sys.ram[0].length * graphicsResolution,
@@ -118,7 +121,7 @@ export default function execute() {
       running = true;
       output = p.createP("Output: ");
       resizeObserver = new ResizeObserver(parentResized);
-      resizeObserver.observe(parent);
+      resizeObserver.observe(root_);
     };
 
     p.draw = function () {
@@ -201,14 +204,13 @@ export default function execute() {
   }
   let instance: p5Extension;
   return {
-    start: (node: HTMLElement) => {
-      parent = node;
-      instance = new p5(sketch, parent) as p5Extension;
-      canvas ??= instance.canvas;
+    start: (root: HTMLElement, canvas: HTMLCanvasElement) => {
+      root_ = root;
+      canvas_ = canvas;
+      instance = new p5(sketch, root_) as p5Extension;
     },
     stop: () => {
       instance?.remove();
-      canvas?.remove();
       resizeObserver?.disconnect();
       // parent = canvas = instance = resizeObserver = null;
     },

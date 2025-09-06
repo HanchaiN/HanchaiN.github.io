@@ -5,10 +5,11 @@ block title
 
 block append script
   script(type='module').
-    import execute from '/static/scripts/creative_coding/generation/fractal/fractal_tree/index.js';
+    import execute from '@/scripts/creative_coding/generation/fractal/fractal_tree/index.js';
 
     const root = document.getElementById('fractral-tree');
     execute().start(
+      root,
       root.querySelector('#canvas'),
       root.querySelector('#config'),
     );
@@ -16,14 +17,17 @@ block append script
 block content
   h1 Fractal Trees
   #fractral-tree.preview-container
-    div#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
     form#config.data-container
       label(for='alpha') Unbranched:
       input#alpha(type='range', value='0', min='-1', max='1', step='1e-5')
+      br
       label(for='beta1') Branched (new):
       input#beta1(type='range', value='0', min='-1', max='1', step='1e-5')
+      br
       label(for='beta2') Branched (old):
       input#beta2(type='range', value='0', min='-1', max='1', step='1e-5')
+      br
       button#reset(type='button') Toggle Leaves
   p.
     An L-system or Lindenmayer system is a parallel rewriting system and a type of formal grammar.

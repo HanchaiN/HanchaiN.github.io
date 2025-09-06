@@ -1,17 +1,22 @@
 // https://github.com/josdejong/mathjs/blob/develop/src/function/matrix/fft.js
-
 import { Complex } from "../math/complex.js";
 
 type Tensor1D = Complex[];
-type Tensor2D = Complex[][];
-type Tensor3D = Complex[][][];
-type Tensor4D = Complex[][][][];
-type Tensor = Tensor1D | Tensor2D | Tensor3D | Tensor4D;
+type Tensor = Tensor1D | Tensor[];
 
 export function fft<T extends Tensor>(arr: T): T {
   return _ndFft(arr);
 }
 export default fft;
+
+console.log(
+  fft([
+    Complex.fromCartesian(1, 0),
+    Complex.fromCartesian(2, -1),
+    Complex.fromCartesian(0, -1),
+    Complex.fromCartesian(-1, 2),
+  ]),
+);
 
 function _arraySize(arr: Tensor | Complex): number[] {
   if (!Array.isArray(arr) || arr.length === 0) return [];
@@ -61,7 +66,7 @@ function _fft(arr: Tensor1D): Tensor1D {
     const p = ret[k];
     const q = Complex.mult(
       ret[k + len / 2],
-      Complex.exp(Complex.mult(Complex.mult(2 * Math.PI, Complex.I), -k * len)),
+      Complex.exp(Complex.mult(Complex.mult(2 * Math.PI, Complex.I), -k / len)),
     );
     ret[k] = Complex.add(p, q);
     ret[k + len / 2] = Complex.add(p, Complex.mult(-1, q));

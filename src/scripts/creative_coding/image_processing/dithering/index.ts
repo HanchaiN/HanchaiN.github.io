@@ -1,15 +1,17 @@
+import convert_color from "@/scripts/utils/color/conversion.js";
+import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
+import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
+import { SelectDisplay } from "@/scripts/utils/dom/element/SelectDisplay.js";
 import {
-  getImageFromInput,
   getImageData,
+  getImageFromInput,
   onImageChange,
 } from "@/scripts/utils/dom/image.js";
-import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
-import convert_color from "@/scripts/utils/color/conversion.js";
+
 import {
   applyDithering_ErrorDiffusion,
   applyDithering_Ordered,
 } from "./pipeline.js";
-import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
 
 const str2srgb = convert_color("str", "srgb")!;
 
@@ -36,15 +38,24 @@ export default function execute() {
       await getImageFromInput(conf.querySelector<HTMLInputElement>("#image")!),
       canvas,
     );
-    const temp =
+    const temperature =
       conf.querySelector<HTMLInputElement>("#temperature")!.valueAsNumber;
+    const err_decay =
+      conf.querySelector<HTMLInputElement>("#err_decay")!.valueAsNumber;
+    const mask_order =
+      conf.querySelector<HTMLInputElement>("#mask_order")!.valueAsNumber;
+    const param = {
+      temperature,
+      err_decay,
+      mask_size: Math.pow(2, mask_order),
+    };
     const algo = conf.querySelector<HTMLSelectElement>("#algorithm")!.value;
     switch (algo) {
       case "order":
-        applyDithering_Ordered(imageData, getPalette(), temp);
+        applyDithering_Ordered(imageData, getPalette(), param);
         break;
       case "error":
-        applyDithering_ErrorDiffusion(imageData, getPalette(), temp);
+        applyDithering_ErrorDiffusion(imageData, getPalette(), param);
         break;
       default:
         alert("Invalid algorithm");
@@ -65,14 +76,22 @@ export default function execute() {
           getImageData(img, canvas);
         },
       );
+      const algo = new SelectDisplay(
+        config.querySelector<HTMLSelectElement>("#algorithm")!,
+        config.querySelector("#advanced")!,
+      );
       palette = new PaletteInput(
         config.querySelector("#palette")!,
         config.querySelector("#palette-text")!,
       );
       palette.addChangeHandler((p) => {
-        config.querySelector<HTMLInputElement>("#temperature")!.value = (
-          p.length > 0 ? 1 / (p.length - 1) : 1
-        ).toString();
+        let t = 1;
+        if (p.length === 0) t = 1;
+        else if (algo.value === "order")
+          t = 1 / ((p.length * (p.length - 1)) / 2 - 1);
+        else if (algo.value === "error") t = 1 / (p.length - 1);
+        config.querySelector<HTMLInputElement>("#temperature")!.valueAsNumber =
+          t;
       });
       config
         .querySelector<HTMLButtonElement>("#apply")!

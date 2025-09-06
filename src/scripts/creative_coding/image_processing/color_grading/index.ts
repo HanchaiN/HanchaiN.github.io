@@ -1,5 +1,6 @@
-import { getImageFromInput, getImageData } from "@/scripts/utils/dom/image.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
+import { getImageData, getImageFromInput } from "@/scripts/utils/dom/image.js";
+
 import { detectLevel } from "../clut_generation/pipeline.js";
 import { applyGrading } from "./pipeline.js";
 

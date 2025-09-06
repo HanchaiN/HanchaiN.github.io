@@ -1,8 +1,8 @@
-import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
-import { constrain, constrainLerp } from "@/scripts/utils/math/utils.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
+import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
+import { constrain, constrainLerp } from "@/scripts/utils/math/utils.js";
 
 const str2xyz = convert_color("str", "xyz")!;
 

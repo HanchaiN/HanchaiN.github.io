@@ -1,11 +1,11 @@
 {
   "imports": {
     "@/": "/static/",
-    "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.mjs",
-    "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/",
-    "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.3/+esm",
-    "three": "https://cdn.jsdelivr.net/npm/three@0.173.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.173.0/examples/jsm/",
-    "mathjs": "https://unpkg.com/mathjs@14.2.0/lib/browser/math.js"
+    "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+    "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+    "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+    "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
   }
 }

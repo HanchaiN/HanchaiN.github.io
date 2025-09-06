@@ -1,9 +1,5 @@
-import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
-import { map } from "@/scripts/utils/math/utils.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import type { LABColor } from "@/scripts/utils/color/conversion.ts";
-import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import {
   DistanceCMC,
   DistanceE00,
@@ -12,7 +8,11 @@ import {
   DistanceHyAB,
   DistanceRedMean,
 } from "@/scripts/utils/color/distance.js";
+import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
+import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
+import { map } from "@/scripts/utils/math/utils.js";
 
 const lab2srgb = convert_color("lab", "srgb")!,
   str2lab = convert_color("str", "lab")!,

@@ -1,5 +1,6 @@
-import { generate } from "./pipeline.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
+
+import { generate } from "./pipeline.js";
 
 export default function execute() {
   let isActive = false;

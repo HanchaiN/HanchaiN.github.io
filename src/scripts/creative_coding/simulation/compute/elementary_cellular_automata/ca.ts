@@ -1,6 +1,8 @@
 import type p5 from "p5";
-import { GrayToBinary } from "./gray.js";
+
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
+
+import { GrayToBinary } from "./gray.js";
 
 export class CA {
   ruleset!: number[];

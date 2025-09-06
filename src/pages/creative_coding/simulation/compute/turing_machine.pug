@@ -5,17 +5,18 @@ block title
 
 block append script
   script(type='module').
-    import execute from '/static/scripts/creative_coding/simulation/compute/turing_machine/index.js';
+    import execute from '@/scripts/creative_coding/simulation/compute/turing_machine/index.js';
 
     const root = document.getElementById('turing-machine');
     execute().start(
+      root,
       root.querySelector('#canvas'),
     );
 
 block content
   h1 Elementary Cellular Automata
   #turing-machine.preview-container
-    div#canvas
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
   p.
     A Turing machine is a mathematical model of computation describing an abstract
     machine that manipulates symbols on a strip of tape according to a table of

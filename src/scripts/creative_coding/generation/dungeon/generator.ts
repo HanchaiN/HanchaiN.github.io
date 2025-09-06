@@ -1,10 +1,10 @@
 import { PriorityQueue } from "@/scripts/utils/algo/datastructure.js";
-import { Vector } from "@/scripts/utils/math/vector.js";
-import { constrain, map } from "@/scripts/utils/math/utils.js";
-import { PerlinNoise } from "@/scripts/utils/math/noise.js";
-import { randomGaussian } from "@/scripts/utils/math/random.js";
 import { delaunay_triangulation_step } from "@/scripts/utils/algo/delaunay_triangulation.js";
 import { minimum_spanning_tree_step } from "@/scripts/utils/algo/minimum_spanning_tree.js";
+import { PerlinNoise } from "@/scripts/utils/math/noise.js";
+import { randomGaussian } from "@/scripts/utils/math/random.js";
+import { constrain, map } from "@/scripts/utils/math/utils.js";
+import { Vector } from "@/scripts/utils/math/vector.js";
 
 function* shortest_path<T>(
   nodes: T[],

@@ -5,7 +5,7 @@ block title
 
 block append script
   script(type='module').
-    import execute from '/static/scripts/creative_coding/image_processing/clut_generation/index.js';
+    import execute from '@/scripts/creative_coding/image_processing/clut_generation/index.js';
 
     const root = document.getElementById('clut-generation');
     execute().start(

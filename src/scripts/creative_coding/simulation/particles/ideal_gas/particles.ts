@@ -1,6 +1,6 @@
-import { Vector } from "@/scripts/utils/math/vector.js";
-import { map } from "@/scripts/utils/math/utils.js";
 import { randomGaussian, randomUniform } from "@/scripts/utils/math/random.js";
+import { map } from "@/scripts/utils/math/utils.js";
+import { Vector } from "@/scripts/utils/math/vector.js";
 
 export const SETTING = {
   TempMax: 1e10,

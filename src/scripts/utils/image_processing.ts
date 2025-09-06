@@ -1,5 +1,5 @@
-import { constrain, map } from "@/scripts/utils/math/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
+import { constrain, map } from "@/scripts/utils/math/utils.js";
 
 const srgb2hcl = convert_color("srgb", "hcl")!;
 

@@ -1,10 +1,11 @@
-import { onImageChange } from "@/scripts/utils/dom/image.js";
-import { constrainMap, symlog } from "@/scripts/utils/math/utils.js";
-import { Complex } from "@/scripts/utils/math/complex.js";
 import fft from "@/scripts/utils/algo/fft.js";
-import { update } from "./update.js";
-import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
+import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
+import { onImageChange } from "@/scripts/utils/dom/image.js";
+import { Complex } from "@/scripts/utils/math/complex.js";
+import { constrainMap, symlog } from "@/scripts/utils/math/utils.js";
+
+import { update } from "./update.js";
 
 function reshape<T>(array: T[], shape: [number, number]): T[][] {
   const [rows, cols] = shape;

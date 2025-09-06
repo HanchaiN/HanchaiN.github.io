@@ -1,5 +1,5 @@
-import { shuffleArray } from "@/scripts/utils/math/random.js";
 import { Fraction } from "@/scripts/utils/math/fraction.js";
+import { shuffleArray } from "@/scripts/utils/math/random.js";
 import { factorial } from "@/scripts/utils/math/utils.js";
 
 export function toAdjMatrix(

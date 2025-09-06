@@ -5,16 +5,17 @@ block title
 
 block append script
   script(type='module').
-    import execute from '/static/scripts/creative_coding/visualization/poincare_disk/index.js';
+    import execute from '@/scripts/creative_coding/visualization/poincare_disk/index.js';
 
     const root = document.getElementById('poincare');
     execute().start(
+      root,
       root.querySelector('#canvas'),
     );
 
 block content
   h1 Poincaré Disk
   #poincare.preview-container
-    div#canvas
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
   p.
     In geometry, the Poincaré disk model, also called the conformal disk model, is a model of 2-dimensional hyperbolic geometry in which all points are inside the unit disk, and straight lines are either circular arcs contained within the disk that are orthogonal to the unit circle or diameters of the unit circle.

@@ -1,9 +1,11 @@
+import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
-import { Vector } from "@/scripts/utils/math/vector.js";
-import { map } from "@/scripts/utils/math/utils.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
-import type { TColorRGB } from "./colors.ts";
+import { map } from "@/scripts/utils/math/utils.js";
+import { Vector } from "@/scripts/utils/math/vector.js";
+
 import { Light } from "./colors.js";
+import type { TColorRGB } from "./colors.ts";
 import type { SceneObject } from "./object.ts";
 import {
   postProcessorGen,
@@ -12,7 +14,6 @@ import {
 import { Ray, trace } from "./ray.js";
 import { CAMERA_POSITION, FOCAL_LENGTH, FRAME_SIZE, SCENE } from "./scene.js";
 import type { MessageResponse as WhiteMessageResponse } from "./worker_white.ts";
-import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 
 export default function execute() {
   let workers: Worker[] = [];

@@ -1,5 +1,7 @@
-import { Vector } from "@/scripts/utils/math/vector.js";
 import type p5 from "p5";
+
+import { Vector } from "@/scripts/utils/math/vector.js";
+
 export class Draggable {
   static p: p5;
   isDragging: boolean;

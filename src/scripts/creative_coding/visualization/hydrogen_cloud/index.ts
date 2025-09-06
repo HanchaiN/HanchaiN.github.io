@@ -1,11 +1,12 @@
-import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
-import type { TComplex } from "@/scripts/utils/math/complex.ts";
-import type { TVector3 } from "@/scripts/utils/math/vector.ts";
-import { constrain, fpart, map } from "@/scripts/utils/math/utils.js";
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
-import { psi_orbital_superposition } from "./psi.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { getPaletteAccentColor } from "@/scripts/utils/color/palette.js";
+import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
+import type { TComplex } from "@/scripts/utils/math/complex.ts";
+import { constrain, fpart, map } from "@/scripts/utils/math/utils.js";
+import type { TVector3 } from "@/scripts/utils/math/vector.ts";
+
+import { psi_orbital_superposition } from "./psi.js";
 
 const okhcl2srgb = convert_color("okhcl", "srgb")!;
 
@@ -17,6 +18,8 @@ export default function execute() {
   const state: { c: TComplex; n: number; l: number; m: number }[] = [
     { c: [1, 0], n: 4, l: 2, m: -1 },
   ];
+
+  let prob_max = 1e-6;
 
   interface IConstants {
     R: number;
@@ -42,9 +45,11 @@ export default function execute() {
     );
     const vec: TVector3 = [x, y, z];
     const v = psi.bind(this)(vec, t);
-    const prob = 5000 * (v[0] * v[0] + v[1] * v[1]);
+    const _prob = v[0] * v[0] + v[1] * v[1];
+    if (_prob > prob_max) prob_max = _prob;
+    const prob = _prob / prob_max;
     const phase = Math.atan2(v[1], v[0]);
-    const brightness = Math.pow(prob / (prob + 1), 0.5);
+    const brightness = Math.pow((2 * prob) / (prob + 1), 0.5);
     const c = okhcl2srgb([
       (phase < 0.0 ? phase + 2 * Math.PI : phase) / (2.0 * Math.PI),
       0.05,
@@ -70,7 +75,7 @@ export default function execute() {
           if (!isActive) return;
           const z = map(fpart(t / T), 0, 1, -R, +R);
           // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-empty
-          for (const _ in renderer(z, 0.0)) {
+          for (const _ of renderer(z, 0.0)) {
           }
           createImageBitmap(buffer).then((bmp) =>
             ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height),

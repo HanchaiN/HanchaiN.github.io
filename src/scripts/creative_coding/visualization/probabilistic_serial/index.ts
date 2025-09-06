@@ -5,15 +5,16 @@ import { DragListY } from "@/scripts/utils/dom/element/DragListY.js";
 import { Fraction } from "@/scripts/utils/math/fraction.js";
 import { shuffleArray } from "@/scripts/utils/math/random.js";
 import { Namespace } from "@/scripts/utils/namespace.js";
+
 import {
-  toAdjList,
-  toAdjMatrix,
-  SinkhornFrac as Sinkhorn,
-  permanentFrac as permanent,
   HopcroftKarp,
+  SinkhornFrac as Sinkhorn,
   BvNDecomposeFrac as _BvNDecompose,
   preTransverse as __preTransverse,
   samplePairing as _samplePairing,
+  permanentFrac as permanent,
+  toAdjList,
+  toAdjMatrix,
 } from "./perfect_pair.js";
 
 const hcl2str = convert_color("hcl", "hex")!;

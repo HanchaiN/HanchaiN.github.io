@@ -5,9 +5,9 @@ block title
 
 block append script
   script(type='module').
-    import execute from '/static/scripts/creative_coding/visualization/probabilistic_serial/index.js';
+    import execute from '@/scripts/creative_coding/visualization/probabilistic_serial/index.js';
 
-    const root = document.getElementById('probabilistic_serial');
+    const root = document.getElementById('probabilistic-serial');
     execute().start(
       root.querySelector('#canvas'),
       root.querySelector('#config'),
@@ -15,7 +15,7 @@ block append script
 
 block content
   h1 Probabilistic Serial
-  #probabilistic_serial.preview-container
+  #probabilistic-serial.preview-container
     .sketch
       canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
     form.data-container#config

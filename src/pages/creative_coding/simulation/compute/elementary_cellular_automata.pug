@@ -5,16 +5,17 @@ block title
 
 block append script
   script(type='module').
-    import execute from '/static/scripts/creative_coding/simulation/compute/elementary_cellular_automata/index.js';
+    import execute from '@/scripts/creative_coding/simulation/compute/elementary_cellular_automata/index.js';
 
     const root = document.getElementById('elementary-cellular-automata');
     execute().start(
+      root,
       root.querySelector('#canvas'),
     );
 
 block content
   h1 Elementary Cellular Automata
   #elementary-cellular-automata.preview-container
-    div#canvas
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
   p.
     In mathematics and computability theory, an elementary cellular automaton is a one-dimensional cellular automaton where there are two possible states (labeled 0 and 1) and the rule to determine the state of a cell in the next generation depends only on the current state of the cell and its two immediate neighbors.

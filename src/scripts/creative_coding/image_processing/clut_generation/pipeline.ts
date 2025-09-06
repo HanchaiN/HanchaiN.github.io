@@ -1,18 +1,18 @@
 // https://github.com/ozwaldorf/lutgen-rs
-
-import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
-import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
-import type { IKernelFunctionThis_CMap } from "../color_grading/pipeline.js";
 import type {
   ColorSpace,
   ColorSpaceMap,
   SRGBColor,
 } from "@/scripts/utils/color/conversion.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
+import { DistanceE94 } from "@/scripts/utils/color/distance.js";
+import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
+import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
+import { sample } from "@/scripts/utils/math/random.js";
 import { normalize, softargmax } from "@/scripts/utils/math/utils.js";
 import { vector_add, vector_mult } from "@/scripts/utils/math/vector.js";
-import { sample } from "@/scripts/utils/math/random.js";
-import { DistanceE94 } from "@/scripts/utils/color/distance.js";
+
+import type { IKernelFunctionThis_CMap } from "../color_grading/pipeline.js";
 
 const mode: ColorSpace = "lab";
 type EmbedColor = ColorSpaceMap[typeof mode];

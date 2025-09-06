@@ -6,6 +6,7 @@ import {
   SCENE,
   WHITE_DIRECTION,
 } from "./scene.js";
+
 let iter = 0;
 const white = Light.black,
   bright = Light.black,
@@ -36,6 +37,6 @@ function main(data: MessageRequest) {
   };
 }
 
-self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) =>
-  self.postMessage(main(data)),
-);
+self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) => {
+  return self.postMessage(main(data));
+});

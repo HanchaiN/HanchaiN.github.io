@@ -1,16 +1,17 @@
-import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
-import { getImageData, onImageChange } from "@/scripts/utils/dom/image.js";
-import { argmax } from "@/scripts/utils/math/utils.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
 import type {
   ColorSpace,
   ColorSpaceMap,
 } from "@/scripts/utils/color/conversion.js";
-import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
-import { applyColorMapping } from "../color_grading/pipeline.js";
-import { _applyClosest } from "../clut_generation/pipeline.js";
-import { evaluatePalette, extractPalette, extendPalette } from "./pipeline.js";
 import { DistanceE94 } from "@/scripts/utils/color/distance.js";
+import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
+import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
+import { getImageData, onImageChange } from "@/scripts/utils/dom/image.js";
+import { argmax } from "@/scripts/utils/math/utils.js";
+
+import { _applyClosest } from "../clut_generation/pipeline.js";
+import { applyColorMapping } from "../color_grading/pipeline.js";
+import { evaluatePalette, extendPalette, extractPalette } from "./pipeline.js";
 
 const mode: ColorSpace = "lab";
 type EmbedColor = ColorSpaceMap[typeof mode];

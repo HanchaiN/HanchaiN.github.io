@@ -1,13 +1,15 @@
-import { Vector } from "@/scripts/utils/math/vector.js";
-import { constrain } from "@/scripts/utils/math/utils.js";
 import p5 from "p5";
-import { Branch } from "./branch.js";
-import type { p5Extension } from "@/scripts/utils/types.ts";
+
 import { PHI } from "@/scripts/utils/math/constants.js";
 import { PerlinNoise as Noise } from "@/scripts/utils/math/noise.js";
+import { constrain } from "@/scripts/utils/math/utils.js";
+import { Vector } from "@/scripts/utils/math/vector.js";
+
+import { Branch } from "./branch.js";
+
 export default function execute() {
-  let wrapper: HTMLElement;
-  let canvas: HTMLCanvasElement;
+  let root_: HTMLElement;
+  let canvas_: HTMLCanvasElement;
   let alpha: HTMLInputElement,
     beta1: HTMLInputElement,
     beta2: HTMLInputElement,
@@ -31,7 +33,7 @@ export default function execute() {
     let isLeaves = false;
 
     p.setup = function () {
-      p.createCanvas(500, 500);
+      p.createCanvas(500, 500, "p2d", canvas_);
       tree_layer = p.createGraphics(p.width, p.height);
       wind = new Noise();
       resetButton.addEventListener("click", () => {
@@ -132,20 +134,23 @@ export default function execute() {
     }
   };
 
-  let instance: p5Extension;
+  let instance: p5;
   return {
-    start: (node: HTMLDivElement, config: HTMLFormElement) => {
-      wrapper = node;
+    start: (
+      root: HTMLDivElement,
+      canvas: HTMLCanvasElement,
+      config: HTMLFormElement,
+    ) => {
+      root_ = root;
+      canvas_ = canvas;
       alpha = config.querySelector("#alpha")!;
       beta1 = config.querySelector("#beta1")!;
       beta2 = config.querySelector("#beta2")!;
       resetButton = config.querySelector("#reset")!;
-      instance = new p5(sketch, wrapper) as p5Extension;
-      canvas ??= instance.canvas;
+      instance = new p5(sketch, root_);
     },
     stop: () => {
       instance?.remove();
-      canvas?.remove();
     },
   };
 }
