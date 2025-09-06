@@ -3,6 +3,18 @@ import type { HCLColor } from "@/scripts/utils/color/conversion.ts";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { DragListY } from "@/scripts/utils/dom/element/DragListY.js";
 import { Fraction } from "@/scripts/utils/math/fraction.js";
+import { shuffleArray } from "@/scripts/utils/math/random.js";
+import { Namespace } from "@/scripts/utils/namespace.js";
+import {
+  toAdjList,
+  toAdjMatrix,
+  SinkhornFrac as Sinkhorn,
+  permanentFrac as permanent,
+  HopcroftKarp,
+  BvNDecomposeFrac as _BvNDecompose,
+  preTransverse as __preTransverse,
+  samplePairing as _samplePairing,
+} from "./perfect_pair.js";
 
 const hcl2str = convert_color("hcl", "hex")!;
 
@@ -11,16 +23,20 @@ export default function execute() {
   const agent_hcl: HCLColor = [0, 0.7, 0.7];
   const item_hcl: HCLColor = [0, 0.7, 0.3];
   const fg_col: string = getPaletteBaseColor(1);
-  let sample_bvn: number = 100; // Number of samples to estimate BvN decomposition
   const do_shift: boolean = false;
   let dragLists: DragListY[] = [];
-  const preference: Map<number, number[]> = new Map();
-  let baseDistribution: Map<number, { id: number; value: Fraction }[]> | null =
-    null;
-  let selected: Map<number, number> | null = null;
-  let baseDecomposition: [Fraction, number[]][] | null = null;
-  let distribution: Map<number, { id: number; value: Fraction }[]> | null =
-    null;
+
+  type TCache = {
+    preference: Map<number, number[]>;
+    baseDistribution: Map<number, { id: number; value: Fraction }[]>;
+    sample_perm: number;
+    algo: "naive" | "count" | "greedy" | "sample";
+    baseDecomposition: [Fraction, number[]][];
+    baseSample: number[][];
+    selected: Map<number, number>;
+    distribution: Map<number, { id: number; value: Fraction }[]>;
+  };
+  const cache = Namespace.create<TCache>();
 
   function refresh_list(config: HTMLFormElement) {
     const count =
@@ -75,6 +91,7 @@ export default function execute() {
   function initStep(config: HTMLFormElement, step: string) {
     switch (step) {
       case "1": {
+        cache.set("preference", new Map());
         showSteps(config, ["1"]);
         break;
       }
@@ -90,7 +107,7 @@ export default function execute() {
       case "3": {
         clearStep(config, "3");
         showSteps(config, ["1", "3"]);
-        selected = new Map();
+        cache.set("selected", new Map());
         const seed = config.querySelector<HTMLInputElement>("input#seed")!;
         seed.valueAsNumber = Math.random();
         seed.dispatchEvent(new Event("input"));
@@ -104,11 +121,7 @@ export default function execute() {
     switch (step) {
       case "1": {
         clearStep(config, "2");
-        preference.clear();
-        baseDistribution = new Map();
-        baseDecomposition = null;
-        distribution = null;
-        initStep(config, "1");
+        cache.remove("preference");
         break;
       }
       case "2": {
@@ -118,8 +131,7 @@ export default function execute() {
         break;
       }
       case "3": {
-        selected = null;
-        distribution = null;
+        cache.remove("selected");
         break;
       }
       default:
@@ -127,234 +139,140 @@ export default function execute() {
     }
   }
 
-  function _getBaseDistribution(): Map<
-    number,
-    { id: number; value: Fraction }[]
-  > {
-    // Solve simultaneous eating algorithm
-    const prefs: [number, number[]][] = [
-      ...preference.entries().map<[number, number[]]>(([k, v]) => [k, [...v]]),
-    ];
-    const dist = new Map<number, { id: number; value: Fraction }[]>();
-    const leftover = new Map<number, Fraction>(
-      prefs.flatMap(([, items]) => items.map((id) => [id, new Fraction(1)])),
-    );
-    while (!leftover.values().every((v) => v.compare() <= 0)) {
-      const share = new Map(leftover.entries().map(([k]) => [k, 0]));
-      const stepsize = prefs.reduce<Fraction>((min, [, items]) => {
-        if (items.length === 0) return min;
-        while (leftover.get(items[0])!.compare() <= 0) {
-          items.shift();
+  cache.setGen(
+    "baseDistribution",
+    function _getBaseDistribution(
+      cache,
+    ): Map<number, { id: number; value: Fraction }[]> {
+      const preference = cache.get("preference");
+      if (!preference) throw new Error("Preference not set");
+      // Solve simultaneous eating algorithm
+      const prefs: [number, number[]][] = [
+        ...preference
+          .entries()
+          .map<[number, number[]]>(([k, v]) => [k, [...v]]),
+      ];
+      const dist = new Map<number, { id: number; value: Fraction }[]>();
+      const leftover = new Map<number, Fraction>(
+        prefs.flatMap(([, items]) => items.map((id) => [id, new Fraction(1)])),
+      );
+      while (!leftover.values().every((v) => v.compare() <= 0)) {
+        const share = new Map(leftover.entries().map(([k]) => [k, 0]));
+        const stepsize = prefs.reduce<Fraction>((min, [, items]) => {
           if (items.length === 0) return min;
+          while (leftover.get(items[0])!.compare() <= 0) {
+            items.shift();
+            if (items.length === 0) return min;
+          }
+          share.set(items[0], (share.get(items[0]) || 0) + 1);
+          const step = Fraction.div(
+            leftover.get(items[0])!,
+            new Fraction(share.get(items[0])!),
+          );
+          if (step.compare(min) < 0) {
+            min = step;
+          }
+          return min;
+        }, new Fraction(1));
+        for (const [agent, items] of prefs) {
+          if (!items) continue;
+          const item = items[0];
+          if (!dist.has(agent)) {
+            dist.set(agent, []);
+          }
+          dist.get(agent)!.push({ id: item, value: stepsize });
+          leftover.set(item, leftover.get(item)!.sub(stepsize));
         }
-        share.set(items[0], (share.get(items[0]) || 0) + 1);
-        const step = Fraction.div(
-          leftover.get(items[0])!,
-          new Fraction(share.get(items[0])!),
+      }
+      const distribution = new Map<number, { id: number; value: Fraction }[]>();
+      dist.forEach((dist, agent) => {
+        const total = dist.reduce(
+          (sum, item) => sum.add(item.value),
+          new Fraction(0),
         );
-        if (step.compare(min) < 0) {
-          min = step;
-        }
-        return min;
-      }, new Fraction(1));
-      for (const [agent, items] of prefs) {
-        if (!items) continue;
-        const item = items[0];
-        if (!dist.has(agent)) {
-          dist.set(agent, []);
-        }
-        dist.get(agent)!.push({ id: item, value: stepsize });
-        leftover.set(item, leftover.get(item)!.sub(stepsize));
-      }
-    }
-    const distribution = new Map<number, { id: number; value: Fraction }[]>();
-    dist.forEach((dist, agent) => {
-      const total = dist.reduce(
-        (sum, item) => sum.add(item.value),
-        new Fraction(0),
-      );
-      console.assert(
-        total.compare(new Fraction(1)) === 0,
-        `Agent ${agent} distribution does not sum to 1 (${total.toString()})`,
-      );
-      const elements: { id: number | null; value: Fraction }[] = [];
-      let element: { id: number | null; value: Fraction } = {
-        id: null,
-        value: new Fraction(0),
-      };
-      dist.forEach((item) => {
-        if (item.id === element.id) {
-          element.value.add(item.value);
-        } else {
-          elements.push(element);
-          element = { id: item.id, value: item.value.copy() };
-        }
+        console.assert(
+          total.compare(new Fraction(1)) === 0,
+          `Agent ${agent} distribution does not sum to 1 (${total.toString()})`,
+        );
+        const elements: { id: number | null; value: Fraction }[] = [];
+        let element: { id: number | null; value: Fraction } = {
+          id: null,
+          value: new Fraction(0),
+        };
+        dist.forEach((item) => {
+          if (item.id === element.id) {
+            element.value.add(item.value);
+          } else {
+            elements.push(element);
+            element = { id: item.id, value: item.value.copy() };
+          }
+        });
+        elements.push(element);
+        distribution.set(
+          agent,
+          elements.filter((el) => el.id !== null) as {
+            id: number;
+            value: Fraction;
+          }[],
+        );
       });
-      elements.push(element);
-      distribution.set(
-        agent,
-        elements.filter((el) => el.id !== null) as {
-          id: number;
-          value: Fraction;
-        }[],
-      );
-    });
-    return distribution;
-  }
-  function getBaseDistribution(
-    override: boolean = false,
-  ): Map<number, { id: number; value: Fraction }[]> {
-    if (!override && baseDistribution) return baseDistribution;
-    baseDecomposition = null;
-    distribution = null;
-    return (baseDistribution = _getBaseDistribution());
-  }
+      return distribution;
+    },
+    false,
+  );
 
-  function toMatrix(
-    map: Map<number, { id: number; value: Fraction }[]>,
-  ): Fraction[][] {
-    const n = map.size;
-    const matrix: Fraction[][] = Array.from({ length: n }, () =>
-      Array.from({ length: n }, () => new Fraction(0)),
+  const preTransverseCache = new Map();
+  function _preTransverse(
+    activity: Fraction[][],
+    sample_size: number,
+    steps: number,
+  ) {
+    const key = JSON.stringify({ activity });
+    if (preTransverseCache.has(key)) return preTransverseCache.get(key);
+    if (preTransverseCache.size > 100)
+      preTransverseCache.delete(preTransverseCache.keys().next().value);
+    const result = __preTransverse(
+      activity.map((row) => row.map((v) => v.number)),
+      sample_size,
+      steps,
     );
-    map.forEach((dist, agent) => {
-      dist.forEach((item) => {
-        matrix[agent][item.id] = item.value.copy();
-      });
-    });
-    return matrix;
+    preTransverseCache.set(key, result);
+    return result;
   }
-  function fromMatrix(
-    matrix: Fraction[][],
-    sort_id: (i: number, a: number, b: number) => number = (_, a, b) => a - b,
-  ): Map<number, { id: number; value: Fraction }[]> {
-    const map = new Map<number, { id: number; value: Fraction }[]>();
-    matrix.forEach((row, agent) => {
-      map.set(
-        agent,
-        row
-          .map((value, id) => ({ id, value: value.copy() }))
-          .toSorted((a, b) => sort_id(agent, a.id, b.id)),
-      );
-    });
-    return map;
+  function clearPreTransverseCache() {
+    preTransverseCache.clear();
   }
-
-  function shuffleArray<T>(array: T[]): T[] {
-    return array.sort(() => Math.random() - 0.5);
-  }
-  function HopcroftKarp(n: number, adj: number[][]) {
-    const pair_u = new Array<number>(n).fill(n);
-    const pair_v = new Array<number>(n).fill(n);
-    const dist = new Array<number>(n + 1).fill(Infinity);
-    function bfs(): boolean {
-      const q = [];
-      for (let u = 0; u < n; u++) {
-        if (pair_u[u] === n) {
-          dist[u] = 0;
-          q.push(u);
-        } else {
-          dist[u] = Infinity;
-        }
-      }
-      dist[n] = Infinity;
-      while (q.length > 0) {
-        const u = q.shift()!;
-        if (dist[u] < dist[n]) {
-          shuffleArray(adj[u]).forEach((v) => {
-            if (dist[pair_v[v]] === Infinity) {
-              dist[pair_v[v]] = dist[u]! + 1;
-              q.push(pair_v[v]!);
-            }
-          });
-        }
-      }
-      return dist[n] !== Infinity;
-    }
-    function dfs(u: number): boolean {
-      if (u !== n) {
-        for (const v of shuffleArray(adj[u])) {
-          if (dist[pair_v[v]] === dist[u] + 1) {
-            if (dfs(pair_v[v])) {
-              pair_v[v] = u;
-              pair_u[u] = v;
-              return true;
-            }
-          }
-        }
-        dist[u] = Infinity;
-        return false;
-      }
-      return true;
-    }
-    let matching = 0;
-    while (bfs()) {
-      for (let u = 0; u < n; u++) {
-        if (pair_u[u] === n) {
-          if (dfs(u)) {
-            matching++;
-          }
-        }
-      }
-    }
-    if (matching !== n) return null; // No perfect matching
-    return { pair_u, pair_v };
-  }
-  function BvNDecompose(matrix: Fraction[][]): [Fraction, number[]][] {
-    // Birkhoff-von Neumann decomposition
-    // TODO: Maximize entropy of the permutations
-    const n = matrix.length;
-    if (!matrix.every((row) => row.length === n))
-      throw new Error("Matrix must be square");
-    if (
-      !matrix.every(
-        (row) =>
-          row
-            .reduce((sum, v) => sum.add(v), new Fraction(0))
-            .compare(new Fraction(1)) === 0,
-      )
-    )
-      throw new Error("Row sums must be 1");
-    if (
-      !matrix[0].every(
-        (_, j) =>
-          matrix
-            .reduce((sum, row) => sum.add(row[j]), new Fraction(0))
-            .compare(new Fraction(1)) === 0,
-      )
-    )
-      throw new Error("Column sums must be 1");
-    const A = matrix.map((row) => row.map((v) => v.copy()));
-    const decomposition: [Fraction, number[]][] = []; // List of permutation matrices
-    while (A.some((row) => row.some((v) => v.compare() > 0))) {
-      const { pair_u } = HopcroftKarp(
+  function samplePairing(
+    activity: Fraction[][],
+    steps: number = -1,
+    pre_sample_size: number = -10,
+    pre_steps: number = -10,
+  ) {
+    if (pre_steps <= 0) pre_steps = steps;
+    if (steps === 0) {
+      const n = activity.length;
+      const sample = HopcroftKarp(
         n,
-        A.map((row) =>
+        activity.map((row) =>
           row.map((v, j) => (v.compare() > 0 ? j : -1)).filter((j) => j >= 0),
         ),
-      )!;
-      const P: number[] = [];
-      for (let row = 0; row < n; row++) {
-        if (pair_u[row] === n) {
-          throw new Error("No perfect matching found");
-        }
-        P.push(pair_u[row]!);
-      }
-
-      let lambda = new Fraction(1);
-      for (let row = 0; row < n; row++) {
-        const col = P[row];
-        if (A[row][col].compare(lambda) < 0) {
-          lambda = A[row][col].copy();
-        }
-      }
-      for (let row = 0; row < n; row++) {
-        const col = P[row];
-        A[row][col] = A[row][col].sub(lambda);
-      }
-      decomposition.push([lambda, P]);
+      )?.pair_u;
+      if (!sample) throw new Error("No perfect matching found");
+      return sample;
     }
-    return decomposition;
+    const weight = _preTransverse(activity, pre_sample_size, pre_steps);
+    return _samplePairing(
+      activity.map((row) => row.map((v) => v.number)),
+      weight,
+      steps,
+    );
+  }
+
+  function BvNDecompose(matrix: Fraction[][]): [Fraction, number[]][] {
+    return _BvNDecompose(
+      matrix,
+      // (m) => samplePairing(m.map(r => r.map(c => c ? new Fraction(1) : new Fraction(0))), 10, 10),
+    );
   }
   function weightedSum(entries: [Fraction, number[]][]): Fraction[][] {
     if (entries.length === 0) throw new Error("No entries to sum");
@@ -370,47 +288,43 @@ export default function execute() {
     return matrix;
   }
 
-  function permanent(matrix: Fraction[][]): Fraction {
-    const n = matrix.length;
-    if (!matrix.every((row) => row.length === n))
-      throw new Error("Matrix must be square");
-    let perm = new Fraction(0);
-    for (let s = 0; s < 1 << n; s++) {
-      const prod = new Fraction(1);
-      for (let i = 0; i < n; i++) {
-        const sum = new Fraction(0);
-        for (let j = 0; j < n; j++) {
-          if ((s & (1 << j)) !== 0) {
-            sum.add(matrix[i][j]);
-          }
-        }
-        prod.mul(sum);
-        if (prod.compare() === 0) break;
+  cache.setGen(
+    "baseDecomposition",
+    function _getBaseDecomposition(cache) {
+      const sample_perm = cache.get("sample_perm");
+      if (sample_perm === null) throw new Error("sample_perm not set");
+      const baseDistribution = cache.get("baseDistribution");
+      if (!baseDistribution) throw new Error("baseDistribution not set");
+      const matrix = toAdjMatrix(baseDistribution);
+      const baseDecomposition = [];
+      for (let i = 0; i < sample_perm; i++) {
+        const bvn = BvNDecompose(matrix);
+        bvn.forEach(([weight]) => weight.mul(new Fraction(1, sample_perm)));
+        baseDecomposition.push(...bvn);
       }
-      if (prod.compare() === 0) continue;
-      const bits = s.toString(2).replaceAll("0", "").length;
-      if (bits % 2 === 0) {
-        perm.add(prod);
-      } else {
-        perm.sub(prod);
-      }
-    }
-    if (n % 2 === 1) perm = perm.mul(new Fraction(-1));
-    return perm;
-  }
+      console.log("BvN Decomposition:", baseDecomposition);
+      return baseDecomposition;
+    },
+    false,
+  );
 
-  function getBaseDecomposition(override: boolean = false) {
-    if (!override && baseDecomposition) return baseDecomposition;
-    distribution = null;
-    baseDecomposition = [];
-    for (let i = 0; i < sample_bvn; i++) {
-      const bvn = BvNDecompose(toMatrix(getBaseDistribution()));
-      bvn.forEach(([weight]) => weight.mul(new Fraction(1, sample_bvn)));
-      baseDecomposition.push(...bvn);
-    }
-    console.log("BvN Decomposition:", baseDecomposition);
-    return baseDecomposition;
-  }
+  cache.setGen(
+    "baseSample",
+    function _getBaseSample(cache) {
+      const sample_perm = cache.get("sample_perm");
+      if (sample_perm === null) throw new Error("sample_perm not set");
+      const baseDistribution = cache.get("baseDistribution");
+      if (!baseDistribution) throw new Error("baseDistribution not set");
+      const matrix = toAdjMatrix(baseDistribution);
+      const baseSample = [];
+      for (let i = 0; i < sample_perm; i++) {
+        baseSample.push(samplePairing(matrix));
+      }
+      console.log("Sampled permutations:", baseSample);
+      return baseSample;
+    },
+    false,
+  );
 
   function count_events(matrix: Fraction[][]) {
     const sample = permanent(
@@ -441,153 +355,158 @@ export default function execute() {
     });
     return { sample, events };
   }
-
-  function Sinkhorn(matrix: Fraction[][]) {
-    // Technically, the result is likely irrational.
-    // But the approximation process should result in rational numbers.
-    // sum_i ai vij = 1 / bj
-    // sum_j bj vij = 1 / ai
-    // bj = 1 / sum_i ai vij
-    // sum_j(ai vij / (sum_i ai vij)) = 1
-
-    const n = matrix.length;
-    for (let z = 0; z < n ** 2; z++) {
-      let is_fixing = false;
-      for (let i = 0; i < n; i++) {
-        const total = matrix.reduce(
-          (sum, row) => sum.add(row[i]),
-          new Fraction(0),
-        );
-        if (total.compare(new Fraction(1)) !== 0) is_fixing = true;
-        matrix.forEach((r) => r[i].div(total));
-      }
-      for (let j = 0; j < n; j++) {
-        const total = matrix[j].reduce((sum, v) => sum.add(v), new Fraction(0));
-        if (total.compare(new Fraction(1)) !== 0) is_fixing = true;
-        matrix[j].forEach((v) => v.div(total));
-      }
-      if (!is_fixing) break;
-    }
-  }
-
-  function _getDistribution() {
-    if (selected === null) return getBaseDistribution();
-    const mode: string = sample_bvn <= 0 ? "count" : "greedy";
-    switch (mode) {
-      case "naive": {
-        console.warn("Naive mode is incorrect, do not use");
-        const dist = toMatrix(getBaseDistribution());
-        dist.forEach((_, i) => {
-          _.forEach((_, j) => {
-            if (selected!.has(i) && selected!.get(i) === j) {
-              dist[i][j] = new Fraction(1);
-            } else if (
-              (selected!.has(i) && selected!.get(i) !== j) ||
-              (!selected!.has(i) && selected!.values().some((v) => v === j))
-            ) {
-              dist[i][j] = new Fraction(0);
-            }
+  cache.setGen(
+    "distribution",
+    function _getDistribution(cache) {
+      const selected = cache.get("selected");
+      if (selected === null) return cache.get("baseDistribution")!;
+      const sample_perm = cache.get("sample_perm");
+      if (sample_perm === null) throw new Error("sample_perm not set");
+      switch (cache.get("algo")) {
+        case "naive": {
+          console.warn("Naive mode is incorrect, do not use");
+          const preference = cache.get("preference");
+          const dist = toAdjMatrix(cache.get("baseDistribution")!);
+          dist.forEach((_, i) => {
+            _.forEach((_, j) => {
+              if (selected!.has(i) && selected!.get(i) === j) {
+                dist[i][j] = new Fraction(1);
+              } else if (
+                (selected!.has(i) && selected!.get(i) !== j) ||
+                (!selected!.has(i) && selected!.values().some((v) => v === j))
+              ) {
+                dist[i][j] = new Fraction(0);
+              }
+            });
           });
-        });
-        Sinkhorn(dist);
-        return fromMatrix(dist, (i, a, b) => {
-          const pref = preference.get(i)!;
-          return pref.indexOf(a) - pref.indexOf(b);
-        });
-      }
-      case "greedy": {
-        const dec = getBaseDecomposition()
-          .filter(([, perm]) =>
-            perm.every((v, i) => !selected!.has(i) || selected!.get(i) === v),
-          )
-          .map(
-            ([weight, perm]) =>
-              [weight.copy(), [...perm]] as [Fraction, number[]],
+          Sinkhorn(dist);
+          return toAdjList(dist, (i, a, b) => {
+            const pref = preference?.get(i);
+            if (!pref) return 0;
+            return pref.indexOf(a) - pref.indexOf(b);
+          });
+        }
+        case "count": {
+          const preference = cache.get("preference");
+          const dist = toAdjMatrix(cache.get("baseDistribution")!);
+          const matrix: Fraction[][] = dist.map((row) =>
+            row.map((v) => (v.compare() > 0 ? v.copy() : new Fraction(0))),
           );
+          const { sample: n_preselect, events: ns_preselect } =
+            count_events(matrix);
+          matrix.forEach((_, i) => {
+            _.forEach((_, j) => {
+              if (selected!.has(i) && selected!.get(i) === j) {
+                matrix[i][j] = new Fraction(1);
+              } else if (
+                (selected!.has(i) && selected!.get(i) !== j) ||
+                (!selected!.has(i) && selected!.values().some((v) => v === j))
+              ) {
+                matrix[i][j] = new Fraction(0);
+              }
+            });
+          });
+          const { sample: n_postselect, events: ns_postselect } =
+            count_events(matrix);
+          console.log("Event counts:", {
+            n_postselect,
+            ns_postselect,
+            n_preselect,
+            ns_preselect,
+          });
+          console.log("Base distribution:", matrix);
+          dist.forEach((row, i) => {
+            row.forEach((_, j) => {
+              if (selected!.has(i) && selected!.get(i) === j) {
+                dist[i][j] = new Fraction(1);
+              } else if (selected!.has(i)) {
+                dist[i][j] = new Fraction(0);
+              } else if (selected!.values().some((v) => v === j)) {
+                dist[i][j] = new Fraction(0);
+              } else if (ns_preselect[i][j].compare() === 0) {
+                dist[i][j] = new Fraction(0);
+              } else {
+                dist[i][j] = Fraction.div(
+                  ns_postselect[i][j],
+                  ns_preselect[i][j],
+                ).mul(dist[i][j]);
+              }
+            });
+          });
+          console.log(
+            "Pre-distribution:",
+            dist.map((r) => r.map((v) => v.toString())),
+          );
+          Sinkhorn(dist); // FIXME: Learn probability theory and make the normalization correct in the first place
+          return toAdjList(dist, (i, a, b) => {
+            const pref = preference?.get(i);
+            if (!pref) return 0;
+            return pref.indexOf(a) - pref.indexOf(b);
+          });
+        }
+        case "greedy": {
+          const preference = cache.get("preference");
+          const dec = cache
+            .get("baseDecomposition")!
+            .filter(([, perm]) =>
+              perm.every((v, i) => !selected!.has(i) || selected!.get(i) === v),
+            )
+            .map(
+              ([weight, perm]) =>
+                [weight.copy(), [...perm]] as [Fraction, number[]],
+            );
 
-        console.log("BvN Decomposition:", dec);
-        const total = dec.reduce(
-          (sum, [weight]) => sum.add(weight),
-          new Fraction(0),
-        );
-        dec.forEach((entry) => (entry[0] = entry[0].copy().div(total)));
-        return fromMatrix(
-          weightedSum(dec),
-          (i, a, b) =>
-            preference.get(i)!.indexOf(a) - preference.get(i)!.indexOf(b),
-        );
-      }
-      case "count": {
-        const dist = toMatrix(getBaseDistribution());
-        const matrix: Fraction[][] = dist.map((row) =>
-          row.map((v) => (v.compare() > 0 ? v.copy() : new Fraction(0))),
-        );
-        const { sample: n_preselect, events: ns_preselect } =
-          count_events(matrix);
-        matrix.forEach((_, i) => {
-          _.forEach((_, j) => {
-            if (selected!.has(i) && selected!.get(i) === j) {
-              matrix[i][j] = new Fraction(1);
-            } else if (
-              (selected!.has(i) && selected!.get(i) !== j) ||
-              (!selected!.has(i) && selected!.values().some((v) => v === j))
-            ) {
-              matrix[i][j] = new Fraction(0);
-            }
+          console.log("BvN Decomposition:", dec);
+          const total = dec.reduce(
+            (sum, [weight]) => sum.add(weight),
+            new Fraction(0),
+          );
+          dec.forEach((entry) => (entry[0] = entry[0].copy().div(total)));
+          return toAdjList(weightedSum(dec), (i, a, b) => {
+            const pref = preference?.get(i);
+            if (!pref) return 0;
+            return pref.indexOf(a) - pref.indexOf(b);
           });
-        });
-        const { sample: n_postselect, events: ns_postselect } =
-          count_events(matrix);
-        console.log("Event counts:", {
-          n_postselect,
-          ns_postselect,
-          n_preselect,
-          ns_preselect,
-        });
-        console.log("Base distribution:", matrix);
-        dist.forEach((row, i) => {
-          row.forEach((_, j) => {
-            if (selected!.has(i) && selected!.get(i) === j) {
-              dist[i][j] = new Fraction(1);
-            } else if (selected!.has(i)) {
-              dist[i][j] = new Fraction(0);
-            } else if (selected!.values().some((v) => v === j)) {
-              dist[i][j] = new Fraction(0);
-            } else if (ns_preselect[i][j].compare() === 0) {
-              dist[i][j] = new Fraction(0);
-            } else {
-              dist[i][j] = Fraction.div(
-                ns_postselect[i][j],
-                ns_preselect[i][j],
-              ).mul(dist[i][j]);
-            }
+        }
+        case "sample": {
+          const preference = cache.get("preference");
+          const samp = cache
+            .get("baseSample")!
+            .filter((perm) =>
+              perm.every((v, i) => !selected!.has(i) || selected!.get(i) === v),
+            );
+          console.log("Sampled permutations:", samp);
+          const dist = new Map<number, { id: number; value: Fraction }[]>();
+          samp.forEach((perm) => {
+            perm.forEach((v, i) => {
+              if (!dist.has(i)) {
+                dist.set(i, []);
+              }
+              const item = dist.get(i)!.find((el) => el.id === v);
+              if (item) {
+                item.value.add(new Fraction(1, samp.length));
+              } else {
+                dist
+                  .get(i)!
+                  .push({ id: v, value: new Fraction(1, samp.length) });
+              }
+            });
           });
-        });
-        console.log(
-          "Pre-distribution:",
-          dist.map((r) => r.map((v) => v.toString())),
-        );
-        Sinkhorn(dist); // FIXME: Learn probability theory and make the normalization correct in the first place
-        return fromMatrix(dist, (i, a, b) => {
-          const pref = preference.get(i)!;
-          return pref.indexOf(a) - pref.indexOf(b);
-        });
+          dist.forEach((d, i) => {
+            const pref = preference?.get(i);
+            d.sort((a, b) => {
+              if (!pref) return a.value.number - b.value.number;
+              return pref.indexOf(a.id) - pref.indexOf(b.id);
+            });
+          });
+          return dist;
+        }
+        default:
+          throw new Error(`Unknown mode: ${cache.get("algo")}`);
       }
-      case "sample": {
-        // TODO: Implement sampling mode
-        // https://faculty.cc.gatech.edu/~vigoda/Permanent.pdf
-        throw new Error("Sampling mode not implemented");
-      }
-      default:
-        throw new Error(`Unknown mode: ${mode}`);
-    }
-  }
-  function getDistribution(override: boolean = false) {
-    if (!override && distribution) return distribution;
-    distribution = _getDistribution();
-    console.log("Distribution:", distribution);
-    return distribution;
-  }
+    },
+    false,
+  );
 
   function drawAll(
     ctx: CanvasRenderingContext2D,
@@ -595,9 +514,8 @@ export default function execute() {
     index: number | null = null,
   ) {
     // TODO: Smooth animation
-    // TODO: Represent each permutation and update the probability accordingly
     if (!isActive) return null;
-    const distribution = getDistribution();
+    const distribution = cache.get("distribution")!;
     const count = distribution.size;
     const n_col = 2 * Math.ceil(Math.sqrt(count / 2));
     const r = (0.5 * Math.min(ctx.canvas.width, ctx.canvas.height)) / n_col;
@@ -809,14 +727,14 @@ export default function execute() {
         step
           .querySelector<HTMLButtonElement>("button#calculate")!
           .addEventListener("click", () => {
-            preference.clear();
+            cache.set("preference", new Map());
+            const preference = cache.get("preference")!;
             for (const dragList of dragLists) {
               preference.set(dragList.id, dragList.ids);
             }
             console.log("Preference:", preference);
-
-            getBaseDistribution(true);
             initStep(config, "2");
+            cache.updated("preference");
           });
       }
       {
@@ -831,7 +749,6 @@ export default function execute() {
           .querySelector<HTMLButtonElement>("button#done")!
           .addEventListener("click", () => {
             time.disabled = true;
-            baseDecomposition = null;
             initStep(config, "3");
           });
       }
@@ -868,9 +785,9 @@ export default function execute() {
               selected_item,
             )!;
             if (selected_agent !== null) {
-              selected!.set(selected_agent, selected_item);
-              console.log("Selected:", selected);
-              distribution = null;
+              cache.get("selected")?.set(selected_agent, selected_item);
+              console.log("Selected:", cache.get("selected"));
+              cache.updated("selected");
             }
             drawAll(ctx, seed.valueAsNumber, selected_item)!;
           });
@@ -886,17 +803,36 @@ export default function execute() {
         {
           const advanced = config.querySelector("#advanced")!;
           advanced
-            .querySelector<HTMLInputElement>("#sample-bvn")!
-            .addEventListener("change", (e) => {
-              sample_bvn = (e.target as HTMLInputElement).valueAsNumber;
-              baseDecomposition = null;
-              distribution = null;
+            .querySelector<HTMLInputElement>("input#sample-perm")!
+            .addEventListener("change", () => {
+              cache.refresh("sample_perm");
               drawAll(ctx, seed.valueAsNumber, parseInt(select.value))!;
             });
-          sample_bvn =
-            advanced.querySelector<HTMLInputElement>(
-              "#sample-bvn",
-            )!.valueAsNumber;
+          cache.setGen(
+            "sample_perm",
+            () =>
+              advanced.querySelector<HTMLInputElement>("#sample-perm")!
+                .valueAsNumber,
+          );
+          advanced
+            .querySelector<HTMLSelectElement>("select#algo")!
+            .addEventListener("change", () => {
+              cache.refresh("algo");
+              drawAll(ctx, seed.valueAsNumber, parseInt(select.value))!;
+            });
+          cache.setGen(
+            "algo",
+            () =>
+              advanced.querySelector<HTMLSelectElement>("#algo")!
+                .value as TCache["algo"],
+          );
+          advanced
+            .querySelector<HTMLButtonElement>("button#clear-cache")!
+            .addEventListener("click", () => {
+              clearPreTransverseCache();
+              cache.updated("preference");
+              drawAll(ctx, seed.valueAsNumber, parseInt(select.value))!;
+            });
         }
       }
     },

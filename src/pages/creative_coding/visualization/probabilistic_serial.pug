@@ -40,14 +40,14 @@ block content
         button#reset(type='button') Reset
         details#advanced
           summary Advanced Options
-          label(for='sample-bvn')
-            details
-              summary Number of samples to estimate BvN decomposition:
-              | If set to 0, the exact algorithm will be used, could be very slow for large problems.
-              | Otherwise, a approximation with greedy BvN will be used.
-              br
-              | Disclaimer: I don't think that this (the exact algorithm) is implemented correctly.
-          input#sample-bvn(type='number', value='100', min='0', step='1')
+          select#algo
+            option(value='naive') Naive exclusion
+            option(value='count') Scale by count
+            option(value='greedy' selected) Average Birkhoff
+            option(value='sample') Sample by weight
+          label(for='sample-perm') Number of samples:
+          input#sample-perm(type='number', value='100', min='1', step='1')
+          button#clear-cache(type='button') Clear cache
       label(for='lists') Preferences order:
       div#lists.row
   p.

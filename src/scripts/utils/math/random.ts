@@ -131,3 +131,7 @@ export class Mash {
     return (this.n >>> 0) * 2.3283064365386963e-10; // 2^-32
   }
 }
+
+export function shuffleArray<T>(array: T[]): T[] {
+  return array.sort(() => Math.random() - 0.5);
+}
