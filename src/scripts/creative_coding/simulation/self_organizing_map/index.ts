@@ -1,4 +1,3 @@
-import { generate } from "@/scripts/creative_coding/generation/perlin_noise/pipeline.js";
 import type {
   ColorSpace,
   ColorSpaceMap,
@@ -19,6 +18,7 @@ import { vector_dist } from "@/scripts/utils/math/vector.js";
 import type { TVector2 } from "@/scripts/utils/math/vector.ts";
 import { iterate_all } from "@/scripts/utils/utils.js";
 
+// import { generate } from "../../generation/perlin_noise/pipeline.js";
 import { applyDithering_Ordered } from "../../image_processing/dithering/pipeline.js";
 import { extractPalette } from "../../image_processing/palette_extraction/pipeline.js";
 
@@ -383,14 +383,14 @@ export default function execute() {
             "slot#color-choices-value",
           )!.innerText = (+this.value).toFixed(3);
         });
-      canvas.addEventListener("click", function () {
-        generate(buffer);
-        const ofs_canvas = new OffscreenCanvas(buffer.width, buffer.height);
-        const ofs_ctx = ofs_canvas.getContext("2d")!;
-        ofs_ctx.putImageData(buffer, 0, 0);
-        ctx.drawImage(ofs_canvas, 0, 0, canvas.width, canvas.height);
-        setup(config, canvas);
-      });
+      // canvas.addEventListener("click", function () {
+      //   generate(buffer);
+      //   const ofs_canvas = new OffscreenCanvas(buffer.width, buffer.height);
+      //   const ofs_ctx = ofs_canvas.getContext("2d")!;
+      //   ofs_ctx.putImageData(buffer, 0, 0);
+      //   ctx.drawImage(ofs_canvas, 0, 0, canvas.width, canvas.height);
+      //   setup(config, canvas);
+      // });
       onImageChange(
         config.querySelector<HTMLInputElement>("#image")!,
         (img) => {
