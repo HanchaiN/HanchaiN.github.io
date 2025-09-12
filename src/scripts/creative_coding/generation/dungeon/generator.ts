@@ -5,7 +5,7 @@ import { PerlinNoise } from "@/scripts/utils/math/noise.js";
 import { randomGaussian } from "@/scripts/utils/math/random.js";
 import { constrain, map } from "@/scripts/utils/math/utils.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
-import { iterate_all } from "@/scripts/utils/utils";
+import { iterate_all } from "@/scripts/utils/utils.js";
 
 function* shortest_path<T>(
   nodes: T[],

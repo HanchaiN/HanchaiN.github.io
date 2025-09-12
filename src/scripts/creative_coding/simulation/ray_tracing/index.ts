@@ -27,6 +27,7 @@ export default function execute() {
 
   let white_balance = true;
   let tone_mapping = true;
+  let bright_as_white = false;
 
   const postProcessorGen_ = postProcessorGen(tonemaper);
 
@@ -35,15 +36,15 @@ export default function execute() {
     FOCAL_LENGTH: number;
     SCENE: SceneObject;
     CAMERA_POSITION: Vector;
+    postProcessor: (color: RGBColor) => RGBColor;
   }
 
   function main(
     this: IKernelFunctionThis<IConstants>,
     acc: Light[][],
     iter: number,
-    postProcessor: ReturnType<typeof postProcessorGen_>,
   ) {
-    const [r, g, b] = postProcessor(
+    const [r, g, b] = this.constants.postProcessor(
       acc[this.thread.x][this.thread.y]
         .mix(
           trace(
@@ -80,12 +81,37 @@ export default function execute() {
   return {
     start: (canvas: HTMLCanvasElement, config: HTMLFormElement) => {
       isActive = true;
+      const renderConfig: IConstants = {
+        FRAME_SIZE,
+        FOCAL_LENGTH,
+        SCENE,
+        CAMERA_POSITION,
+        postProcessor: postProcessorGen_({
+          bright: tone_mapping ? color.bright : [1, 1, 1],
+          white: white_balance
+            ? bright_as_white
+              ? color.bright
+              : color.white
+            : [1, 1, 1],
+        }),
+      };
+      function refreshPostProcessor() {
+        renderConfig.postProcessor = postProcessorGen_({
+          bright: tone_mapping ? color.bright : [1, 1, 1],
+          white: white_balance
+            ? bright_as_white
+              ? color.bright
+              : color.white
+            : [1, 1, 1],
+        });
+      }
       tone_mapping =
         config.querySelector<HTMLInputElement>("#tone-mapping")!.checked;
       config
         .querySelector<HTMLInputElement>("#tone-mapping")!
         .addEventListener("change", (e) => {
           tone_mapping = (e.target as HTMLInputElement).checked;
+          refreshPostProcessor();
         });
       white_balance =
         config.querySelector<HTMLInputElement>("#white-balance")!.checked;
@@ -93,6 +119,15 @@ export default function execute() {
         .querySelector<HTMLInputElement>("#white-balance")!
         .addEventListener("change", (e) => {
           white_balance = (e.target as HTMLInputElement).checked;
+          refreshPostProcessor();
+        });
+      bright_as_white =
+        config.querySelector<HTMLInputElement>("#bright-as-white")!.checked;
+      config
+        .querySelector<HTMLInputElement>("#bright-as-white")!
+        .addEventListener("change", (e) => {
+          bright_as_white = (e.target as HTMLInputElement).checked;
+          refreshPostProcessor();
         });
 
       const white_calc = new Worker(
@@ -106,6 +141,7 @@ export default function execute() {
           white_calc.postMessage(null);
           color.white = data.white;
           color.bright = data.bright;
+          refreshPostProcessor();
         },
       );
       workers.push(white_calc);
@@ -126,16 +162,7 @@ export default function execute() {
         .fill(null)
         .map(() => new Array(buffer.height).fill(null).map(() => Light.black));
       let i = 0;
-      const renderer = kernelGenerator(
-        main,
-        {
-          FRAME_SIZE,
-          FOCAL_LENGTH,
-          SCENE,
-          CAMERA_POSITION,
-        },
-        buffer,
-      );
+      const renderer = kernelGenerator(main, renderConfig, buffer);
       startAnimationLoop(async function draw() {
         if (!isActive) return false;
         await createImageBitmap(buffer).then((bmp) =>
@@ -148,14 +175,7 @@ export default function execute() {
         if (!isActive) return false;
         const res = step?.next();
         if (!res || res.done) {
-          step = renderer(
-            acc,
-            ++i,
-            postProcessorGen_({
-              bright: tone_mapping ? color.bright : [1, 1, 1],
-              white: white_balance ? color.white : [1, 1, 1],
-            }),
-          );
+          step = renderer(acc, ++i);
         }
         return true;
       });

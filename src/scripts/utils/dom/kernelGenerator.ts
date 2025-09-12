@@ -1,4 +1,4 @@
-import { iterate_all } from "../utils";
+import { iterate_all } from "../utils.js";
 
 export function kernelGenerator<
   IConstants = Record<string, never>,
