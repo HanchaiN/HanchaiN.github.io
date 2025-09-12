@@ -48,13 +48,7 @@ jobs:
           fi
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
-      - run: corepack enable
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version: 20
-          cache: ${{ steps.detect-package-manager.outputs.manager }}
+          node-version: 22
       - name: Install dependencies
         run: |
           ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
