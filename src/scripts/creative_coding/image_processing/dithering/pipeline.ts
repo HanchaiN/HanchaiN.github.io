@@ -17,10 +17,10 @@ import {
   vector_sub,
 } from "@/scripts/utils/math/vector.js";
 
-const mode: ColorSpace = "xyz";
-type EmbedColor = ColorSpaceMap[typeof mode];
-const srgb2embed = convert_color("srgb", mode)!,
-  embed2lab = convert_color(mode, "lab")!;
+const embed: ColorSpace = "lab";
+type EmbedColor = ColorSpaceMap[typeof embed];
+const srgb2embed = convert_color("srgb", embed)!,
+  embed2lab = convert_color(embed, "lab")!;
 const color_distance = (a: EmbedColor, b: EmbedColor) =>
   DistanceE94(embed2lab(a), embed2lab(b));
 
@@ -131,7 +131,7 @@ export function applyDithering_Ordered(
     .map((c1, i) =>
       embed_palette.map(
         (c2, j) =>
-          [i, j, vector_mult(vector_add(c1, c2), 2)] as [
+          [i, j, vector_mult(vector_add(c1, c2), 0.5)] as [
             number,
             number,
             XYZColor,

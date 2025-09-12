@@ -1,11 +1,18 @@
 import convert_color from "@/scripts/utils/color/conversion.js";
+import type {
+  ColorSpace,
+  ColorSpaceMap,
+} from "@/scripts/utils/color/conversion.ts";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import { startAnimationLoop, startLoop } from "@/scripts/utils/dom/utils.js";
 import { constrain, constrainLerp } from "@/scripts/utils/math/utils.js";
 
-const str2xyz = convert_color("str", "xyz")!;
+const embed: ColorSpace = "lab";
+type EmbedColor = ColorSpaceMap[typeof embed];
+const str2embed = convert_color("str", embed)!;
+const embed2srgb = convert_color(embed, "srgb")!;
 
 export default function execute() {
   let isActive = false;
@@ -23,8 +30,8 @@ export default function execute() {
     DIFFUSION_RATE: number[];
   }
   interface IDrawConstants {
-    BASE_COLOR: [number, number, number];
-    CONC_COLOR: [number, number, number];
+    BASE_COLOR: EmbedColor;
+    CONC_COLOR: EmbedColor;
   }
 
   function init(this: IKernelFunctionThis): [number, number] {
@@ -99,21 +106,23 @@ export default function execute() {
   ) {
     const v = grid[this.thread.y][this.thread.x];
     this.color(
-      constrainLerp(
-        v[0] - v[1],
-        this.constants.CONC_COLOR[0],
-        this.constants.BASE_COLOR[0],
-      ),
-      constrainLerp(
-        v[0] - v[1],
-        this.constants.CONC_COLOR[1],
-        this.constants.BASE_COLOR[1],
-      ),
-      constrainLerp(
-        v[0] - v[1],
-        this.constants.CONC_COLOR[2],
-        this.constants.BASE_COLOR[2],
-      ),
+      ...embed2srgb([
+        constrainLerp(
+          v[0] - v[1],
+          this.constants.CONC_COLOR[0],
+          this.constants.BASE_COLOR[0],
+        ),
+        constrainLerp(
+          v[0] - v[1],
+          this.constants.CONC_COLOR[1],
+          this.constants.BASE_COLOR[1],
+        ),
+        constrainLerp(
+          v[0] - v[1],
+          this.constants.CONC_COLOR[2],
+          this.constants.BASE_COLOR[2],
+        ),
+      ]),
       1,
     );
   }
@@ -142,8 +151,8 @@ export default function execute() {
       const draw_kernel = kernelGenerator(
         draw,
         {
-          BASE_COLOR: str2xyz(getPaletteBaseColor(1 / 8)),
-          CONC_COLOR: str2xyz(getPaletteBaseColor(7 / 8)),
+          BASE_COLOR: str2embed(getPaletteBaseColor(1 / 8)),
+          CONC_COLOR: str2embed(getPaletteBaseColor(7 / 8)),
         },
         buffer,
       );

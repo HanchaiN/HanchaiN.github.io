@@ -1,6 +1,7 @@
 import convert_color from "@/scripts/utils/color/conversion.js";
 import {
-  getPaletteAccentColor,
+  getChroma,
+  getLightness,
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
@@ -14,8 +15,7 @@ import { lerp } from "@/scripts/utils/math/utils.js";
 
 import { rot_hilbert as rot, xy2d } from "./hilbert.js";
 
-const okhcl2srgb = convert_color("okhcl", "srgb")!,
-  str2okhcl = convert_color("str", "okhcl")!;
+const okhcl2srgb = convert_color("okhcl", "srgb")!;
 
 export default function execute() {
   let audioContext: AudioContext, gainNode: GainNode, oscl: OscillatorNode;
@@ -56,12 +56,11 @@ export default function execute() {
       const buffer = ctx.getImageData(0, 0, canvas.width, canvas.height, {
         colorSpace: "srgb",
       });
-      const ref = str2okhcl(getPaletteAccentColor(0));
       const renderer = kernelGenerator(
         main,
         {
-          c: ref[1],
-          l: ref[2],
+          c: getChroma(),
+          l: getLightness(),
         },
         buffer,
       );

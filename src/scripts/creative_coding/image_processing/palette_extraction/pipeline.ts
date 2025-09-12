@@ -10,11 +10,11 @@ import type {
 } from "@/scripts/utils/color/conversion.js";
 import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 
-const mode: ColorSpace = "lab";
-type EmbedColor = ColorSpaceMap[typeof mode];
-const srgb2embed = convert_color("srgb", mode)!,
-  str2embed = convert_color("str", mode)!,
-  embed2hex = convert_color(mode, "hex")!;
+const embed: ColorSpace = "lab";
+type EmbedColor = ColorSpaceMap[typeof embed];
+const srgb2embed = convert_color("srgb", embed)!,
+  str2embed = convert_color("str", embed)!,
+  embed2hex = convert_color(embed, "hex")!;
 const color_distance: (c1: EmbedColor, c2: EmbedColor) => number = DistanceE94;
 const copy = (a: EmbedColor) => a.slice() as EmbedColor;
 

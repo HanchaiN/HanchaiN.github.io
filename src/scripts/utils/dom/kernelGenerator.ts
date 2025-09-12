@@ -16,7 +16,7 @@ export function kernelGenerator<
   return function* (
     this: IRenderFunctionThis<IConstants>,
     ...args: Parameters<typeof main>
-  ) {
+  ): Generator<IReturnType, IReturnType[][], undefined> {
     const res: IReturnType[][] = new Array(this.output.x)
       .fill(null)
       .map(() => new Array(this.output.y).fill(null));

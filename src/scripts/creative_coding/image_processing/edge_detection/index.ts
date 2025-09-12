@@ -10,7 +10,7 @@ import { getEdgeMask } from "./pipeline.js";
 
 const okhcl2srgb = convert_color("okhcl", "srgb")!,
   str2srgb = convert_color("str", "srgb")!,
-  srgb2okhcl = convert_color("srgb", "okhcl")!;
+  srgb2lum = convert_color("srgb", "lum")!;
 
 export default function execute() {
   let canvas: HTMLCanvasElement;
@@ -35,7 +35,7 @@ export default function execute() {
   ) {
     const foreground = str2srgb(getForeground()),
       saturation = getChroma(),
-      lightness = srgb2okhcl(foreground)[2];
+      lightness = srgb2lum(foreground);
     for (let y = 0; y < imageData.height; y++) {
       for (let x = 0; x < imageData.width; x++) {
         const index = (y * imageData.width + x) * 4;

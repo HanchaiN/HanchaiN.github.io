@@ -1,4 +1,4 @@
-export const MAX_DEPTH = 10;
+export const MAX_DEPTH = 5;
 // Distance
 export const MIN_DIST = 1e-2;
 export const MAX_DIST = 1e4;

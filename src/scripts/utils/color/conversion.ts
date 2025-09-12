@@ -31,6 +31,7 @@ type ColorSpaceMapExt = ColorSpaceMap & {
   str: string;
   css: string;
   hex: string;
+  lum: number;
 };
 
 export type ColorSpace = keyof ColorSpaceMap;
@@ -320,6 +321,7 @@ export default function convert_color<
     "str",
     "css",
     "hex",
+    "lum",
   ];
   const edges: {
     [i in keyof ColorSpaceMapExt]?: {
@@ -356,6 +358,7 @@ export default function convert_color<
       xyz: rgb2xyz,
       lms: rgb2lms,
       srgb: rgb2srgb,
+      lum: rgb2lum,
     },
     srgb: {
       rgb: srgb2rgb,

@@ -1,5 +1,9 @@
 import convert_color from "@/scripts/utils/color/conversion.js";
-import type { SRGBColor, XYZColor } from "@/scripts/utils/color/conversion.ts";
+import type {
+  ColorSpace,
+  ColorSpaceMap,
+  SRGBColor,
+} from "@/scripts/utils/color/conversion.ts";
 import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import { softargmax } from "@/scripts/utils/math/utils.js";
@@ -13,8 +17,10 @@ import type { ExcludeKeys } from "@/scripts/utils/types.ts";
 
 import { detectLevel, getBaseLUT } from "../clut_generation/pipeline.js";
 
-const srgb2xyz = convert_color("srgb", "xyz")!;
-const xyz2srgb = convert_color("xyz", "srgb")!;
+const embed: ColorSpace = "lab";
+type EmbedColor = ColorSpaceMap[typeof embed];
+const srgb2embed = convert_color("srgb", embed)!;
+const embed2srgb = convert_color(embed, "srgb")!;
 
 function _mapColor(c: [number, number, number], lut: ImageData, level: number) {
   const cube_size = level * level;
@@ -50,7 +56,7 @@ export function mapColor(
     c[1] * (cube_size - 1),
     c[2] * (cube_size - 1),
   ];
-  const xyz0 = srgb2xyz(c);
+  const xyz0 = srgb2embed(c);
   const ref: [SRGBColor, number][] = [];
   for (const ir of [0, 1]) {
     const r1 = Math.floor(r0) + ir;
@@ -66,7 +72,7 @@ export function mapColor(
           g1 / (cube_size - 1),
           b1 / (cube_size - 1),
         ];
-        const d = vector_mag(vector_sub(xyz0, srgb2xyz(c1)));
+        const d = vector_mag(vector_sub(xyz0, srgb2embed(c1)));
         const c_ = _mapColor(c1, lut, level);
         ref.push([c_, d]);
       }
@@ -76,13 +82,13 @@ export function mapColor(
     ref.map((a) => -a[1]),
     temperature,
   )
-    .map((w, i) => [srgb2xyz(ref[i][0]), w] as [XYZColor, number])
+    .map((w, i) => [srgb2embed(ref[i][0]), w] as [EmbedColor, number])
     .reduce(
       ([c_, w_], [c, w]) =>
-        [vector_add(c_, vector_mult(c, w)), w_ + w] as [XYZColor, number],
+        [vector_add(c_, vector_mult(c, w)), w_ + w] as [EmbedColor, number],
       [[0, 0, 0], 0],
     );
-  return xyz2srgb(acc[0].map((v) => v / acc[1]) as XYZColor);
+  return embed2srgb(acc[0].map((v) => v / acc[1]) as EmbedColor);
 }
 
 export function _applyGrading(

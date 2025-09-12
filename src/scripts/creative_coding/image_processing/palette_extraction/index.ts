@@ -13,12 +13,12 @@ import { _applyClosest } from "../clut_generation/pipeline.js";
 import { applyColorMapping } from "../color_grading/pipeline.js";
 import { evaluatePalette, extendPalette, extractPalette } from "./pipeline.js";
 
-const mode: ColorSpace = "lab";
-type EmbedColor = ColorSpaceMap[typeof mode];
-const srgb2embed = convert_color("srgb", mode)!,
-  embed2srgb = convert_color(mode, "srgb")!,
-  str2embed = convert_color("str", mode)!,
-  embed2hex = convert_color(mode, "hex")!;
+const embed: ColorSpace = "lab";
+type EmbedColor = ColorSpaceMap[typeof embed];
+const srgb2embed = convert_color("srgb", embed)!,
+  embed2srgb = convert_color(embed, "srgb")!,
+  str2embed = convert_color("str", embed)!,
+  embed2hex = convert_color(embed, "hex")!;
 const color_distance: (c1: EmbedColor, c2: EmbedColor) => number = DistanceE94;
 
 export default function execute() {

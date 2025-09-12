@@ -1,5 +1,9 @@
 import fft from "@/scripts/utils/algo/fft.js";
 import convert_color from "@/scripts/utils/color/conversion.js";
+import type {
+  ColorSpace,
+  ColorSpaceMap,
+} from "@/scripts/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { onImageChange } from "@/scripts/utils/dom/image.js";
 import { startAnimationLoop } from "@/scripts/utils/dom/utils.js";
@@ -17,9 +21,13 @@ function reshape<T>(array: T[], shape: [number, number]): T[][] {
   return result;
 }
 
-const str2xyz = convert_color("str", "xyz")!,
-  xyz2hcl = convert_color("xyz", "hcl")!,
-  srgb2hcl = convert_color("srgb", "hcl")!;
+const embed: ColorSpace = "lab";
+type EmbedColor = ColorSpaceMap[typeof embed];
+
+const str2embed = convert_color("str", embed)!,
+  embed2lum = convert_color(embed, "lum")!,
+  srgb2lum = convert_color("srgb", "lum")!,
+  embed2srgb = convert_color(embed, "srgb")!;
 
 export default function execute() {
   let parent: HTMLElement;
@@ -34,8 +42,8 @@ export default function execute() {
   let overlay_slider: HTMLInputElement;
   let overlay_value: HTMLSlotElement;
   const getColor = () =>
-    [str2xyz(getPaletteBaseColor(0)), str2xyz(getPaletteBaseColor(1))].sort(
-      (a, b) => xyz2hcl(a)[2] - xyz2hcl(b)[2],
+    [str2embed(getPaletteBaseColor(0)), str2embed(getPaletteBaseColor(1))].sort(
+      (a, b) => embed2lum(a) - embed2lum(b),
     );
   let isActive = false;
   let src = "";
@@ -93,11 +101,11 @@ export default function execute() {
         .fill(0)
         .map((_, i) => {
           const index = i * 4;
-          return srgb2hcl([
+          return srgb2lum([
             imageData.data[index] / 255,
             imageData.data[index + 1] / 255,
             imageData.data[index + 2] / 255,
-          ])[2];
+          ]);
         });
       const kspace = fft(
         reshape(luminance.map(Complex.copy), [
@@ -130,15 +138,18 @@ export default function execute() {
                 ? j + kspace[i].length / 2
                 : j - kspace[i].length / 2;
           const value = symlog(Complex.abs(kspace[i][j]));
+          const embed_color: EmbedColor = [
+            constrainMap(value, minValue, maxValue, minColor[0], maxColor[0]),
+            constrainMap(value, minValue, maxValue, minColor[1], maxColor[1]),
+            constrainMap(value, minValue, maxValue, minColor[2], maxColor[2]),
+          ];
+          const srgb_color = embed2srgb(embed_color);
           imageData.data[(x * imageData.width + y) * 4 + 0] =
-            constrainMap(value, minValue, maxValue, minColor[0], maxColor[0]) *
-            255;
+            srgb_color[0] * 255;
           imageData.data[(x * imageData.width + y) * 4 + 1] =
-            constrainMap(value, minValue, maxValue, minColor[1], maxColor[1]) *
-            255;
+            srgb_color[1] * 255;
           imageData.data[(x * imageData.width + y) * 4 + 2] =
-            constrainMap(value, minValue, maxValue, minColor[2], maxColor[2]) *
-            255;
+            srgb_color[2] * 255;
           imageData.data[(x * imageData.width + y) * 4 + 3] = 255;
         }
       }

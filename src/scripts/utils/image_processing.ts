@@ -1,7 +1,7 @@
 import convert_color from "@/scripts/utils/color/conversion.js";
 import { constrain, map } from "@/scripts/utils/math/utils.js";
 
-const srgb2hcl = convert_color("srgb", "hcl")!;
+const srgb2lum = convert_color("srgb", "lum")!;
 
 export function deepCopyImageData(imageData: ImageData): ImageData {
   const newImageData = new ImageData(imageData.width, imageData.height);
@@ -32,11 +32,11 @@ export function getLuminance(imageData: ImageData, outIndex: number = 3) {
   for (let y = 0; y < imageData.height; y++) {
     for (let x = 0; x < imageData.width; x++) {
       const index = (y * imageData.width + x) * 4;
-      const l = srgb2hcl([
+      const l = srgb2lum([
         imageData.data[index] / 255,
         imageData.data[index + 1] / 255,
         imageData.data[index + 2] / 255,
-      ])[2];
+      ]);
       if (outIndex < 0) {
         imageData.data[index] = l * 255;
         imageData.data[index + 1] = l * 255;

@@ -14,10 +14,10 @@ import { vector_add, vector_mult } from "@/scripts/utils/math/vector.js";
 
 import type { IKernelFunctionThis_CMap } from "../color_grading/pipeline.js";
 
-const mode: ColorSpace = "lab";
-type EmbedColor = ColorSpaceMap[typeof mode];
-const srgb2embed = convert_color("srgb", mode)!,
-  embed2srgb = convert_color(mode, "srgb")!;
+const embed: ColorSpace = "lab";
+type EmbedColor = ColorSpaceMap[typeof embed];
+const srgb2embed = convert_color("srgb", embed)!,
+  embed2srgb = convert_color(embed, "srgb")!;
 const color_distance: (c1: EmbedColor, c2: EmbedColor) => number = DistanceE94;
 
 export function detectLevel(width: number, height: number) {
@@ -210,11 +210,11 @@ export function _applyMap<EmbedColor extends ColorSpaceMap[ColorSpace]>(
 
 export function applyCustomMap(
   img: ImageData,
-  mode: ColorSpace,
-  mapper: (color: ColorSpaceMap[typeof mode]) => ColorSpaceMap[typeof mode],
+  embed: ColorSpace,
+  mapper: (color: ColorSpaceMap[typeof embed]) => ColorSpaceMap[typeof embed],
 ) {
-  const srgb2embed = convert_color("srgb", mode)!,
-    embed2srgb = convert_color(mode, "srgb")!;
+  const srgb2embed = convert_color("srgb", embed)!,
+    embed2srgb = convert_color(embed, "srgb")!;
   const runner = kernelRunner(
     _applyMap,
     { mapper, srgb2embed, embed2srgb },

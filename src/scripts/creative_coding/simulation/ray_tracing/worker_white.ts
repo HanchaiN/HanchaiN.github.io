@@ -1,4 +1,6 @@
-import { Light, TColorRGB } from "./colors.js";
+import type { RGBColor } from "@/scripts/utils/color/conversion.js";
+
+import { Light } from "./colors.js";
 import { Ray, trace } from "./ray.js";
 import {
   CAMERA_POSITION,
@@ -15,8 +17,8 @@ const white = Light.black,
 
 export type MessageRequest = Record<string, never>;
 export type MessageResponse = {
-  white: TColorRGB;
-  bright: TColorRGB;
+  white: RGBColor;
+  bright: RGBColor;
 };
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function main(data: MessageRequest) {

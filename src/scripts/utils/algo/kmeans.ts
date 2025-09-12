@@ -1,5 +1,5 @@
 import { sample } from "@/scripts/utils/math/random.js";
-import { argmax, softargmax, softmax } from "@/scripts/utils/math/utils.js";
+import { argmax, softargmax } from "@/scripts/utils/math/utils.js";
 
 function getSilhouetteScoreArray<T>(
   samples: T[],
@@ -34,6 +34,7 @@ function getSilhouetteScoreArray<T>(
     let min_dist = Infinity;
     for (let j = 0; j < centroids.length; j++) {
       if (cls[j].length <= 0) continue;
+      if (j === ind[i]) continue;
       const d =
         cls[j].reduce((acc, { c: o }) => acc + dist(v, o), 0) /
         cls[ind[i]].length;
@@ -44,7 +45,7 @@ function getSilhouetteScoreArray<T>(
     return min_dist;
   });
   const s = samples.map((_, i) => {
-    const max = softmax([a[i], b[i]], 0);
+    const max = Math.max(a[i], b[i]);
     return cls[ind[i]].length <= 1 || Number.isNaN(a[i]) || Number.isNaN(b[i])
       ? 0
       : !Number.isFinite(a[i])

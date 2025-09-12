@@ -22,7 +22,7 @@ import { iterate_all } from "@/scripts/utils/utils.js";
 import { applyDithering_Ordered } from "../../image_processing/dithering/pipeline.js";
 import { extractPalette } from "../../image_processing/palette_extraction/pipeline.js";
 
-const embed: ColorSpace = "xyz";
+const embed: ColorSpace = "lab";
 type EmbedColor = ColorSpaceMap[typeof embed];
 
 const str2srgb = convert_color("str", "srgb")!,

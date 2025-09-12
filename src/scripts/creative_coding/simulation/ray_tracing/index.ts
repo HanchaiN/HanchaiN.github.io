@@ -1,3 +1,4 @@
+import type { RGBColor } from "@/scripts/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
@@ -6,7 +7,6 @@ import { map } from "@/scripts/utils/math/utils.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
 
 import { Light } from "./colors.js";
-import type { TColorRGB } from "./colors.ts";
 import type { SceneObject } from "./object.ts";
 import {
   postProcessorGen,
@@ -19,11 +19,14 @@ import type { MessageResponse as WhiteMessageResponse } from "./worker_white.ts"
 export default function execute() {
   let workers: Worker[] = [];
   const color = {
-    white: [1, 1, 1] as TColorRGB,
-    bright: [1, 1, 1] as TColorRGB,
+    white: [1, 1, 1] as RGBColor,
+    bright: [1, 1, 1] as RGBColor,
   };
   let isActive = false;
   const scale = 1;
+
+  let white_balance = true;
+  let tone_mapping = true;
 
   const postProcessorGen_ = postProcessorGen(tonemaper);
 
@@ -75,8 +78,23 @@ export default function execute() {
   }
 
   return {
-    start: (canvas: HTMLCanvasElement) => {
+    start: (canvas: HTMLCanvasElement, config: HTMLFormElement) => {
       isActive = true;
+      tone_mapping =
+        config.querySelector<HTMLInputElement>("#tone-mapping")!.checked;
+      config
+        .querySelector<HTMLInputElement>("#tone-mapping")!
+        .addEventListener("change", (e) => {
+          tone_mapping = (e.target as HTMLInputElement).checked;
+        });
+      white_balance =
+        config.querySelector<HTMLInputElement>("#white-balance")!.checked;
+      config
+        .querySelector<HTMLInputElement>("#white-balance")!
+        .addEventListener("change", (e) => {
+          white_balance = (e.target as HTMLInputElement).checked;
+        });
+
       const white_calc = new Worker(
         new URL("./worker_white.js", import.meta.url),
         { type: "module" },
@@ -118,11 +136,6 @@ export default function execute() {
         },
         buffer,
       );
-      let step = renderer(
-        acc,
-        ++i,
-        postProcessorGen_(color.bright, color.white),
-      );
       startAnimationLoop(async function draw() {
         if (!isActive) return false;
         await createImageBitmap(buffer).then((bmp) =>
@@ -130,14 +143,18 @@ export default function execute() {
         );
         return true;
       });
+      let step: Generator<void, void[][], never> | null = null;
       startLoop(function update() {
         if (!isActive) return false;
-        const res = step.next();
-        if (res.done) {
+        const res = step?.next();
+        if (!res || res.done) {
           step = renderer(
             acc,
             ++i,
-            postProcessorGen_(color.bright, color.white),
+            postProcessorGen_({
+              bright: tone_mapping ? color.bright : [1, 1, 1],
+              white: white_balance ? color.white : [1, 1, 1],
+            }),
           );
         }
         return true;
