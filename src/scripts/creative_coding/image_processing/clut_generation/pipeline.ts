@@ -1,10 +1,10 @@
 // https://github.com/ozwaldorf/lutgen-rs
+import convert_color from "@/scripts/utils/color/conversion.js";
 import type {
   ColorSpace,
   ColorSpaceMap,
   SRGBColor,
-} from "@/scripts/utils/color/conversion.js";
-import convert_color from "@/scripts/utils/color/conversion.js";
+} from "@/scripts/utils/color/conversion.ts";
 import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";

@@ -1,28 +1,32 @@
 import convert_color from "@/scripts/utils/color/conversion.js";
 import type {
   ColorSpace,
+  ColorSpaceExt,
   ColorSpaceMap,
+  ColorSpaceMapExt,
+  RGBColor,
   SRGBColor,
   XYZColor,
 } from "@/scripts/utils/color/conversion.ts";
 import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
+import { matrix_inverse, matrix_mult } from "@/scripts/utils/math/matrix.js";
 import { sample } from "@/scripts/utils/math/random.js";
-import { softargmax } from "@/scripts/utils/math/utils.js";
+import {
+  constrain,
+  normalize,
+  softargmax,
+} from "@/scripts/utils/math/utils.js";
 import {
   vector_add,
   vector_dot,
+  vector_mag,
   vector_mult,
+  vector_normalize,
+  vector_proj,
   vector_sub,
 } from "@/scripts/utils/math/vector.js";
-
-const embed: ColorSpace = "lab";
-type EmbedColor = ColorSpaceMap[typeof embed];
-const srgb2embed = convert_color("srgb", embed)!,
-  embed2lab = convert_color(embed, "lab")!;
-const color_distance = (a: EmbedColor, b: EmbedColor) =>
-  DistanceE94(embed2lab(a), embed2lab(b));
 
 function validate_map(map: number[][]) {
   if (map.length === 0) throw new Error("map must be non-empty");
@@ -76,36 +80,84 @@ function threshold_map(n: number, base: number[][]): number[][] {
     );
 }
 
-function _applyDithering_Ordered(
+function _applyDithering_Ordered<Embed extends number[]>(
   this: IKernelFunctionThis<{
     cmap: number[][];
     color_palette: SRGBColor[];
-    embed_palette: XYZColor[];
-    embed_avg: [number, number, XYZColor][];
+    embed_palette: Embed[];
     temperature: number;
+    n_candidates: number;
+    srgb2embed: (c: SRGBColor) => Embed;
+    distance: (a: Embed, b: Embed) => number;
+    project: (candidates: number[]) => {
+      is: number[];
+      es: Embed[];
+      k_inv: number[][];
+    };
   }>,
 ) {
   const n = this.constants.cmap.length;
   const { x, y } = this.thread;
   const seed = this.constants.cmap[x % n][y % n] + 0.5;
   const [r, g, b, a] = this.getColor();
-  const target_color = srgb2embed([r, g, b]);
-  const pair_index = sample(
-    this.constants.embed_avg.map(([i, j]) => [i, j] as [number, number]),
-    softargmax(
-      this.constants.embed_avg.map(
-        ([, , color]) => -color_distance(color, target_color),
-      ),
-      this.constants.temperature,
+  const target_embed = this.constants.srgb2embed([r, g, b]);
+  let _target_embed = vector_mult(target_embed, 1);
+  const candidates: number[] = [];
+  const n_candidates = Math.max(
+    1,
+    Math.min(
+      this.constants.embed_palette.length,
+      this.constants.n_candidates,
+      _target_embed.length + 1,
     ),
   );
-  const c1 = this.constants.embed_palette[pair_index[0]];
-  const c2 = this.constants.embed_palette[pair_index[1]];
-  const c12 = vector_sub(c2, c1);
-  const c10 = vector_sub(target_color, c1);
-  const threshold = vector_dot(c12, c10) / vector_dot(c12, c12);
-  const color =
-    this.constants.color_palette[pair_index[seed < threshold ? 1 : 0]];
+  for (let i = 0; i < n_candidates; i++) {
+    const weight = softargmax(
+      this.constants.embed_palette.map((embed, j) =>
+        candidates.includes(j)
+          ? -Infinity
+          : -this.constants.distance(embed, _target_embed),
+      ),
+      this.constants.temperature,
+    );
+    const idx = sample(
+      this.constants.embed_palette.map((_, i) => i),
+      weight,
+    );
+    const candidate_color = this.constants.embed_palette[idx];
+    _target_embed = vector_add(
+      _target_embed,
+      vector_mult(
+        vector_sub(_target_embed, candidate_color),
+        1 / (n_candidates - i - 1),
+      ),
+    );
+    candidates.push(idx);
+  }
+  const fallback = candidates[0];
+  if (candidates.length > 1) {
+    candidates.reverse();
+    const { is, es, k_inv } = this.constants.project(candidates);
+    const v0 = vector_sub(
+      target_embed,
+      this.constants.embed_palette[candidates[0]],
+    );
+    const k0 = es.map((e) => vector_dot(v0, e));
+    let w = matrix_mult([k0], k_inv)[0];
+    w.push(1 - w.reduce((acc, v) => acc + v, 0));
+    w = w.map((v) => constrain(v, 0, 1));
+    w = normalize(w);
+    let acc = 0;
+    for (let i = 0; i < w.length; i++) {
+      acc += constrain(w[i], 0, 1);
+      if (seed < acc) {
+        const color = this.constants.color_palette[candidates[is[i]]];
+        this.color(color[0], color[1], color[2], a);
+        return;
+      }
+    }
+  }
+  const color = this.constants.color_palette[fallback];
   this.color(color[0], color[1], color[2], a);
 }
 
@@ -115,11 +167,40 @@ export function applyDithering_Ordered(
   {
     temperature = 0,
     mask_size = 16,
+    n_candidates = 0,
+    order_mode = "cie",
   }: {
     temperature?: number;
     mask_size?: number;
+    n_candidates?: number;
+    order_mode?: "cie" | "rgb" | "lum";
   } = {},
 ) {
+  const embed: ColorSpaceExt = { cie: "xyz", rgb: "rgb", lum: "lum" }[
+    order_mode
+  ] as "xyz" | "rgb" | "lum";
+  type EmbedColor = ColorSpaceMapExt[typeof embed];
+  const srgb2embed = convert_color("srgb", embed)!;
+  let distance: (a: EmbedColor, b: EmbedColor) => number;
+  switch (order_mode) {
+    case "cie": {
+      const xyz2lab = convert_color("xyz", "lab")!;
+      distance = (a: EmbedColor, b: EmbedColor) =>
+        DistanceE94(xyz2lab(a as XYZColor), xyz2lab(b as XYZColor));
+      break;
+    }
+    case "rgb":
+      distance = (a: EmbedColor, b: EmbedColor) =>
+        vector_mag(vector_sub(a as RGBColor, b as RGBColor));
+      break;
+    case "lum":
+      distance = (a: EmbedColor, b: EmbedColor) =>
+        Math.abs((a as [l: number])[0] - (b as [l: number])[0]);
+      break;
+    default:
+      throw new Error(`Unknown order_mode: ${order_mode}`);
+  }
+
   const cmap = normalize_map(
     threshold_map(mask_size, [
       [0, 2],
@@ -127,27 +208,57 @@ export function applyDithering_Ordered(
     ]),
   );
   const embed_palette = color_palette.map(srgb2embed);
-  const embed_avg: [number, number, XYZColor][] = embed_palette
-    .map((c1, i) =>
-      embed_palette.map(
-        (c2, j) =>
-          [i, j, vector_mult(vector_add(c1, c2), 0.5)] as [
-            number,
-            number,
-            XYZColor,
-          ],
-      ),
-    )
-    .flat()
-    .filter(([i, j]) => i > j);
+
+  const project_cache: Map<
+    string,
+    { is: number[]; es: EmbedColor[]; k_inv: number[][] }
+  > = new Map();
+  function project(candidates: number[]) {
+    const key = candidates.join(",");
+    if (project_cache.has(key)) return project_cache.get(key)!;
+    const is: number[] = [];
+    const vs: EmbedColor[] = [];
+    const es: EmbedColor[] = [];
+    for (let i = 1; i < candidates.length; i++) {
+      const v = vector_sub(
+        embed_palette[candidates[i]],
+        embed_palette[candidates[0]],
+      );
+      let u = vector_mult(v, 1);
+      for (let j = 0; j < es.length; j++) {
+        const proj = vector_proj(u, es[j]);
+        u = vector_sub(u, proj);
+      }
+      if (vector_dot(u, u) > 1e-5) {
+        vs.push(v);
+        is.push(i);
+        const e = vector_normalize(u);
+        es.push(e);
+      }
+    }
+    is.push(0);
+    const ks: number[][] = [];
+    for (let i = 0; i < vs.length; i++) {
+      const k = es.map((e) => vector_dot(vs[i], e));
+      ks.push(k);
+    }
+    const k_inv = matrix_inverse(ks);
+    if (k_inv === null) throw new Error("Matrix is singular");
+    project_cache.set(key, { is, es, k_inv });
+    return project_cache.get(key)!;
+  }
+
   const runner = kernelRunner(
     _applyDithering_Ordered,
     {
       cmap,
       color_palette,
       embed_palette,
-      embed_avg,
       temperature,
+      n_candidates: n_candidates <= 0 ? Infinity : n_candidates,
+      srgb2embed,
+      distance: distance,
+      project,
     },
     buffer,
   );
@@ -165,6 +276,13 @@ export function applyDithering_ErrorDiffusion(
     err_decay?: number;
   } = {},
 ) {
+  const embed: ColorSpace = "lab";
+  type EmbedColor = ColorSpaceMap[typeof embed];
+  const srgb2embed = convert_color("srgb", embed)!,
+    embed2lab = convert_color(embed, "lab")!;
+  const color_distance = (a: EmbedColor, b: EmbedColor) =>
+    DistanceE94(embed2lab(a), embed2lab(b));
+
   const color_palette_ = color_palette.map(srgb2embed);
   const err_diffusion: [[number, number], number][] = [
     // [[+1, 0], 1 / 8],

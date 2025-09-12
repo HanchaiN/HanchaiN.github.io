@@ -1,5 +1,5 @@
-import { PriorityQueue } from "@/scripts/utils/algo/datastructure.js";
-import { iterate_all } from "@/scripts/utils/utils.js";
+import { iterate_all } from "../utils.js";
+import { PriorityQueue } from "./datastructure.js";
 
 export function* minimum_spanning_tree_step(edges: number[][]) {
   const tree_edges: number[] = [];

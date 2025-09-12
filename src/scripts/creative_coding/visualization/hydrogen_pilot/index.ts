@@ -12,7 +12,7 @@ import { constrain } from "@/scripts/utils/math/utils.js";
 
 import type { MessageResponse } from "./worker.ts";
 
-const okhcl2hex = convert_color("okhcl", "hex")!;
+const hcl2hex = convert_color("hcl", "hex")!;
 
 export default function execute() {
   let camera: THREE.PerspectiveCamera,
@@ -119,7 +119,7 @@ export default function execute() {
             electron_mesh.setMatrixAt(index + i, matrix);
             electron_mesh.setColorAt(
               index + i,
-              new THREE.Color(okhcl2hex([h / 360, saturation, lightness])),
+              new THREE.Color(hcl2hex([h / 360, saturation, lightness])),
             );
           });
           electron_mesh.instanceMatrix.needsUpdate = true;

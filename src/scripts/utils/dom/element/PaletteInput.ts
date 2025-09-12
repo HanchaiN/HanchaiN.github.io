@@ -1,5 +1,5 @@
-import convert_color from "@/scripts/utils/color/conversion.js";
-import { throttle } from "@/scripts/utils/utils.js";
+import convert_color from "../../color/conversion.js";
+import { throttle } from "../../utils.js";
 
 const str2hex = convert_color("str", "hex")!;
 

@@ -20,20 +20,38 @@ block content
     form.data-container#config
       label(for='image') Image:
       input#image(type='file', accept='image/*')
-      label(for='sample-dim') Sampling size:
-      input#sample-dim(type='number', value='100', min='50', max='5000', step='1')
+      br
+      label(for='sample-size-cluster') Sampling size (clustering):
+      input#sample-size-cluster(type='number', value='1000', min='1', step='1')
+      br
+      label(for='auto-target') Target Color Count:
+      input#auto-target(type='number', value='0', min='0', step='1')
       button#autorun(type='button') Autorun
+      br
       label(for='palette-count') Color Count:
       input#palette-count(type='number', value='0', min='0', step='1')
+      details
+        summary Palette:
+        textarea#palette-text
+        div#palette
       button#calc(type='button') Calculate
       button#snap(type='button') Snap to pixels
+      br
+      button#draw-raw(type='button') Draw (Raw)
+      button#draw-quant(type='button') Quantize
+      br
+      label(for='sample-size-eval') Sampling size (evaluation):
+      input#sample-size-eval(type='number', value='1000', min='0', step='1')
+      label(for='eval-iter') Iterations (evaluation):
+      input#eval-iter(type='number', value='3', min='0', step='1')
+      label(for='simplify-a') Simplify Intracluster distance:
+      input#simplify-a(type='checkbox')
+      label(for='simplify-b') Simplify Intercluster distance:
+      input#simplify-b(type='checkbox' checked)
+      br
       button#eval(type='button') Evaluate
       label(for='palette-score') Silhouette Score:
       input#palette-score(type='number', value='0', readonly, disabled)
-      button#draw-raw(type='button') Draw (Raw)
-      button#draw-quant(type='button') Quantize
-      textarea#palette-text
-      div#palette
 
   p.
     In computer graphics, color quantization or color image quantization is quantization applied to color spaces;

@@ -10,7 +10,7 @@ import { Vector } from "@/scripts/utils/math/vector.js";
 
 import type { MessageResponse } from "./worker.ts";
 
-const okhcl2hex = convert_color("okhcl", "hex")!;
+const hcl2hex = convert_color("hcl", "hex")!;
 
 export default function execute() {
   let canvas: HTMLCanvasElement;
@@ -87,7 +87,7 @@ export default function execute() {
     result.forEach(({ states }) => {
       states!.forEach(({ state, hue }) => {
         const pos = project(...state);
-        ctx.fillStyle = okhcl2hex([hue / 360, 0.125, 0.75]);
+        ctx.fillStyle = hcl2hex([hue / 360, 0.125, 0.75]);
         ctx.beginPath();
         ctx.arc(pos.x, pos.y, r, 0, 2 * Math.PI);
         ctx.fill();

@@ -1,11 +1,12 @@
 import convert_color from "@/scripts/utils/color/conversion.js";
-import type { RGBColor, SRGBColor } from "@/scripts/utils/color/conversion.js";
+import type { RGBColor, SRGBColor } from "@/scripts/utils/color/conversion.ts";
 import { constrain, constrainLerp, lerp } from "@/scripts/utils/math/utils.js";
 
 type IToneMapper = (ref: RGBColor) => (col: RGBColor) => RGBColor;
 
 // https://64.github.io/tonemapping/
-export const luminance = convert_color("rgb", "lum")!;
+const rgb2lum = convert_color("rgb", "lum")!;
+export const luminance = ([r, g, b]: RGBColor) => rgb2lum([r, g, b])[0];
 const exposture =
   (exposture: number) =>
   ([r, g, b]: RGBColor): RGBColor => [

@@ -38,24 +38,30 @@ export default function execute() {
       await getImageFromInput(conf.querySelector<HTMLInputElement>("#image")!),
       canvas,
     );
-    const temperature =
-      conf.querySelector<HTMLInputElement>("#temperature")!.valueAsNumber;
-    const err_decay =
-      conf.querySelector<HTMLInputElement>("#err_decay")!.valueAsNumber;
-    const mask_order =
-      conf.querySelector<HTMLInputElement>("#mask_order")!.valueAsNumber;
-    const param = {
-      temperature,
-      err_decay,
-      mask_size: Math.pow(2, mask_order),
-    };
     const algo = conf.querySelector<HTMLSelectElement>("#algorithm")!.value;
     switch (algo) {
       case "order":
-        applyDithering_Ordered(imageData, getPalette(), param);
+        applyDithering_Ordered(imageData, getPalette(), {
+          temperature:
+            conf.querySelector<HTMLInputElement>("#temperature")!.valueAsNumber,
+          mask_size: Math.pow(
+            2,
+            conf.querySelector<HTMLInputElement>("#mask_order")!.valueAsNumber,
+          ),
+          n_candidates:
+            conf.querySelector<HTMLInputElement>("#candidate_count")!
+              .valueAsNumber,
+          order_mode: conf.querySelector<HTMLSelectElement>("#order_mode")!
+            .value as "cie" | "rgb" | "lum",
+        });
         break;
       case "error":
-        applyDithering_ErrorDiffusion(imageData, getPalette(), param);
+        applyDithering_ErrorDiffusion(imageData, getPalette(), {
+          temperature:
+            conf.querySelector<HTMLInputElement>("#temperature")!.valueAsNumber,
+          err_decay:
+            conf.querySelector<HTMLInputElement>("#err_decay")!.valueAsNumber,
+        });
         break;
       default:
         alert("Invalid algorithm");
@@ -85,11 +91,17 @@ export default function execute() {
         config.querySelector("#palette-text")!,
       );
       palette.addChangeHandler((p) => {
-        let t = 1;
-        if (p.length === 0) t = 1;
-        else if (algo.value === "order")
-          t = 1 / ((p.length * (p.length - 1)) / 2 - 1);
-        else if (algo.value === "error") t = 1 / (p.length - 1);
+        let t = 0;
+        switch (algo.value) {
+          case "order":
+            if (p.length >= 3) t = 1 / ((p.length * (p.length - 1)) / 2 - 1);
+            break;
+          case "error":
+            if (p.length >= 2) t = 1 / (p.length - 1);
+            break;
+          default:
+            break;
+        }
         config.querySelector<HTMLInputElement>("#temperature")!.valueAsNumber =
           t;
       });

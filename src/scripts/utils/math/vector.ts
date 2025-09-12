@@ -1,86 +1,94 @@
-import type { TComplex } from "./complex.ts";
+export type TVector<T = number, N extends number = number> = T[] & {
+  readonly length: N;
+};
 
-export type TVector2 = [number, number];
-export type TCVector2 = [TComplex, TComplex, TComplex];
-export type TVector3 = [number, number, number];
-export type TCVector3 = [TComplex, TComplex, TComplex];
-export type TVector4 = [number, number, number, number];
-export type TCVector4 = [TComplex, TComplex, TComplex, TComplex];
-export type TVector = TVector2 | TVector3 | TVector4;
-export function vector_dim<T extends TVector>(v: T) {
-  return v.length;
+export function vector_dim<T extends TVector>(
+  v: T,
+): T extends TVector<unknown, infer N> ? N : number {
+  return v.length as T extends TVector<unknown, infer N> ? N : number;
 }
-export function vector_add<T extends TVector>(a: T, b: T): T {
+export function vector_add<T extends TVector<number>>(a: T, b: T): T {
   return a.map((_, i) => a[i] + b[i]) as T;
 }
-export function vector_sub<T extends TVector>(a: T, b: T): T {
+export function vector_sub<T extends TVector<number>>(a: T, b: T): T {
   return a.map((_, i) => a[i] - b[i]) as T;
 }
-export function vector_mult<T extends TVector>(v: T, s: number): T {
+export function vector_mult<T extends TVector<number>>(v: T, s: number): T {
   return v.map((_, i) => v[i] * s) as T;
 }
-export function vector_div<T extends TVector>(v: T, s: number): T {
+export function vector_div<T extends TVector<number>>(v: T, s: number): T {
   return v.map((_, i) => v[i] / s) as T;
 }
-export function vector_dot<T extends TVector>(a: T, b: T) {
+export function vector_dot<T extends TVector<number>>(a: T, b: T) {
   let acc = 0.0;
   for (let i = 0; i < vector_dim(a); i++) acc += a[i] * b[i];
   return acc;
 }
-export function vector_cross(a: TVector3, b: TVector3): TVector3 {
+export function vector_proj<T extends TVector<number>>(a: T, b: T): T {
+  return vector_mult(b, vector_dot(a, b) / vector_dot(b, b));
+}
+export function vector_cross(
+  a: TVector<number, 3>,
+  b: TVector<number, 3>,
+): TVector<number, 3> {
   return [
     a[1] * b[2] - a[2] * b[1],
     a[2] * b[0] - a[0] * b[2],
     a[0] * b[1] - a[1] * b[0],
   ];
 }
-export function vector_magSq<T extends TVector>(v: T) {
+export function vector_magSq<T extends TVector<number>>(v: T) {
   return vector_dot(v, v);
 }
-export function vector_mag<T extends TVector>(v: T) {
+export function vector_mag<T extends TVector<number>>(v: T) {
   return Math.sqrt(vector_magSq(v));
 }
-export function vector_dist<T extends TVector>(a: T, b: T) {
+export function vector_dist<T extends TVector<number>>(a: T, b: T) {
   return vector_mag(vector_sub(a, b));
 }
-export function vector_normalize<T extends TVector>(v: T): T {
+export function vector_normalize<T extends TVector<number>>(v: T): T {
   return vector_div(v, vector_mag(v));
 }
-export function vector_setMag<T extends TVector>(v: T, mag: number): T {
+export function vector_setMag<T extends TVector<number>>(v: T, mag: number): T {
   return vector_mult(vector_normalize(v), mag);
 }
-export function vector_heading(v: TVector2) {
+export function vector_heading(v: TVector<number, 2>) {
   return Math.atan2(v[1], v[0]);
 }
-export function vector_angleBetween<T extends TVector>(a: T, b: T) {
-  if (vector_dim(a) !== 2)
-    return Math.acos(vector_dot(a, b) / (vector_mag(a), vector_mag(b)));
-  return (
-    Math.acos(vector_dot(a, b) / (vector_mag(a), vector_mag(b))) *
-    Math.sign(a[0] * b[1] - a[1] * b[0])
-  );
+export function vector_angleBetween<T extends TVector<number>>(a: T, b: T) {
+  let k = 1;
+  if (vector_dim(a) === 2 && vector_dim(b) === 2) {
+    k = Math.sign(a[0] * b[1] - a[1] * b[0]);
+  }
+  return Math.acos(vector_dot(a, b) / (vector_mag(a) * vector_mag(b))) * k;
 }
-export function vector_rotate(v: TVector2, theta: number): TVector2 {
+export function vector_rotate(
+  v: TVector<number, 2>,
+  theta: number,
+): TVector<number, 2> {
   return [
     Math.cos(theta) * v[0] - Math.sin(theta) * v[1],
     Math.sin(theta) * v[0] + Math.cos(theta) * v[1],
   ];
 }
-export function vector_inclination(v: TVector3) {
+export function vector_inclination(v: TVector<number, 3>) {
   const r = vector_mag(v);
   return r === 0 ? 0 : Math.acos(v[2] / r);
 }
-export function vector_alzimuth(v: TVector3) {
+export function vector_alzimuth(v: TVector<number, 3>) {
   return Math.atan2(v[1], v[0]);
 }
-export function vector_fromPolar(r: number, heading: number): TVector2 {
+export function vector_fromPolar(
+  r: number,
+  heading: number,
+): TVector<number, 2> {
   return [r * Math.cos(heading), r * Math.sin(heading)];
 }
 export function vector_fromSphere(
   r: number,
   inclination: number,
   alzimuth: number,
-): TVector3 {
+): TVector<number, 3> {
   return [
     r * Math.sin(inclination) * Math.cos(alzimuth),
     r * Math.sin(inclination) * Math.sin(alzimuth),

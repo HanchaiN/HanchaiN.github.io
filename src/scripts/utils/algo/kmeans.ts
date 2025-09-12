@@ -1,43 +1,67 @@
-import { sample } from "@/scripts/utils/math/random.js";
-import { argmax, softargmax } from "@/scripts/utils/math/utils.js";
+import { sample } from "../math/random.js";
+import { argmax, softargmax } from "../math/utils.js";
 
 function getSilhouetteScoreArray<T>(
   samples: T[],
   centroids: T[] = [],
   dist: (a: T, b: T) => number,
+  simplify_a: boolean = false,
+  simplify_b: boolean = false,
 ): [number, number][] {
   const ind = samples.map((v) => {
     let min_dist = Infinity,
-      min_ind = -1;
+      min_ind: number[] = [];
     for (let j = 0; j < centroids.length; j++) {
       const d = dist(v, centroids[j]);
       if (d < min_dist) {
         min_dist = d;
-        min_ind = j;
+        min_ind = [j];
+      } else if (d === min_dist) {
+        min_ind.push(j);
       }
     }
-    return min_ind;
+    return min_ind[Math.floor(Math.random() * min_ind.length)];
   });
   const cls = new Array(centroids.length)
     .fill(0)
-    .map((_, i) =>
-      samples.map((c, i) => ({ c, i })).filter((_, j) => ind[j] === i),
+    .map((_, k) =>
+      samples.map((c, i) => ({ c, i })).filter(({ i }) => ind[i] === k),
     );
-  const a = samples.map((v, i) => {
-    if (cls[ind[i]].length <= 1) return Infinity;
-    return (
-      cls[ind[i]].reduce((acc, { c: o }) => acc + dist(v, o), 0) /
-      (cls[ind[i]].length - 1)
-    );
+  const _dist: Map<string, number> = new Map();
+  const dist_samp_samp = (i: number, j: number) => {
+    if (i === j) return 0;
+    if (i > j) [i, j] = [j, i];
+    const key = `S_${i}_${j}`;
+    if (!_dist.has(key)) _dist.set(key, dist(samples[i], samples[j]));
+    const val = _dist.get(key);
+    if (typeof val === "undefined") throw new Error("Unreachable");
+    return val!;
+  };
+  const dist_samp_cen = (i: number, j: number) => {
+    const key = `C_${i}_${j}`;
+    if (!_dist.has(key)) _dist.set(key, dist(samples[i], centroids[j]));
+    const val = _dist.get(key);
+    if (typeof val === "undefined") throw new Error("Unreachable");
+    return val!;
+  };
+
+  const a = samples.map((_, i) => {
+    return cls[ind[i]].length <= 1
+      ? 0
+      : simplify_a
+        ? dist_samp_cen(i, ind[i])
+        : cls[ind[i]].reduce((acc, { i: j }) => acc + dist_samp_samp(i, j), 0) /
+          (cls[ind[i]].length - 1);
   });
-  const b = samples.map((v, i) => {
+  const b = samples.map((_, i) => {
     let min_dist = Infinity;
-    for (let j = 0; j < centroids.length; j++) {
-      if (cls[j].length <= 0) continue;
-      if (j === ind[i]) continue;
-      const d =
-        cls[j].reduce((acc, { c: o }) => acc + dist(v, o), 0) /
-        cls[ind[i]].length;
+    for (let k = 0; k < centroids.length; k++) {
+      if (cls[k].length <= 0) continue;
+      if (k === ind[i]) continue;
+      const d = simplify_b
+        ? dist_samp_cen(i, k)
+        : cls[k].reduce((acc, { i: j }) => acc + dist_samp_samp(i, j), 0) /
+          cls[k].length;
       if (d < min_dist) {
         min_dist = d;
       }
@@ -67,8 +91,16 @@ export function getSilhouetteScore<T>(
   samples: T[],
   centroids: T[] = [],
   dist: (a: T, b: T) => number,
+  simplify_a: boolean = false,
+  simplify_b: boolean = false,
 ) {
-  const score = getSilhouetteScoreArray(samples, centroids, dist);
+  const score = getSilhouetteScoreArray(
+    samples,
+    centroids,
+    dist,
+    simplify_a,
+    simplify_b,
+  );
   return (
     score.reduce((acc, [s, n]) => acc + s * n, 0) /
     score.reduce((acc, [, n]) => acc + n, 0)
@@ -148,15 +180,19 @@ export function kMeans<T>(
     const sample = getSample();
     for (let k = 0; k < sample.length; k++) {
       let min_dist = Infinity;
-      let min_index = -1;
+      let min_index: number[] = [];
       for (let j = 0; j < centroids.length; j++) {
         const d = dist(sample[k], centroids[j]);
         if (d < min_dist) {
           min_dist = d;
-          min_index = j;
+          min_index = [j];
+        } else if (d === min_dist) {
+          min_index.push(j);
         }
       }
-      acc[min_index].push(sample[k]);
+      acc[min_index[Math.floor(Math.random() * min_index.length)]].push(
+        sample[k],
+      );
     }
     let converged = true;
     for (let j = 0; j < centroids.length; j++) {

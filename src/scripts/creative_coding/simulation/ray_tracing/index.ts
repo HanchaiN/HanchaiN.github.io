@@ -1,4 +1,4 @@
-import type { RGBColor } from "@/scripts/utils/color/conversion.js";
+import type { RGBColor } from "@/scripts/utils/color/conversion.ts";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";

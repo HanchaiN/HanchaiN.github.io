@@ -1,5 +1,5 @@
 import convert_color from "@/scripts/utils/color/conversion.js";
-import type { RGBColor, XYZColor } from "@/scripts/utils/color/conversion.js";
+import type { RGBColor, XYZColor } from "@/scripts/utils/color/conversion.ts";
 
 import { MAX_LUM, MIN_LUM } from "./const.js";
 

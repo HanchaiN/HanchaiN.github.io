@@ -61,7 +61,9 @@ export function average(x: number[], w: number[] | null = null) {
   return x.reduce((acc, v, i) => acc + v * w[i], 0);
 }
 export function argmax(x: number[]) {
-  return x.indexOf(Math.max(...x));
+  let x_max = -Infinity;
+  for (const v of x) if (v > x_max) x_max = v;
+  return x.indexOf(x_max);
 }
 export function softargmax(x: number[], temperature = 1): number[] {
   const max = x.reduce((acc, v) => Math.max(acc, v), -Infinity);

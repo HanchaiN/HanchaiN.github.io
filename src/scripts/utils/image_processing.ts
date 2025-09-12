@@ -1,5 +1,5 @@
-import convert_color from "@/scripts/utils/color/conversion.js";
-import { constrain, map } from "@/scripts/utils/math/utils.js";
+import convert_color from "./color/conversion.js";
+import { constrain, map } from "./math/utils.js";
 
 const srgb2lum = convert_color("srgb", "lum")!;
 
@@ -36,7 +36,7 @@ export function getLuminance(imageData: ImageData, outIndex: number = 3) {
         imageData.data[index] / 255,
         imageData.data[index + 1] / 255,
         imageData.data[index + 2] / 255,
-      ]);
+      ])[0];
       if (outIndex < 0) {
         imageData.data[index] = l * 255;
         imageData.data[index + 1] = l * 255;

@@ -5,6 +5,7 @@ import { PerlinNoise } from "@/scripts/utils/math/noise.js";
 import { randomGaussian } from "@/scripts/utils/math/random.js";
 import { constrain, map } from "@/scripts/utils/math/utils.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
+import { iterate_all } from "@/scripts/utils/utils";
 
 function* shortest_path<T>(
   nodes: T[],
@@ -290,9 +291,7 @@ export class DungeonGenerator {
     return this.edges;
   }
   genEdges() {
-    for (const _ of this.genEdges_Stepwise()) {
-      _; // eslint-disable-line @typescript-eslint/no-unused-expressions
-    }
+    return iterate_all(this.genEdges_Stepwise());
   }
   *genTree_Stepwise() {
     const tree_gen = minimum_spanning_tree_step(
@@ -311,9 +310,7 @@ export class DungeonGenerator {
     return this.tree;
   }
   genTree() {
-    for (const _ of this.genTree_Stepwise()) {
-      _; // eslint-disable-line @typescript-eslint/no-unused-expressions
-    }
+    return iterate_all(this.genTree_Stepwise());
   }
   filterEdges(EXTRA_NODE_RATE = 0.125) {
     this.edges.sort((a, b) => {

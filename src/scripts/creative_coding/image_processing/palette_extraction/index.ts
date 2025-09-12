@@ -2,7 +2,8 @@ import convert_color from "@/scripts/utils/color/conversion.js";
 import type {
   ColorSpace,
   ColorSpaceMap,
-} from "@/scripts/utils/color/conversion.js";
+  SRGBColor,
+} from "@/scripts/utils/color/conversion.ts";
 import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
@@ -52,17 +53,8 @@ export default function execute() {
     setPalette([]);
     redraw(true);
   }
-  function downSample() {
-    const sample_dim =
-      form.querySelector<HTMLInputElement>("#sample-dim")!.valueAsNumber;
-    const scale = Math.max(
-      1,
-      Math.max(canvas.width, canvas.height) / sample_dim,
-    );
-    const offscreen = new OffscreenCanvas(
-        canvas.width / scale,
-        canvas.height / scale,
-      ),
+  function getSample(sample_size: number = -1) {
+    const offscreen = new OffscreenCanvas(image.width, image.height),
       offscreenCtx = offscreen.getContext("2d")!;
     offscreenCtx.drawImage(image, 0, 0, offscreen.width, offscreen.height);
     const buffer = offscreenCtx.getImageData(
@@ -72,7 +64,19 @@ export default function execute() {
       offscreen.height,
       { colorSpace: "srgb" },
     );
-    return buffer;
+    const samples = new Array(buffer.width * buffer.height)
+      .fill(0)
+      .map((_, i) => i)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, sample_size)
+      .map<SRGBColor>((i) => {
+        return [
+          buffer.data[i * 4 + 0] / 255,
+          buffer.data[i * 4 + 1] / 255,
+          buffer.data[i * 4 + 2] / 255,
+        ];
+      });
+    return samples;
   }
   function cluster() {
     if (!isActive || !image) return;
@@ -90,21 +94,19 @@ export default function execute() {
       }, 0);
     const seed = cache[closestKey] ?? [];
     setPalette(
-      extractPalette(downSample(), n_colors, seed.map(embed2hex)).map((c) =>
-        str2embed(c),
+      extractPalette(getSample(), n_colors, seed.map(embed2hex)).map(
+        (c) => str2embed(c),
+        {
+          n_sample: form.querySelector<HTMLInputElement>(
+            "#sample-size-cluster",
+          )!.valueAsNumber,
+        },
       ),
     );
   }
   function snap() {
     if (!isActive || !image) return;
-    const buffer = downSample(),
-      samples = new Array(buffer.width * buffer.height).fill(0).map((_, i) => {
-        return srgb2embed([
-          buffer.data[i * 4 + 0] / 255,
-          buffer.data[i * 4 + 1] / 255,
-          buffer.data[i * 4 + 2] / 255,
-        ]);
-      }),
+    const samples = getSample().map(srgb2embed),
       palette = getPalette().map(
         (c) =>
           samples[argmax(samples.map((sample) => -color_distance(c, sample)))],
@@ -115,7 +117,30 @@ export default function execute() {
     if (!isActive || !image) return;
     const palette = getPalette();
     if (palette.length === 0) return;
-    const score = evaluatePalette(downSample(), palette.map(embed2hex));
+    const sample_size =
+      form.querySelector<HTMLInputElement>("#sample-size-eval")!.valueAsNumber;
+    const iter =
+      form.querySelector<HTMLInputElement>("#eval-iter")!.valueAsNumber;
+    const score =
+      iter > 0
+        ? new Array(iter)
+            .fill(0)
+            .map(() =>
+              evaluatePalette(
+                getSample(sample_size > 0 ? sample_size : -1),
+                palette.map(embed2hex),
+                {
+                  simplify_a:
+                    form.querySelector<HTMLInputElement>("#simplify-a")!
+                      .checked,
+                  simplify_b:
+                    form.querySelector<HTMLInputElement>("#simplify-b")!
+                      .checked,
+                },
+              ),
+            )
+            .reduce((a, b) => a + b, 0) / iter
+        : 0;
     form.querySelector<HTMLInputElement>("#palette-score")!.valueAsNumber =
       score;
   }
@@ -141,8 +166,7 @@ export default function execute() {
   }
   function extend(n_colors: number) {
     if (!image) return;
-    const buffer = downSample();
-    palette.value = extendPalette(buffer, n_colors, palette.value);
+    palette.value = extendPalette(getSample(), n_colors, palette.value);
   }
 
   function lock() {
@@ -166,12 +190,19 @@ export default function execute() {
 
   async function runAuto() {
     isAuto = true;
+    const target =
+      form.querySelector<HTMLInputElement>("#auto-target")!.valueAsNumber;
     clear(image);
     lock();
     try {
-      for (let n_colors = 0; isAuto; n_colors++) {
+      for (
+        let n_colors = 0;
+        isAuto && (target === 0 || n_colors < target);
+        n_colors++
+      ) {
         extend(n_colors);
         cluster();
+        redraw();
         updateScore();
         console.info(
           n_colors,

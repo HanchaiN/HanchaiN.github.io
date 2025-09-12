@@ -15,7 +15,7 @@ import { lerp } from "@/scripts/utils/math/utils.js";
 
 import { rot_hilbert as rot, xy2d } from "./hilbert.js";
 
-const okhcl2srgb = convert_color("okhcl", "srgb")!;
+const hcl2srgb = convert_color("hcl", "srgb")!;
 
 export default function execute() {
   let audioContext: AudioContext, gainNode: GainNode, oscl: OscillatorNode;
@@ -30,7 +30,7 @@ export default function execute() {
   function main(this: IKernelFunctionThis<IConstants>, n: number) {
     const d = xy2d(n, this.thread.x, this.thread.y, rot);
     const v = (1.0 * d) / (n * n);
-    const c = okhcl2srgb([
+    const c = hcl2srgb([
       v,
       this.constants.c as number,
       this.constants.l as number,

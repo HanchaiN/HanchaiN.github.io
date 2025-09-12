@@ -1,4 +1,4 @@
-import type { RGBColor } from "@/scripts/utils/color/conversion.js";
+import type { RGBColor } from "@/scripts/utils/color/conversion.ts";
 
 import { Light } from "./colors.js";
 import { Ray, trace } from "./ray.js";

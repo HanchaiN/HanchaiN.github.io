@@ -27,11 +27,11 @@ export type ColorSpaceMap = {
   srgb: SRGBColor;
   cubehelix: CubehelixColor;
 };
-type ColorSpaceMapExt = ColorSpaceMap & {
+export type ColorSpaceMapExt = ColorSpaceMap & {
   str: string;
   css: string;
   hex: string;
-  lum: number;
+  lum: [l: number];
 };
 
 export type ColorSpace = keyof ColorSpaceMap;
@@ -293,8 +293,8 @@ function cubehelix2rgb(hsl: CubehelixColor): RGBColor {
   return [l + a * (A * c + B * s), l + a * (C * c + D * s), l + a * (E * c)];
 }
 
-export function rgb2lum(rgb: RGBColor): number {
-  return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+export function rgb2lum(rgb: RGBColor): [l: number] {
+  return [0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]];
 }
 
 export default function convert_color<

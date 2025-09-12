@@ -14,8 +14,8 @@ import {
 
 import { ParticleSystem, SETTING } from "./particles.js";
 
-const str2oklab = convert_color("str", "oklab")!,
-  oklab2hex = convert_color("oklab", "hex")!;
+const str2lab = convert_color("str", "lab")!,
+  lab2hex = convert_color("lab", "hex")!;
 
 export default function execute() {
   let canvas: HTMLCanvasElement;
@@ -32,11 +32,11 @@ export default function execute() {
   const getBackground = () => getPaletteBaseColor(0);
   const getForeground = () => getPaletteBaseColor(1);
   const gradient = generateGradient(100, [
-    [0 / 3, str2oklab(getPaletteAccentColor(5))],
-    [1 / 3, str2oklab(getPaletteAccentColor(6))],
-    [2 / 3, str2oklab(getPaletteAccentColor(7))],
-    [3 / 3, str2oklab(getPaletteAccentColor(8))],
-  ]).map((c) => oklab2hex(c));
+    [0 / 3, str2lab(getPaletteAccentColor(5))],
+    [1 / 3, str2lab(getPaletteAccentColor(6))],
+    [2 / 3, str2lab(getPaletteAccentColor(7))],
+    [3 / 3, str2lab(getPaletteAccentColor(8))],
+  ]).map((c) => lab2hex(c));
   const n = 2048;
   const time_scale = 1;
   const max_dt = (1 / 8) * time_scale;

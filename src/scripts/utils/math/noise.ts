@@ -1,5 +1,6 @@
 import { lerp } from "./utils.js";
-import { TVector2, TVector3, TVector4, vector_dot } from "./vector.js";
+import { vector_dot } from "./vector.js";
+import type { TVector } from "./vector.ts";
 
 abstract class Noise {
   randomizer: { random: () => number };
@@ -23,10 +24,10 @@ abstract class Noise {
  * It is assumed to have a random() method.
  */
 export class SimplexNoise extends Noise {
-  grad3: TVector3[];
+  grad3: TVector<number, 3>[];
   p: number[];
   perm: number[];
-  simplex: TVector4[];
+  simplex: TVector<number, 4>[];
   constructor(r: { random: () => number } = Math) {
     super(r);
     this.grad3 = [
@@ -165,21 +166,27 @@ export class SimplexNoise extends Noise {
     else {
       t0 *= t0;
       n0 =
-        t0 * t0 * vector_dot(this.grad3[gi0].slice(0, 2) as TVector2, [x0, y0]); // (x,y) of grad3 used for 2D gradient
+        t0 *
+        t0 *
+        vector_dot(this.grad3[gi0].slice(0, 2) as TVector<number, 2>, [x0, y0]); // (x,y) of grad3 used for 2D gradient
     }
     let t1 = 0.5 - x1 * x1 - y1 * y1;
     if (t1 < 0) n1 = 0.0;
     else {
       t1 *= t1;
       n1 =
-        t1 * t1 * vector_dot(this.grad3[gi1].slice(0, 2) as TVector2, [x1, y1]);
+        t1 *
+        t1 *
+        vector_dot(this.grad3[gi1].slice(0, 2) as TVector<number, 2>, [x1, y1]);
     }
     let t2 = 0.5 - x2 * x2 - y2 * y2;
     if (t2 < 0) n2 = 0.0;
     else {
       t2 *= t2;
       n2 =
-        t2 * t2 * vector_dot(this.grad3[gi2].slice(0, 2) as TVector2, [x2, y2]);
+        t2 *
+        t2 *
+        vector_dot(this.grad3[gi2].slice(0, 2) as TVector<number, 2>, [x2, y2]);
     }
     // Add contributions from each corner to get the final noise value.
     // The result is scaled to return values in the interval [-1,1].
@@ -316,7 +323,7 @@ export class SimplexNoise extends Noise {
 //----------------------------------------------------------------------------//
 
 export class ClassicalNoise extends Noise {
-  grad3: TVector3[];
+  grad3: TVector<number, 3>[];
   p: number[];
   perm: number[];
   constructor(r: { random: () => number } = Math) {

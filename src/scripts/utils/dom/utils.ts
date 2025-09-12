@@ -1,4 +1,4 @@
-import convert_color from "@/scripts/utils/color/conversion.js";
+import convert_color from "../color/conversion.js";
 
 const str2hex = convert_color("str", "hex")!;
 

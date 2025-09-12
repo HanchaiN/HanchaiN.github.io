@@ -1,7 +1,6 @@
 type Timeout = ReturnType<typeof setTimeout>;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function throttle<T extends (...args: any) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   delay: number = 1000,
 ): (...args: Parameters<T>) => void {

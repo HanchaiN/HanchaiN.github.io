@@ -1,10 +1,5 @@
-import {
-  vector_add,
-  vector_dist,
-  vector_mult,
-} from "@/scripts/utils/math/vector.js";
-
 import { softargmax } from "../math/utils.js";
+import { vector_add, vector_dist, vector_mult } from "../math/vector.js";
 
 export const dist = vector_dist<[number, number, number]>;
 

@@ -1,7 +1,7 @@
-import convert_color from "@/scripts/utils/color/conversion.js";
-import { getChroma, getLightness } from "@/scripts/utils/color/palette.js";
+import convert_color from "./color/conversion.js";
+import { getChroma, getLightness } from "./color/palette.js";
 
-const okhcl2hex = convert_color("okhcl", "hex")!;
+const hcl2hex = convert_color("hcl", "hex")!;
 
 export type TNote =
   | "C "
@@ -61,7 +61,7 @@ export function getNoteColor(note: TNote) {
     "F ",
   ];
   const noteIndex = NOTE_ORDER.indexOf(note);
-  const noteColors = okhcl2hex([
+  const noteColors = hcl2hex([
     noteIndex / NOTE_ORDER.length,
     getChroma(),
     getLightness(),

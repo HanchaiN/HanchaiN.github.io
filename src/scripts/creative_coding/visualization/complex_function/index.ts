@@ -7,7 +7,7 @@ import { complex_absSq, complex_zeta } from "@/scripts/utils/math/complex.js";
 import type { TComplex } from "@/scripts/utils/math/complex.ts";
 import { fpart, map } from "@/scripts/utils/math/utils.js";
 
-const okhcl2srgb = convert_color("okhcl", "srgb")!;
+const hcl2srgb = convert_color("hcl", "srgb")!;
 
 export default function execute() {
   const R = 20;
@@ -62,7 +62,7 @@ export default function execute() {
       this.constants.l0,
       this.constants.l1,
     );
-    const c = okhcl2srgb([hue, sat, lum]);
+    const c = hcl2srgb([hue, sat, lum]);
     this.color(c[0], c[1], c[2], 1);
   }
   return {

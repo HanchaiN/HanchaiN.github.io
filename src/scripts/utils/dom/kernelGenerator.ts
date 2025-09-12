@@ -1,6 +1,8 @@
+import { iterate_all } from "../utils";
+
 export function kernelGenerator<
   IConstants = Record<string, never>,
-  IParameters extends any[] = [], // eslint-disable-line @typescript-eslint/no-explicit-any
+  IParameters extends unknown[] = [],
   IReturnType = void,
 >(
   main: (
@@ -85,7 +87,7 @@ export function kernelGenerator<
 
 export function kernelRunner<
   IConstants = Record<string, never>,
-  IParameters extends any[] = [], // eslint-disable-line @typescript-eslint/no-explicit-any
+  IParameters extends unknown[] = [],
 >(
   main: (this: IKernelFunctionThis<IConstants>, ...args: IParameters) => void,
   constants: IConstants,
@@ -93,9 +95,7 @@ export function kernelRunner<
 ) {
   const generator = kernelGenerator(main, constants, buffer);
   return function (...args: Parameters<typeof main>) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-empty
-    for (const _ of generator(...args)) {
-    }
+    iterate_all(generator(...args));
     return buffer;
   };
 }

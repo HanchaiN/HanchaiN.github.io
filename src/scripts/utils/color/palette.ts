@@ -1,8 +1,7 @@
-import convert_color from "@/scripts/utils/color/conversion.js";
-
 import { constrainLerp } from "../math/utils.js";
+import convert_color from "./conversion.js";
 
-const str2okhcl = convert_color("str", "okhcl")!,
+const str2hcl = convert_color("str", "hcl")!,
   str2hex = convert_color("str", "hex")!;
 
 // https://stephango.com/flexoki
@@ -233,10 +232,10 @@ export function getPaletteBaseColors(isDark: boolean | null = null) {
 
 export function getChroma(isDark: boolean | null = null) {
   const c = getPaletteAccentColor(0, isDark);
-  return str2okhcl(c)[1];
+  return str2hcl(c)[1];
 }
 
 export function getLightness(isDark: boolean | null = null) {
   const c = getPaletteAccentColor(0, isDark);
-  return str2okhcl(c)[2];
+  return str2hcl(c)[2];
 }

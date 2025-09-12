@@ -1,9 +1,9 @@
+import convert_color from "@/scripts/utils/color/conversion.js";
 import type {
   ColorSpace,
   ColorSpaceMap,
   SRGBColor,
-} from "@/scripts/utils/color/conversion.js";
-import convert_color from "@/scripts/utils/color/conversion.js";
+} from "@/scripts/utils/color/conversion.ts";
 import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 import {
   getPaletteAccentColors,
@@ -15,7 +15,7 @@ import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts
 import { randomGaussian, randomUniform } from "@/scripts/utils/math/random.js";
 import { constrainLerp, gaus, softargmax } from "@/scripts/utils/math/utils.js";
 import { vector_dist } from "@/scripts/utils/math/vector.js";
-import type { TVector2 } from "@/scripts/utils/math/vector.ts";
+import type { TVector } from "@/scripts/utils/math/vector.ts";
 import { iterate_all } from "@/scripts/utils/utils.js";
 
 // import { generate } from "../../generation/perlin_noise/pipeline.js";
@@ -27,8 +27,8 @@ type EmbedColor = ColorSpaceMap[typeof embed];
 
 const str2srgb = convert_color("str", "srgb")!,
   srgb2embed = convert_color("srgb", embed)!,
-  srgb2okhcl = convert_color("srgb", "okhcl")!,
-  okhcl2srgb = convert_color("okhcl", "srgb")!,
+  srgb2hcl = convert_color("srgb", "hcl")!,
+  hcl2srgb = convert_color("hcl", "srgb")!,
   embed2lab = convert_color(embed, "lab")!,
   embed2srgb = convert_color(embed, "srgb")!;
 const embed_distance = (c1: EmbedColor, c2: EmbedColor) =>
@@ -45,7 +45,7 @@ export default function execute() {
     typeof kernelGenerator<
       Record<string, never>,
       [
-        best_matching: TVector2,
+        best_matching: TVector<number, 2>,
         element: SRGBColor,
         learning_rate: number,
         range: number,
@@ -76,7 +76,16 @@ export default function execute() {
       offscreen.width,
       offscreen.height,
     );
-    const auto_palette = extractPalette(buffer, 16).map((c) => str2srgb(c));
+    const samples = new Array(buffer.width * buffer.height)
+      .fill(0)
+      .map((_, i) => {
+        return [
+          buffer.data[i * 4 + 0] / 255,
+          buffer.data[i * 4 + 1] / 255,
+          buffer.data[i * 4 + 2] / 255,
+        ] as SRGBColor;
+      });
+    const auto_palette = extractPalette(samples, 16).map((c) => str2srgb(c));
     const auto_palette_weight = auto_palette.map(() => 1 / auto_palette.length);
     {
       applyDithering_Ordered(buffer, auto_palette);
@@ -114,7 +123,7 @@ export default function execute() {
     const palette_hcl = new Array(buffer.width * buffer.height)
         .fill(0)
         .map((_, i) => {
-          return srgb2okhcl([
+          return srgb2hcl([
             buffer.data[i * 4 + 0] / 255,
             buffer.data[i * 4 + 1] / 255,
             buffer.data[i * 4 + 2] / 255,
@@ -162,17 +171,17 @@ export default function execute() {
             break;
           }
         }
-      } else if (Math.random() < 0.0125)
+      } else if (Math.random() < 0.0125) {
         c = palette[Math.floor(Math.random() * palette.length)];
-      // eslint-disable-next-line no-dupe-else-if
-      else if (Math.random() < 0.0125)
-        c = okhcl2srgb([
+        // eslint-disable-next-line no-dupe-else-if
+      } else if (Math.random() < 0.0125) {
+        c = hcl2srgb([
           randomUniform(0, 1),
           randomUniform(0.05, 0.1),
           randomGaussian(0.8, 0.125),
         ]);
-      else if (Math.random() < 0.5) {
-        c = okhcl2srgb([
+      } else if (Math.random() < 0.5) {
+        c = hcl2srgb([
           randomUniform(0, 1),
           randomUniform(
             avg_c - 1.5 * Math.sqrt(cov_cc),
@@ -183,7 +192,7 @@ export default function execute() {
       } else {
         const x = randomGaussian(),
           y = randomGaussian();
-        c = okhcl2srgb([
+        c = hcl2srgb([
           randomUniform(0, 1),
           avg_c + fac_xc * x + fac_yc * y,
           avg_l + fac_xl * x,
@@ -203,7 +212,7 @@ export default function execute() {
 
   function apply_step(
     this: IKernelFunctionThis<Record<string, never>>,
-    best_matching: TVector2,
+    best_matching: TVector<number, 2>,
     element: SRGBColor,
     learning_rate: number,
     range: number,

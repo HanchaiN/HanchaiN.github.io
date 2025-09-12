@@ -3,7 +3,7 @@ import convert_color from "@/scripts/utils/color/conversion.js";
 import type {
   ColorSpace,
   ColorSpaceMap,
-} from "@/scripts/utils/color/conversion.js";
+} from "@/scripts/utils/color/conversion.ts";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { onImageChange } from "@/scripts/utils/dom/image.js";
 import { startAnimationLoop } from "@/scripts/utils/dom/utils.js";
@@ -43,7 +43,7 @@ export default function execute() {
   let overlay_value: HTMLSlotElement;
   const getColor = () =>
     [str2embed(getPaletteBaseColor(0)), str2embed(getPaletteBaseColor(1))].sort(
-      (a, b) => embed2lum(a) - embed2lum(b),
+      (a, b) => embed2lum(a)[0] - embed2lum(b)[0],
     );
   let isActive = false;
   let src = "";
@@ -105,7 +105,7 @@ export default function execute() {
             imageData.data[index] / 255,
             imageData.data[index + 1] / 255,
             imageData.data[index + 2] / 255,
-          ]);
+          ])[0];
         });
       const kspace = fft(
         reshape(luminance.map(Complex.copy), [

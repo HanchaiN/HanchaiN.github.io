@@ -119,7 +119,7 @@ export type IKernelFunctionThis_CMap<IConstants> = ExcludeKeys<
 
 export function getColorMapper<
   IConstants = Record<string, never>,
-  IParameters extends any[] = [], // eslint-disable-line @typescript-eslint/no-explicit-any
+  IParameters extends unknown[] = [],
 >(
   img: ImageData,
   mapper: (
@@ -148,7 +148,7 @@ export function getColorMapper<
 
 export function applyColorMapping<
   IConstants = Record<string, never>,
-  IParameters extends any[] = [], // eslint-disable-line @typescript-eslint/no-explicit-any
+  IParameters extends unknown[] = [],
 >(
   img: ImageData,
   mapper: (

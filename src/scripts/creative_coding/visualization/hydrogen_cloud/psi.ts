@@ -16,8 +16,7 @@ import {
   product,
 } from "@/scripts/utils/math/utils.js";
 import {
-  TCVector3,
-  TVector3,
+  TVector,
   vector_alzimuth,
   vector_fromSphere,
   vector_inclination,
@@ -123,7 +122,7 @@ export function psi_orbital(
   n: number,
   l: number,
   m: number,
-  x: TVector3,
+  x: TVector<number, 3>,
   t: number,
 ) {
   const normalize_r = Math.sqrt(
@@ -152,9 +151,9 @@ export function psi_orbital_der(
   n: number,
   l: number,
   m: number,
-  x: TVector3,
+  x: TVector<number, 3>,
   t: number,
-): TCVector3 {
+): TVector<TComplex, 3> {
   const normalize_r = Math.sqrt(
     Math.pow((2 * Z) / (n * RADIUS_REDUCED), 3.0) /
       (product(n - l, n + l) * 2 * n),
@@ -298,7 +297,7 @@ export function psi_orbital_sample(
 
 export function psi_orbital_superposition(
   state: { c: TComplex; n: number; l: number; m: number }[],
-  x: TVector3,
+  x: TVector<number, 3>,
   t: number,
 ) {
   const total_mag = Math.sqrt(
@@ -321,9 +320,9 @@ export function psi_orbital_superposition(
 }
 export function psi_orbital_superposition_der(
   state: { c: TComplex; n: number; l: number; m: number }[],
-  x: TVector3,
+  x: TVector<number, 3>,
   t: number,
-): TCVector3 {
+): TVector<TComplex, 3> {
   const total_mag = Math.sqrt(
     state.reduce((prev, { c }) => prev + complex_absSq(c), 0),
   );
@@ -352,7 +351,7 @@ export function psi_orbital_superposition_sample(
   const MAX_SEED = 0.99;
   const R_MAX = 50;
   const seed = new Array(counts).fill(null).map(() => Math.random() * MAX_SEED);
-  const res: TVector3[] = new Array(counts).fill(null);
+  const res: TVector<number, 3>[] = new Array(counts).fill(null);
   let total_prob = 0;
   const d_r = SAMPLE_RESOLUTION;
   for (let r = SAMPLE_RESOLUTION / 2; r < R_MAX; r += d_r) {
@@ -406,9 +405,12 @@ export function psi_orbital_re(
   return [{ c: [1, 0], n, l, m }];
 }
 
-export function psi_getvel(val: TComplex, der: TCVector3): TVector3 {
+export function psi_getvel(
+  val: TComplex,
+  der: TVector<TComplex, 3>,
+): TVector<number, 3> {
   if (complex_absSq(val) === 0) return [0, 0, 0];
   return der.map<number>(
     (z) => (complex_div(z, val)[1] * H_BAR) / MASS_REDUCED,
-  ) as TVector3;
+  ) as TVector<number, 3>;
 }

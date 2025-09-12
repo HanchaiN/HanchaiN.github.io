@@ -2,7 +2,7 @@ import convert_color from "@/scripts/utils/color/conversion.js";
 import { PerlinNoise } from "@/scripts/utils/math/noise.js";
 import { map } from "@/scripts/utils/math/utils.js";
 
-const okhcl2srgb = convert_color("okhcl", "srgb")!;
+const hcl2srgb = convert_color("hcl", "srgb")!;
 
 export function generate(buffer: ImageData) {
   const noise = new PerlinNoise();
@@ -13,7 +13,7 @@ export function generate(buffer: ImageData) {
     for (let i = 0; i < buffer.width; i++) {
       const y = i / buffer.width;
       const index = (j * buffer.width + i) * 4;
-      const [r, g, b] = okhcl2srgb([
+      const [r, g, b] = hcl2srgb([
         map(
           noise.noise(x * 6, y * 6, 255),
           -1,

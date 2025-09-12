@@ -7,7 +7,8 @@ import convert_color from "@/scripts/utils/color/conversion.js";
 import type {
   ColorSpace,
   ColorSpaceMap,
-} from "@/scripts/utils/color/conversion.js";
+  SRGBColor,
+} from "@/scripts/utils/color/conversion.ts";
 import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 
 const embed: ColorSpace = "lab";
@@ -19,24 +20,16 @@ const color_distance: (c1: EmbedColor, c2: EmbedColor) => number = DistanceE94;
 const copy = (a: EmbedColor) => a.slice() as EmbedColor;
 
 export function extractPalette(
-  buffer: ImageData,
+  samples: SRGBColor[],
   n_colors: number,
   reference: string[] = [],
+  { n_sample = Infinity, max_iter = 1000 } = {},
 ) {
-  const samples = new Array(buffer.width * buffer.height)
-    .fill(0)
-    .map((_, i) => {
-      return srgb2embed([
-        buffer.data[i * 4 + 0] / 255,
-        buffer.data[i * 4 + 1] / 255,
-        buffer.data[i * 4 + 2] / 255,
-      ]);
-    });
   return kMeans(
-    samples,
-    Infinity,
+    samples.map(srgb2embed),
+    n_sample,
     n_colors,
-    1000,
+    max_iter,
     reference.map(str2embed),
     copy,
     color_distance,
@@ -58,21 +51,12 @@ export function extractPalette(
 }
 
 export function extendPalette(
-  buffer: ImageData,
+  samples: SRGBColor[],
   n_colors: number,
   reference: string[],
 ) {
-  const samples = new Array(buffer.width * buffer.height)
-    .fill(0)
-    .map((_, i) => {
-      return srgb2embed([
-        buffer.data[i * 4 + 0] / 255,
-        buffer.data[i * 4 + 1] / 255,
-        buffer.data[i * 4 + 2] / 255,
-      ]);
-    });
   return extendCentroids(
-    samples,
+    samples.map(srgb2embed),
     n_colors,
     reference.map(str2embed),
     color_distance,
@@ -80,15 +64,16 @@ export function extendPalette(
   ).map(embed2hex);
 }
 
-export function evaluatePalette(buffer: ImageData, palette: string[]) {
-  const samples = new Array(buffer.width * buffer.height)
-    .fill(0)
-    .map((_, i) => {
-      return srgb2embed([
-        buffer.data[i * 4 + 0] / 255,
-        buffer.data[i * 4 + 1] / 255,
-        buffer.data[i * 4 + 2] / 255,
-      ]);
-    });
-  return getSilhouetteScore(samples, palette.map(str2embed), color_distance);
+export function evaluatePalette(
+  samples: SRGBColor[],
+  palette: string[],
+  { simplify_a = false, simplify_b = false } = {},
+): number {
+  return getSilhouetteScore(
+    samples.map(srgb2embed),
+    palette.map(str2embed),
+    color_distance,
+    simplify_a,
+    simplify_b,
+  );
 }

@@ -1,5 +1,5 @@
-import { Vector } from "@/scripts/utils/math/vector.js";
-import { iterate_all } from "@/scripts/utils/utils.js";
+import { Vector } from "../math/vector.js";
+import { iterate_all } from "../utils.js";
 
 export function* delaunay_triangulation_step(
   nodes: Vector[],

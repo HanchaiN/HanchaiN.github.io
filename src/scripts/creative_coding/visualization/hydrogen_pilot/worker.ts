@@ -1,7 +1,7 @@
 import type { TComplex } from "@/scripts/utils/math/complex.ts";
 import { constrainMap } from "@/scripts/utils/math/utils.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
-import type { TVector3 } from "@/scripts/utils/math/vector.ts";
+import type { TVector } from "@/scripts/utils/math/vector.ts";
 
 import { HigherOrderState } from "../../simulation/particles/dynamical_system/dynamic.js";
 import {
@@ -17,7 +17,11 @@ let pretime: number,
   time_scale = 1;
 
 function getHue(pos: Vector, t: number) {
-  const val = psi_orbital_superposition(superposition, pos.val as TVector3, t);
+  const val = psi_orbital_superposition(
+    superposition,
+    pos.val as TVector<number, 3>,
+    t,
+  );
   const phase = Math.atan2(val[1], val[0]);
   return constrainMap(phase, -Math.PI, +Math.PI, 0, 360);
 }
@@ -41,7 +45,7 @@ export function main(data: MessageRequest) {
   if (data.addStates)
     states.push(
       ...psi_orbital_superposition_sample(superposition, data.addStates).map(
-        (pos: TVector3) => new HigherOrderState(new Vector(...pos)),
+        (pos: TVector<number, 3>) => new HigherOrderState(new Vector(...pos)),
       ),
     );
   if (data.resetState) states = [];
@@ -58,12 +62,12 @@ export function main(data: MessageRequest) {
               ...psi_getvel(
                 psi_orbital_superposition(
                   superposition,
-                  pos.val as TVector3,
+                  pos.val as TVector<number, 3>,
                   t,
                 ),
                 psi_orbital_superposition_der(
                   superposition,
-                  pos.val as TVector3,
+                  pos.val as TVector<number, 3>,
                   t,
                 ),
               ),

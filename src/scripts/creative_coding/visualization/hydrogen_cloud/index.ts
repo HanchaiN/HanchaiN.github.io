@@ -5,11 +5,12 @@ import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts
 import { startAnimationLoop, startLoop } from "@/scripts/utils/dom/utils.js";
 import type { TComplex } from "@/scripts/utils/math/complex.ts";
 import { constrain, fpart, map } from "@/scripts/utils/math/utils.js";
-import type { TVector3 } from "@/scripts/utils/math/vector.ts";
+import type { TVector } from "@/scripts/utils/math/vector.ts";
+import { iterate_all } from "@/scripts/utils/utils.js";
 
 import { psi_orbital_superposition } from "./psi.js";
 
-const okhcl2srgb = convert_color("okhcl", "srgb")!;
+const hcl2srgb = convert_color("hcl", "srgb")!;
 
 export default function execute() {
   const T = 20_000;
@@ -26,7 +27,11 @@ export default function execute() {
     R: number;
   }
 
-  function psi(this: IKernelFunctionThis<IConstants>, x: TVector3, t: number) {
+  function psi(
+    this: IKernelFunctionThis<IConstants>,
+    x: TVector<number, 3>,
+    t: number,
+  ) {
     return psi_orbital_superposition(state, x, t);
   }
   function main(this: IKernelFunctionThis<IConstants>, z: number, t: number) {
@@ -44,14 +49,14 @@ export default function execute() {
       -this.constants.R,
       +this.constants.R,
     );
-    const vec: TVector3 = [x, y, z];
+    const vec: TVector<number, 3> = [x, y, z];
     const v = psi.bind(this)(vec, t);
     const _prob = v[0] * v[0] + v[1] * v[1];
     if (_prob > prob_max) prob_max = _prob;
     const prob = _prob / prob_max;
     const phase = Math.atan2(v[1], v[0]);
     const brightness = Math.pow((2 * prob) / (prob + 1), 0.5);
-    const c = okhcl2srgb([
+    const c = hcl2srgb([
       (phase < 0.0 ? phase + 2 * Math.PI : phase) / (2.0 * Math.PI),
       0.05,
       constrain(brightness, 0, 1),
@@ -82,9 +87,7 @@ export default function execute() {
         startLoop(function update(t) {
           if (!isActive) return false;
           const z = map(fpart(t / T), 0, 1, -R, +R);
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-empty
-          for (const _ of renderer(z, 0.0)) {
-          }
+          iterate_all(renderer(z, t));
           return true;
         });
       }

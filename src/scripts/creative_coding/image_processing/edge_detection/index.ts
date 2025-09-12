@@ -8,7 +8,7 @@ import { map } from "@/scripts/utils/math/utils.js";
 
 import { getEdgeMask } from "./pipeline.js";
 
-const okhcl2srgb = convert_color("okhcl", "srgb")!,
+const hcl2srgb = convert_color("hcl", "srgb")!,
   str2srgb = convert_color("str", "srgb")!,
   srgb2lum = convert_color("srgb", "lum")!;
 
@@ -35,7 +35,7 @@ export default function execute() {
   ) {
     const foreground = str2srgb(getForeground()),
       saturation = getChroma(),
-      lightness = srgb2lum(foreground);
+      lightness = srgb2lum(foreground)[0];
     for (let y = 0; y < imageData.height; y++) {
       for (let x = 0; x < imageData.width; x++) {
         const index = (y * imageData.width + x) * 4;
@@ -49,7 +49,7 @@ export default function execute() {
           imageData.data[index + 1] = foreground[1] * 255;
           imageData.data[index + 2] = foreground[2] * 255;
         } else {
-          const [r, g, b] = okhcl2srgb([
+          const [r, g, b] = hcl2srgb([
             dir,
             saturation,
             lightness * Math.pow(mag / 255, 1 / 3),
