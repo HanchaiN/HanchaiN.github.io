@@ -7,7 +7,6 @@ import { Light, toRGB } from "./colors.js";
 import "./data/camera_response.json" with { type: "json" };
 import "./data/light.json" with { type: "json" };
 import "./data/material.json" with { type: "json" };
-import "./data/ref_light.json" with { type: "json" };
 import { postProcessorGen, tone_mappers } from "./postprocessor.js";
 import type { MessageRequest, MessageResponse } from "./worker.ts";
 import type { MessageResponse as WhiteMessageResponse } from "./worker_white.ts";
