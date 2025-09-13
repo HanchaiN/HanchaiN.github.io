@@ -22,9 +22,9 @@ import {
   vector_add,
   vector_dot,
   vector_mag,
-  vector_mult,
   vector_normalize,
   vector_proj,
+  vector_scale,
   vector_sub,
 } from "@/scripts/utils/math/vector.js";
 
@@ -101,7 +101,7 @@ function _applyDithering_Ordered<Embed extends number[]>(
   const seed = this.constants.cmap[x % n][y % n] + 0.5;
   const [r, g, b, a] = this.getColor();
   const target_embed = this.constants.srgb2embed([r, g, b]);
-  let _target_embed = vector_mult(target_embed, 1);
+  let _target_embed = vector_scale(target_embed, 1);
   const candidates: number[] = [];
   const n_candidates = Math.max(
     1,
@@ -127,7 +127,7 @@ function _applyDithering_Ordered<Embed extends number[]>(
     const candidate_color = this.constants.embed_palette[idx];
     _target_embed = vector_add(
       _target_embed,
-      vector_mult(
+      vector_scale(
         vector_sub(_target_embed, candidate_color),
         1 / (n_candidates - i - 1),
       ),
@@ -224,7 +224,7 @@ export function applyDithering_Ordered(
         embed_palette[candidates[i]],
         embed_palette[candidates[0]],
       );
-      let u = vector_mult(v, 1);
+      let u = vector_scale(v, 1);
       for (let j = 0; j < es.length; j++) {
         const proj = vector_proj(u, es[j]);
         u = vector_sub(u, proj);
@@ -329,7 +329,7 @@ export function applyDithering_ErrorDiffusion(
           temperature,
         ),
       );
-      const err = vector_mult(
+      const err = vector_scale(
         vector_sub(target_color, color_palette_[color_index]),
         buffer.data[index * 4 + 3] / 255,
       );
@@ -339,7 +339,7 @@ export function applyDithering_ErrorDiffusion(
         if (0 > i_ || i_ >= buffer.width || 0 > j_ || j_ >= buffer.height)
           return;
         const index = j_ * buffer.width + i_;
-        const diff = vector_mult(err, w * err_decay);
+        const diff = vector_scale(err, w * err_decay);
         for (let k = 0; k < 3; k++) buffer_[index][k] += diff[k];
       });
       buffer.data[index * 4 + 0] = color_palette[color_index][0] * 255;

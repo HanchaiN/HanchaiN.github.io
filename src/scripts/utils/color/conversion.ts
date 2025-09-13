@@ -110,7 +110,7 @@ function lab2hcl(lab: LABColor | OKLABColor): HCLColor | OKHCLColor {
   ];
 }
 
-const STD_ILLUM = [0.9504492182750991, 1.0, 1.0889166484304715];
+export const STD_ILLUM = [0.9504492182750991, 1.0, 1.0889166484304715];
 function lab2xyz(lab: LABColor): XYZColor {
   const DELTA = 6.0 / 29.0;
   const DELTA2 = DELTA * DELTA;

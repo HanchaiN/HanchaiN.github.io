@@ -1,107 +1,103 @@
-import convert_color from "@/scripts/utils/color/conversion.js";
-import type { RGBColor, XYZColor } from "@/scripts/utils/color/conversion.ts";
+import type { RGBColor } from "@/scripts/utils/color/conversion.ts";
+import {
+  vector_add,
+  vector_mult,
+  vector_scale,
+} from "@/scripts/utils/math/vector.js";
 
 import { MAX_LUM, MIN_LUM } from "./const.js";
+import { readSpectrum, wavelengths } from "./data.js";
+import type { TSpectrum } from "./data.ts";
 
-export type TColor = [v500: number, v600: number, v700: number];
-const color_lookup: [v500: XYZColor, v600: XYZColor, v700: XYZColor] = [
-  [0.0049, 0.323, 0.272],
-  [1.0622, 0.631, 0.0008],
-  [0.01135916, 0.004102, 0],
+const _camera_response = (
+  await import("./data/camera_response.json", { with: { type: "json" } })
+).default;
+// const _ref_light = (await import("./data/light.json", { with: { type: "json" } })).default;
+
+const camera_response: [r: TSpectrum, g: TSpectrum, b: TSpectrum] = [
+  await readSpectrum(_camera_response, "R"),
+  await readSpectrum(_camera_response, "G"),
+  await readSpectrum(_camera_response, "B"),
 ];
-const xyz2rgb = convert_color("xyz", "rgb")!;
-
-function toRGB([v500, v600, v700]: TColor): RGBColor {
-  return xyz2rgb([
-    v500 * color_lookup[0][0] +
-      v600 * color_lookup[1][0] +
-      v700 * color_lookup[2][0],
-    v500 * color_lookup[0][1] +
-      v600 * color_lookup[1][1] +
-      v700 * color_lookup[2][1],
-    v500 * color_lookup[0][2] +
-      v600 * color_lookup[1][2] +
-      v700 * color_lookup[2][2],
-  ]);
+const max_response = _toRGB(
+  wavelengths.map(() => MAX_LUM) as TSpectrum,
+  // await readSpectrum(_ref_light, "intensity")
+);
+function _toRGB(v: TSpectrum): RGBColor {
+  return [
+    v.reduce((acc, val, i) => acc + val * camera_response[0][i], 0),
+    v.reduce((acc, val, i) => acc + val * camera_response[1][i], 0),
+    v.reduce((acc, val, i) => acc + val * camera_response[2][i], 0),
+  ];
+}
+export function toRGB(v: TSpectrum): RGBColor {
+  const rgb = _toRGB(v);
+  return rgb.map((c, i) => c / max_response[i]) as RGBColor;
 }
 
 export class Light {
-  color: TColor;
-  constructor(color: TColor) {
+  color: TSpectrum;
+  constructor(color: TSpectrum) {
     this.color = color;
   }
   rgb() {
     return toRGB(this.color);
   }
   clone() {
-    return new Light([...this.color]);
+    return new Light([...this.color] as TSpectrum);
   }
   mix(other: Light) {
-    for (let i = 0; i < this.color.length; i++) {
-      this.color[i] += other.color[i];
-    }
+    this.color = vector_add(this.color, other.color);
     return this;
   }
   mult(fac: number) {
-    for (let i = 0; i < this.color.length; i++) {
-      this.color[i] *= fac;
-    }
+    this.color = vector_scale(this.color, fac);
     return this;
   }
   apply(dye: Dye) {
-    for (let i = 0; i < this.color.length; i++) {
-      this.color[i] *= dye.color[i];
-    }
+    this.color = vector_mult(this.color, dye.color);
     return this;
   }
   static get black() {
-    return new Light([0, 0, 0]);
+    return new Light(wavelengths.map(() => 0) as TSpectrum);
   }
   static get white() {
-    return new Light([MAX_LUM, MAX_LUM, MAX_LUM]);
+    return new Light(wavelengths.map(() => MAX_LUM) as TSpectrum);
   }
 }
 
 export class Dye {
-  color: TColor;
-  constructor(color: TColor) {
+  color: TSpectrum;
+  constructor(color: TSpectrum) {
     this.color = color;
   }
   rgb() {
     return Light.white.apply(this).rgb();
   }
   clone() {
-    return new Dye([...this.color]);
+    return new Dye([...this.color] as TSpectrum);
   }
   lightMix(other: Dye) {
-    for (let i = 0; i < this.color.length; i++) {
-      this.color[i] += other.color[i];
-    }
+    this.color = vector_add(this.color, other.color);
     return this;
   }
   lightMult(fac: number) {
-    for (let i = 0; i < this.color.length; i++) {
-      this.color[i] *= fac;
-    }
+    this.color = vector_scale(this.color, fac);
     return this;
   }
   mix(other: Dye) {
-    for (let i = 0; i < this.color.length; i++) {
-      this.color[i] *= other.color[i];
-    }
+    this.color = vector_mult(this.color, other.color);
     return this;
   }
   mult(fac: number) {
-    for (let i = 0; i < this.color.length; i++) {
-      this.color[i] = Math.pow(this.color[i], fac);
-    }
+    this.color = this.color.map((v) => Math.pow(v, fac)) as TSpectrum;
     return this;
   }
   static get black() {
-    return new Dye([0, 0, 0]);
+    return new Dye(wavelengths.map(() => 0) as TSpectrum);
   }
   static get white() {
-    return new Dye([1, 1, 1]);
+    return new Dye(wavelengths.map(() => 1) as TSpectrum);
   }
   isBlack() {
     return this.color.every((v) => v < MIN_LUM);

@@ -10,7 +10,7 @@ import { softargmax } from "@/scripts/utils/math/utils.js";
 import {
   vector_add,
   vector_mag,
-  vector_mult,
+  vector_scale,
   vector_sub,
 } from "@/scripts/utils/math/vector.js";
 import type { ExcludeKeys } from "@/scripts/utils/types.ts";
@@ -85,7 +85,7 @@ export function mapColor(
     .map((w, i) => [srgb2embed(ref[i][0]), w] as [EmbedColor, number])
     .reduce(
       ([c_, w_], [c, w]) =>
-        [vector_add(c_, vector_mult(c, w)), w_ + w] as [EmbedColor, number],
+        [vector_add(c_, vector_scale(c, w)), w_ + w] as [EmbedColor, number],
       [[0, 0, 0], 0],
     );
   return embed2srgb(acc[0].map((v) => v / acc[1]) as EmbedColor);

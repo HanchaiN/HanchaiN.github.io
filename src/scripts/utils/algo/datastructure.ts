@@ -104,7 +104,20 @@ export class PriorityQueue<A> {
   }
 }
 
-export function binarySearch(arr: number[], targetL: number, targetH: number) {
+export function binarySearch(
+  arr: number[],
+  targetL: number,
+  targetH: number = targetL,
+): number {
+  const [l, h] = binarySearchBound(arr, targetL, targetH);
+  if (l === h) return l;
+  return -1;
+}
+export function binarySearchBound(
+  arr: number[],
+  targetL: number,
+  targetH: number = targetL,
+): [number, number] {
   let low = 0;
   let high = arr.length - 1;
   while (low <= high) {
@@ -115,8 +128,8 @@ export function binarySearch(arr: number[], targetL: number, targetH: number) {
     } else if (midVal > targetH) {
       high = mid - 1;
     } else {
-      return mid;
+      return [mid, mid];
     }
   }
-  return -1;
+  return [high, low];
 }

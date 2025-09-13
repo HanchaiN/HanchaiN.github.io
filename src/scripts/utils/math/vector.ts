@@ -13,11 +13,20 @@ export function vector_add<T extends TVector<number>>(a: T, b: T): T {
 export function vector_sub<T extends TVector<number>>(a: T, b: T): T {
   return a.map((_, i) => a[i] - b[i]) as T;
 }
-export function vector_mult<T extends TVector<number>>(v: T, s: number): T {
+export function vector_scale<T extends TVector<number>>(v: T, s: number): T {
   return v.map((_, i) => v[i] * s) as T;
 }
-export function vector_div<T extends TVector<number>>(v: T, s: number): T {
+export function vector_scale_div<T extends TVector<number>>(
+  v: T,
+  s: number,
+): T {
   return v.map((_, i) => v[i] / s) as T;
+}
+export function vector_mult<T extends TVector<number>>(a: T, b: T): T {
+  return a.map((_, i) => a[i] * b[i]) as T;
+}
+export function vector_div<T extends TVector<number>>(a: T, b: T): T {
+  return a.map((_, i) => a[i] / b[i]) as T;
 }
 export function vector_dot<T extends TVector<number>>(a: T, b: T) {
   let acc = 0.0;
@@ -25,7 +34,7 @@ export function vector_dot<T extends TVector<number>>(a: T, b: T) {
   return acc;
 }
 export function vector_proj<T extends TVector<number>>(a: T, b: T): T {
-  return vector_mult(b, vector_dot(a, b) / vector_dot(b, b));
+  return vector_scale(b, vector_dot(a, b) / vector_dot(b, b));
 }
 export function vector_cross(
   a: TVector<number, 3>,
@@ -47,10 +56,10 @@ export function vector_dist<T extends TVector<number>>(a: T, b: T) {
   return vector_mag(vector_sub(a, b));
 }
 export function vector_normalize<T extends TVector<number>>(v: T): T {
-  return vector_div(v, vector_mag(v));
+  return vector_scale_div(v, vector_mag(v));
 }
 export function vector_setMag<T extends TVector<number>>(v: T, mag: number): T {
-  return vector_mult(vector_normalize(v), mag);
+  return vector_scale(vector_normalize(v), mag);
 }
 export function vector_heading(v: TVector<number, 2>) {
   return Math.atan2(v[1], v[0]);

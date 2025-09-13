@@ -1,44 +1,64 @@
-import type { RGBColor } from "@/scripts/utils/color/conversion.ts";
-
 import { Light } from "./colors.js";
+import type { TSpectrum } from "./data.ts";
 import { Ray, trace } from "./ray.js";
 import {
   CAMERA_POSITION,
   LIGHT_DIRECTION,
-  SCENE,
-  WHITE_DIRECTION,
+  SCENE_REF as SCENE,
+  WALL_DIRECTION,
 } from "./scene.js";
 
-let iter = 0;
-const white = Light.black,
-  bright = Light.black,
-  white_ray = new Ray(CAMERA_POSITION, WHITE_DIRECTION),
-  ref_ray = new Ray(CAMERA_POSITION, LIGHT_DIRECTION);
+type LandmarkKey = "light" | "wall";
 
-export type MessageRequest = Record<string, never>;
-export type MessageResponse = {
-  white: RGBColor;
-  bright: RGBColor;
+let iter = 0;
+const landmarks: {
+  [key in LandmarkKey]: { acc: Light; ray: Ray };
+} = {
+  light: {
+    acc: Light.black,
+    ray: new Ray(CAMERA_POSITION, LIGHT_DIRECTION),
+  },
+  wall: {
+    acc: Light.black,
+    ray: new Ray(CAMERA_POSITION, WALL_DIRECTION),
+  },
 };
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function main(data: MessageRequest) {
+let isActive = true,
+  lock = false;
+
+export type MessageRequest = { active: boolean };
+export type MessageResponse = {
+  [key in LandmarkKey]: TSpectrum;
+};
+function main(): MessageResponse {
   for (let i = 0; i < 1000; i++) {
-    white.mix(trace(white_ray, SCENE));
-    bright.mix(trace(ref_ray, SCENE));
+    for (const key in landmarks) {
+      landmarks[key as LandmarkKey].acc.mix(
+        trace(landmarks[key as LandmarkKey].ray, SCENE),
+      );
+    }
     iter++;
   }
-  return {
-    white: white
-      .clone()
-      .mult(1 / iter)
-      .rgb(),
-    bright: bright
-      .clone()
-      .mult(1 / iter)
-      .rgb(),
-  };
+  return Object.fromEntries(
+    Object.entries(landmarks).map(([k, v]) => [
+      k,
+      v.acc.clone().mult(1 / iter).color,
+    ]),
+  ) as MessageResponse;
+}
+
+function start() {
+  if (lock) return;
+  lock = true;
+  while (isActive) {
+    self.postMessage(main());
+  }
+  lock = false;
 }
 
 self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) => {
-  return self.postMessage(main(data));
+  isActive = data.active;
+  start();
 });
+
+start();

@@ -19,9 +19,10 @@ const white_balance = ([ref_r, ref_g, ref_b]: RGBColor) => {
     xyz2rgb = convert_color("xyz", "rgb")!;
 
   const [x0, y0, z0] = rgb2xyz([ref_r, ref_g, ref_b]);
+  const [xw, yw, zw] = rgb2xyz([1, 1, 1]);
   return ([r, g, b]: RGBColor): RGBColor => {
     const [x, y, z] = rgb2xyz([r, g, b]);
-    const [x_, y_, z_] = [x / x0, y / y0, z / z0];
+    const [x_, y_, z_] = [(x * xw) / x0, (y * yw) / y0, (z * zw) / z0];
     return xyz2rgb([x_, y_, z_]);
   };
 };
@@ -164,6 +165,18 @@ export const reinhard_jodie_lum_ext: IToneMapper = ([
       constrainLerp(i[2], l[2], h[2]),
     ];
   };
+};
+export const tone_mappers: Record<string, IToneMapper> = {
+  reinhard,
+  reinhard_lum,
+  reinhard_jodie,
+  reinhard_jodie_lum,
+  scaler,
+  scaler_lum,
+  reinhard_ext,
+  reinhard_lum_ext,
+  reinhard_jodie_ext,
+  reinhard_jodie_lum_ext,
 };
 
 const gamma =

@@ -117,8 +117,8 @@ export default function execute() {
           state: [[constrainMap(index + i, 0, count, -err, +err), 2, 20]],
           hue: constrainMap(index + i, 0, count, 0, 360),
         }));
-        worker.postMessage({ time_scale, param, states });
         worker.addEventListener("message", function listener() {
+          worker.postMessage({ time_scale, param, states });
           worker.removeEventListener("message", listener);
         });
       });

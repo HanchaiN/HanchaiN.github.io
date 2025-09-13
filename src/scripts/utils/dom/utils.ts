@@ -35,7 +35,7 @@ export function getMousePos(canvas: HTMLCanvasElement, evt: MouseEvent) {
   };
 }
 
-export const maxWorkers = window.navigator.hardwareConcurrency
+export const maxWorkers = window?.navigator?.hardwareConcurrency
   ? Math.floor(window.navigator.hardwareConcurrency)
   : 1;
 

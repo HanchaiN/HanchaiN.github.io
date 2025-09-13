@@ -4,6 +4,12 @@ export function constrain(v: number, l: number, h: number) {
   return Math.min(h, Math.max(l, v));
 }
 export function map(v: number, l: number, h: number, l_: number, h_: number) {
+  if (Math.abs(h - l) < 1e-10) {
+    const r = (l + h) / 2;
+    if (v < r === l <= h) return l_ < h_ ? -Infinity : Infinity;
+    if (v > r === l <= h) return l_ < h_ ? Infinity : -Infinity;
+    return (l_ + h_) / 2;
+  }
   return l_ + ((v - l) * (h_ - l_)) / (h - l);
 }
 export function lerp(v: number, l: number, h: number) {

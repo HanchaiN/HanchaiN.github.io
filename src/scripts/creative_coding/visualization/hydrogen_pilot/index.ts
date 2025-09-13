@@ -86,47 +86,49 @@ export default function execute() {
     const axesHelper = new THREE.AxesHelper(5);
     scene.add(axesHelper);
 
-    workers = new Array(maxWorkers).fill(null).map(
-      () =>
-        new Worker(new URL("./worker.js", import.meta.url), {
-          type: "module",
-        }),
-    );
-    workers.forEach((worker, i) => {
-      worker.postMessage({
-        superposition,
-        resetState: true,
-        time_scale,
+    workers = new Array(maxWorkers).fill(null).map((_, i) => {
+      const worker = new Worker(new URL("./worker.js", import.meta.url), {
+        type: "module",
       });
-      worker.addEventListener(
-        "message",
-        function listener({ data }: MessageEvent<MessageResponse>) {
-          const saturation = getChroma(),
-            lightness = getLightness();
-          const index =
-              i * Math.floor(counts / maxWorkers) +
-              Math.min(i, counts % maxWorkers),
-            target_counts =
-              Math.floor(counts / maxWorkers) +
-              (i < counts % maxWorkers ? 1 : 0);
-          worker.postMessage({
-            time: clock.getElapsedTime(),
-            addStates: constrain(target_counts - data.states!.length, 0, 50),
-          });
-          data.states!.forEach(({ x, y, z, h }, i) => {
-            const matrix = new THREE.Matrix4();
-            matrix.setPosition(x, y, z);
-            electron_mesh.setMatrixAt(index + i, matrix);
-            electron_mesh.setColorAt(
-              index + i,
-              new THREE.Color(hcl2hex([h / 360, saturation, lightness])),
-            );
-          });
-          electron_mesh.instanceMatrix.needsUpdate = true;
-          if (electron_mesh.instanceColor)
-            electron_mesh.instanceColor.needsUpdate = true;
-        },
-      );
+      worker.addEventListener("message", function listener() {
+        worker.removeEventListener("message", listener);
+
+        worker.addEventListener(
+          "message",
+          function listener({ data }: MessageEvent<MessageResponse>) {
+            const saturation = getChroma(),
+              lightness = getLightness();
+            const index =
+                i * Math.floor(counts / maxWorkers) +
+                Math.min(i, counts % maxWorkers),
+              target_counts =
+                Math.floor(counts / maxWorkers) +
+                (i < counts % maxWorkers ? 1 : 0);
+            worker.postMessage({
+              time: clock.getElapsedTime(),
+              addStates: constrain(target_counts - data.states!.length, 0, 50),
+            });
+            data.states!.forEach(({ x, y, z, h }, i) => {
+              const matrix = new THREE.Matrix4();
+              matrix.setPosition(x, y, z);
+              electron_mesh.setMatrixAt(index + i, matrix);
+              electron_mesh.setColorAt(
+                index + i,
+                new THREE.Color(hcl2hex([h / 360, saturation, lightness])),
+              );
+            });
+            electron_mesh.instanceMatrix.needsUpdate = true;
+            if (electron_mesh.instanceColor)
+              electron_mesh.instanceColor.needsUpdate = true;
+          },
+        );
+        worker.postMessage({
+          superposition,
+          resetState: true,
+          time_scale,
+        });
+      });
+      return worker;
     });
   }
   function animate() {

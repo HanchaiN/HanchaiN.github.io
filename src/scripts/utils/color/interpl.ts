@@ -1,14 +1,16 @@
-import { softargmax } from "../math/utils.js";
-import { vector_add, vector_dist, vector_mult } from "../math/vector.js";
+import { lerp, softargmax } from "../math/utils.js";
+import { vector_add, vector_scale } from "../math/vector.js";
 
-export const dist = vector_dist<[number, number, number]>;
+export function clerp<T extends number[]>(t: number, c0: T, c1: T): T {
+  return c0.map((_, i) => lerp(t, c0[i], c1[i])) as T;
+}
 
-export function generateGradient(
+export function generateGradient<T extends number[]>(
   num: number,
-  stops: [number, [number, number, number]][],
+  stops: [number, T][],
 ) {
   const stops_ = stops
-    .map(([t, c]) => [t, [...c]] as [number, [number, number, number]])
+    .map(([t, c]) => [t, [...c]] as [number, T])
     .sort(([t1], [t2]) => t1 - t2);
   return new Array(num).fill(0).map((_, i) => {
     const t0 = i / (num - 1);
@@ -21,6 +23,6 @@ export function generateGradient(
       [t1, t2].map((t) => Math.abs(t - t0) / Math.abs(t1 - t2)),
       -8,
     );
-    return vector_add(vector_mult(c1, w[0]), vector_mult(c2, w[1]));
-  }) as [number, number, number][];
+    return vector_add(vector_scale(c1, w[0]), vector_scale(c2, w[1]));
+  }) as T[];
 }

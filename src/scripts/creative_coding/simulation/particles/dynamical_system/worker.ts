@@ -59,3 +59,4 @@ export function main(data: MessageRequest) {
 self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) => {
   return self.postMessage(main(data));
 });
+self?.postMessage(null); // indicate ready

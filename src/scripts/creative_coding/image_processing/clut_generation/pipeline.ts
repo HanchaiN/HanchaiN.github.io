@@ -10,7 +10,7 @@ import { kernelRunner } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import { sample } from "@/scripts/utils/math/random.js";
 import { normalize, softargmax } from "@/scripts/utils/math/utils.js";
-import { vector_add, vector_mult } from "@/scripts/utils/math/vector.js";
+import { vector_add, vector_scale } from "@/scripts/utils/math/vector.js";
 
 import type { IKernelFunctionThis_CMap } from "../color_grading/pipeline.js";
 
@@ -109,7 +109,7 @@ export function _applyRBF(
     .filter(([, w], i, arr) => w >= arr[color_count - 1][1])
     .reduce(
       ([c_, w_], [c, w]) =>
-        [vector_add(c_, vector_mult(c, w)), w_ + w] as [EmbedColor, number],
+        [vector_add(c_, vector_scale(c, w)), w_ + w] as [EmbedColor, number],
       [[0, 0, 0], 0],
     );
   const current_color = embed2srgb(acc[0].map((v) => v / acc[1]) as EmbedColor);
