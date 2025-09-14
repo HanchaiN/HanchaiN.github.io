@@ -13,7 +13,13 @@ import { onImageChange } from "@/scripts/utils/dom/image.js";
 import { kernelGenerator } from "@/scripts/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/scripts/utils/dom/kernelGenerator.ts";
 import { randomGaussian, randomUniform } from "@/scripts/utils/math/random.js";
-import { constrainLerp, gaus, softargmax } from "@/scripts/utils/math/utils.js";
+import {
+  argmax,
+  average,
+  constrainLerp,
+  gaus,
+  softargmax,
+} from "@/scripts/utils/math/utils.js";
 import { vector_dist } from "@/scripts/utils/math/vector.js";
 import type { TVector } from "@/scripts/utils/math/vector.ts";
 import { iterate_all } from "@/scripts/utils/utils.js";
@@ -129,25 +135,11 @@ export default function execute() {
             buffer.data[i * 4 + 2] / 255,
           ]);
         }),
-      avg_l =
-        palette_hcl.reduce((acc, v) => acc + v[2], 0) / palette_hcl.length,
-      avg_c =
-        palette_hcl.reduce((acc, v) => acc + v[1], 0) / palette_hcl.length,
-      cov_ll =
-        palette_hcl.reduce(
-          (acc, v) => acc + (v[2] - avg_l) * (v[2] - avg_l),
-          0,
-        ) / palette_hcl.length,
-      cov_cc =
-        palette_hcl.reduce(
-          (acc, v) => acc + (v[1] - avg_c) * (v[1] - avg_c),
-          0,
-        ) / palette_hcl.length,
-      cov_lc =
-        palette_hcl.reduce(
-          (acc, v) => acc + (v[2] - avg_l) * (v[1] - avg_c),
-          0,
-        ) / palette_hcl.length,
+      avg_l = average(palette_hcl.map((v) => v[2])),
+      avg_c = average(palette_hcl.map((v) => v[1])),
+      cov_ll = average(palette_hcl.map((v) => (v[2] - avg_l) * (v[2] - avg_l))),
+      cov_cc = average(palette_hcl.map((v) => (v[1] - avg_c) * (v[1] - avg_c))),
+      cov_lc = average(palette_hcl.map((v) => (v[2] - avg_l) * (v[1] - avg_c))),
       fac_xl = Math.sqrt(cov_ll),
       fac_xc = cov_lc / fac_xl,
       fac_yc = Math.sqrt(cov_cc - fac_xc * fac_xc);
@@ -316,10 +308,10 @@ export default function execute() {
             break;
           }
         }
-        if (col.length <= k) col.push(pos[w.indexOf(Math.max(...w))]);
+        if (col.length <= k) col.push(pos[argmax(w)]);
       }
       const w = softargmax(col.map(({ d }) => -d * constants.weight_colors));
-      c = w.indexOf(Math.max(...w));
+      c = argmax(w);
       col = col.map(({ x, y, d }, i) => ({ x, y, d, w: w[i] }));
       const r = Math.random();
       let s = 0;

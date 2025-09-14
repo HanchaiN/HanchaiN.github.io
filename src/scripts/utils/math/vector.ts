@@ -1,3 +1,5 @@
+import { sum } from "./utils.js";
+
 export type TVector<T = number, N extends number = number> = T[] & {
   readonly length: N;
 };
@@ -143,7 +145,9 @@ export class Vector {
   }
   dot(v: Vector) {
     if (this.dim !== v.dim) throw new TypeError();
-    return this.val.reduce((acc, _, i) => acc + this._val[i] * v._val[i], 0);
+    return sum(
+      new Array(this.dim).fill(0).map((_, i) => this._val[i] * v._val[i]),
+    );
   }
   static dot(a: Vector, b: Vector) {
     return a.dot(b);

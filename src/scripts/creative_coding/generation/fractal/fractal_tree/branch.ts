@@ -44,7 +44,7 @@ export class Branch {
 
   get childCount(): number {
     if (!this.finished) return 1;
-    return this.branches.reduce((acc, branch) => acc + branch.childCount, 0);
+    return this.branches.reduce((acc, { childCount }) => acc + childCount, 0);
   }
 
   grow() {

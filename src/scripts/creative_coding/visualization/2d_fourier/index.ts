@@ -8,7 +8,12 @@ import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { onImageChange } from "@/scripts/utils/dom/image.js";
 import { startAnimationLoop } from "@/scripts/utils/dom/utils.js";
 import { Complex } from "@/scripts/utils/math/complex.js";
-import { constrainMap, symlog } from "@/scripts/utils/math/utils.js";
+import {
+  constrainMap,
+  maxA,
+  minA,
+  symlog,
+} from "@/scripts/utils/math/utils.js";
 
 import { update } from "./update.js";
 
@@ -115,18 +120,8 @@ export default function execute() {
       ) as unknown[][] as Complex[][];
 
       const [minColor, maxColor] = getColor();
-      const minValue = symlog(
-        kspace
-          .flat()
-          .map((v) => Complex.abs(v))
-          .reduce((a, b) => Math.min(a, b)),
-      );
-      const maxValue = symlog(
-        kspace
-          .flat()
-          .map((v) => Complex.abs(v))
-          .reduce((a, b) => Math.max(a, b)),
-      );
+      const minValue = symlog(minA(kspace.flat().map((v) => Complex.abs(v))));
+      const maxValue = symlog(maxA(kspace.flat().map((v) => Complex.abs(v))));
       for (let i = 0; i < kspace.length; i++) {
         for (let j = 0; j < kspace[0].length; j++) {
           const x =

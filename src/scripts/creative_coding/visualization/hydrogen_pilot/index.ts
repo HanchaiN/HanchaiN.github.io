@@ -8,7 +8,7 @@ import {
   getPaletteBaseColor,
 } from "@/scripts/utils/color/palette.js";
 import { maxWorkers, startAnimationLoop } from "@/scripts/utils/dom/utils.js";
-import { constrain } from "@/scripts/utils/math/utils.js";
+import { constrain, maxA } from "@/scripts/utils/math/utils.js";
 
 import type { MessageResponse } from "./worker.ts";
 
@@ -29,7 +29,7 @@ export default function execute() {
 
   const counts = 8192;
   const superposition = [{ c: [1, 0], n: 3, l: 1, m: +1 }];
-  const n_max = superposition.reduce((n_max, { n }) => Math.max(n_max, n), 0);
+  const n_max = maxA(superposition.map(({ n }) => n));
   const unit = Math.pow(n_max, 2);
   const time_scale = 1e4;
 

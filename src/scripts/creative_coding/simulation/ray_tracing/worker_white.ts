@@ -30,7 +30,7 @@ export type MessageResponse = {
   [key in LandmarkKey]: TSpectrum;
 };
 function main(): MessageResponse {
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < 1024; i++) {
     for (const key in landmarks) {
       landmarks[key as LandmarkKey].acc.accumulate(
         trace(landmarks[key as LandmarkKey].ray, SCENE),

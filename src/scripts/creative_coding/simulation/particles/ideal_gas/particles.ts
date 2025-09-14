@@ -1,5 +1,5 @@
 import { randomGaussian, randomUniform } from "@/scripts/utils/math/random.js";
-import { map } from "@/scripts/utils/math/utils.js";
+import { average, map } from "@/scripts/utils/math/utils.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
 
 export const SETTING = {
@@ -99,12 +99,7 @@ export class ParticleSystem {
     return this.w * this.h;
   }
   get KineticEnergy() {
-    return (
-      this.particles.reduce(
-        (acc, particle) => acc + particle.KineticEnergy,
-        0,
-      ) / this.particles.length
-    );
+    return average(this.particles.map((particle) => particle.KineticEnergy));
   }
   get InternalEnergy() {
     return (

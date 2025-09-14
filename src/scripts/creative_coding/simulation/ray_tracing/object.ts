@@ -1,4 +1,4 @@
-import { constrain } from "@/scripts/utils/math/utils.js";
+import { constrain, maxA, minA } from "@/scripts/utils/math/utils.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
 
 import { MAX_DIST, MIN_DIST } from "./const.js";
@@ -32,8 +32,7 @@ export class SceneObject {
     else this.materialAt = material;
   }
   static union(...objects: SceneObject[]) {
-    const distance = (pos: Vector) =>
-      Math.min(...objects.map((o) => o.distance(pos)));
+    const distance = (pos: Vector) => minA(objects.map((o) => o.distance(pos)));
     const normal = (pos: Vector) => {
       let object = objects[0];
       let dist = object.distance(pos);
@@ -61,8 +60,7 @@ export class SceneObject {
     return new SceneObject(distance, normal, materialAt);
   }
   static intersect(...objects: SceneObject[]) {
-    const distance = (pos: Vector) =>
-      Math.max(...objects.map((o) => o.distance(pos)));
+    const distance = (pos: Vector) => maxA(objects.map((o) => o.distance(pos)));
     const normal = (pos: Vector) => {
       let object = objects[0];
       let dist = object.distance(pos);

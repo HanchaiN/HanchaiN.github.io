@@ -1,5 +1,5 @@
 import { sample } from "../math/random.js";
-import { argmax, softargmax } from "../math/utils.js";
+import { argmax, average, minA, softargmax } from "../math/utils.js";
 
 function getSilhouetteScoreArray<T>(
   samples: T[],
@@ -50,8 +50,11 @@ function getSilhouetteScoreArray<T>(
       ? 0
       : simplify_a
         ? dist_samp_cen(i, ind[i])
-        : cls[ind[i]].reduce((acc, { i: j }) => acc + dist_samp_samp(i, j), 0) /
-          (cls[ind[i]].length - 1);
+        : average(
+            cls[ind[i]]
+              .filter(({ i: j }) => j !== ind[i])
+              .map(({ i: j }) => dist_samp_samp(i, j)),
+          );
   });
   const b = samples.map((_, i) => {
     let min_dist = Infinity;
@@ -60,8 +63,7 @@ function getSilhouetteScoreArray<T>(
       if (k === ind[i]) continue;
       const d = simplify_b
         ? dist_samp_cen(i, k)
-        : cls[k].reduce((acc, { i: j }) => acc + dist_samp_samp(i, j), 0) /
-          cls[k].length;
+        : average(cls[k].map(({ i: j }) => dist_samp_samp(i, j)));
       if (d < min_dist) {
         min_dist = d;
       }
@@ -81,9 +83,7 @@ function getSilhouetteScoreArray<T>(
             : (b[i] - a[i]) / max;
   });
   return cls.map((v) =>
-    v.length === 0
-      ? [-1, 0]
-      : [v.reduce((acc, { i }) => acc + s[i], 0) / v.length, v.length],
+    v.length === 0 ? [-1, 0] : [average(v.map(({ i }) => s[i])), v.length],
   );
 }
 
@@ -101,9 +101,9 @@ export function getSilhouetteScore<T>(
     simplify_a,
     simplify_b,
   );
-  return (
-    score.reduce((acc, [s, n]) => acc + s * n, 0) /
-    score.reduce((acc, [, n]) => acc + n, 0)
+  return average(
+    score.map(([s]) => s),
+    score.map(([, n]) => n),
   );
 }
 
@@ -114,7 +114,7 @@ function addCentroid<T>(
 ) {
   // K-means++ initialization
   const weight = softargmax(
-    samples.map((v) => Math.min(Infinity, ...seeds.map((c) => dist(v, c)))),
+    samples.map((v) => minA(seeds.map((c) => dist(v, c)))),
     0.1,
   );
   return sample(samples, weight);
@@ -128,10 +128,7 @@ function removeCentroid<T>(
   if (seeds.length === 0) return null;
   const weight = softargmax(
     seeds.map((v, i) =>
-      Math.min(
-        Infinity,
-        ...seeds.map((c, j) => (i === j ? Infinity : dist(v, c))),
-      ),
+      minA(seeds.filter((_, j) => i !== j).map((c) => dist(v, c))),
     ),
     -0.1,
   );

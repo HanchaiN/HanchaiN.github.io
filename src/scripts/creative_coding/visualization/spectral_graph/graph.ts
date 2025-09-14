@@ -7,6 +7,8 @@ import {
   transpose,
 } from "mathjs";
 
+import { sum } from "@/scripts/utils/math/utils.js";
+
 export class Graph<T> {
   private _node: T[];
   private _adjMatrix: number[][];
@@ -20,9 +22,7 @@ export class Graph<T> {
     return this._node.length;
   }
   get size() {
-    return this._adjMatrix
-      .map((lst) => lst.reduce((acc, val) => acc + val, 0))
-      .reduce((acc, val) => acc + val, 0);
+    return sum(this._adjMatrix.flat());
   }
   clear() {
     this._node = [];

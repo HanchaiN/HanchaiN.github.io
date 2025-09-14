@@ -1,6 +1,6 @@
 import { Fraction } from "@/scripts/utils/math/fraction.js";
 import { shuffleArray } from "@/scripts/utils/math/random.js";
-import { factorial } from "@/scripts/utils/math/utils.js";
+import { factorial, maxA, minA, sum } from "@/scripts/utils/math/utils.js";
 
 export function toAdjMatrix(
   adjList: Map<number, { id: number; value: Fraction }[]>,
@@ -220,13 +220,9 @@ export function BvNDecompose(
   const n = matrix.length;
   if (!matrix.every((row) => row.length === n))
     throw new Error("Matrix must be square");
-  if (!matrix.every((row) => row.reduce((sum, v) => sum + v, 0) === 1))
+  if (!matrix.every((row) => sum(row) === 1))
     throw new Error("Row sums must be 1");
-  if (
-    !matrix[0].every(
-      (_, j) => matrix.reduce((sum, row) => sum + row[j], 0) === 1,
-    )
-  )
+  if (!matrix[0].every((_, j) => sum(matrix.map((row) => row[j])) === 1))
     throw new Error("Column sums must be 1");
   const A = matrix.map((row) => [...row]);
   const decomposition: [number, number[]][] = []; // List of permutation matrices
@@ -269,7 +265,7 @@ function pairingActivity(
   activity: number[][],
   weight: number[][] | null = null,
 ) {
-  let a = pair_u.reduce((sum, v, u) => sum + activity[u][v], 0);
+  let a = sum(pair_u.map((v, u) => (v !== -1 ? activity[u][v] : 0)));
   if (weight !== null && pair_u.includes(-1)) {
     const { us, vs } = missingPairing(pair_u);
     if (vs.length !== 1)
@@ -286,10 +282,8 @@ export function preTransverse(
   const n = activity.length;
   const _sample_size =
     sample_size >= 0 ? sample_size : Math.round(-sample_size * n * n);
-  const a_max = activity.flat().reduce((a, b) => Math.max(a, b), 0);
-  const a_min = activity
-    .flat()
-    .reduce((a, b) => (b > 0 ? Math.min(a, b) : a), Infinity);
+  const a_max = maxA(activity.flat());
+  const a_min = minA(activity.flat().filter((b) => b > 0));
   const v_min = Math.pow(a_min, n) / factorial(n);
   const a0 = activity.map((row) => row.map((v) => (v > 0 ? v : v_min)));
   const a_ = new Array(n).fill(0).map(() => new Array(n).fill(a_max));

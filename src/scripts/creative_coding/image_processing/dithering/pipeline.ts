@@ -17,6 +17,7 @@ import {
   constrain,
   normalize,
   softargmax,
+  sum,
 } from "@/scripts/utils/math/utils.js";
 import {
   vector_add,
@@ -144,7 +145,7 @@ function _applyDithering_Ordered<Embed extends number[]>(
     );
     const k0 = es.map((e) => vector_dot(v0, e));
     let w = matrix_mult([k0], k_inv)[0];
-    w.push(1 - w.reduce((acc, v) => acc + v, 0));
+    w.push(1 - sum(w));
     w = w.map((v) => constrain(v, 0, 1));
     w = normalize(w);
     let acc = 0;

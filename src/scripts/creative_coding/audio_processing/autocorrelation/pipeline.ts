@@ -1,5 +1,7 @@
+import { average } from "@/scripts/utils/math/utils.js";
+
 export function autocorrelation(buffer: Float32Array, bin_count: number) {
-  const mean = buffer.reduce((acc, curr) => acc + curr, 0) / buffer.length;
+  const mean = average(buffer);
   return new Float32Array(bin_count)
     .fill(0)
     .map((_, k) =>
@@ -64,10 +66,10 @@ export function filterPeaks(
 }
 
 export function extractPeriod(peaks: number[]) {
-  const periods = [];
+  const periods: number[] = [];
   for (let j = 1; j < peaks.length; j++) {
     periods.push(peaks[j] - peaks[j - 1]);
   }
   if (periods.length === 0) return 0;
-  return periods.reduce((a, b) => a + b, 0) / periods.length;
+  return average(periods);
 }

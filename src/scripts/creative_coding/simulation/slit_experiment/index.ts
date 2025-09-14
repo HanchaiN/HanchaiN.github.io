@@ -3,7 +3,13 @@ import {
   getParentSize,
   startAnimationLoop,
 } from "@/scripts/utils/dom/utils.js";
-import { constrain, fpart, lerp, map } from "@/scripts/utils/math/utils.js";
+import {
+  average,
+  constrain,
+  fpart,
+  lerp,
+  map,
+} from "@/scripts/utils/math/utils.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
 
 const okhcl2srgb = convert_color("hcl", "srgb")!;
@@ -281,8 +287,7 @@ export default function execute() {
     let prevPosition = Vector.mult(SOURCE_POSITION, scaler);
     for (const LAYER of LAYERS) {
       const position = new Vector(
-        LAYER.SLIT_POSITION.reduce((sum, curr) => sum + curr, 0) /
-          LAYER.SLIT_POSITION.length,
+        average(LAYER.SLIT_POSITION),
         LAYER.LAYER_POSITION,
       ).mult(scaler);
       phaseShift +=

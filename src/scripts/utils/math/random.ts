@@ -1,4 +1,4 @@
-import { lerp } from "./utils.js";
+import { lerp, sum } from "./utils.js";
 import { vector_fromPolar, vector_fromSphere } from "./vector.js";
 
 export function randomUniform(l = 0, h = 1) {
@@ -37,8 +37,8 @@ export function randomChi(alpha = 1) {
   return Math.sqrt(acc);
 }
 export function sample<T>(array: T[], prob: number[] = []) {
-  if (prob.length !== 0) {
-    const r = Math.random() * prob.reduce((a, b) => a + b, 0);
+  if (prob.length === array.length) {
+    const r = Math.random() * sum(prob);
     let acc = 0;
     for (let i = 0; i < array.length; i++) {
       acc += prob[i];

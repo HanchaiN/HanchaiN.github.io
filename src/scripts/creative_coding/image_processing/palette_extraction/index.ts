@@ -8,7 +8,7 @@ import { DistanceE94 } from "@/scripts/utils/color/distance.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { PaletteInput } from "@/scripts/utils/dom/element/PaletteInput.js";
 import { getImageData, onImageChange } from "@/scripts/utils/dom/image.js";
-import { argmax } from "@/scripts/utils/math/utils.js";
+import { argmax, average } from "@/scripts/utils/math/utils.js";
 
 import { _applyClosest } from "../clut_generation/pipeline.js";
 import { applyColorMapping } from "../color_grading/pipeline.js";
@@ -123,9 +123,8 @@ export default function execute() {
       form.querySelector<HTMLInputElement>("#eval-iter")!.valueAsNumber;
     const score =
       iter > 0
-        ? new Array(iter)
-            .fill(0)
-            .map(() =>
+        ? average(
+            new Array(iter).fill(0).map(() =>
               evaluatePalette(
                 getSample(sample_size > 0 ? sample_size : -1),
                 palette.map(embed2hex),
@@ -138,8 +137,8 @@ export default function execute() {
                       .checked,
                 },
               ),
-            )
-            .reduce((a, b) => a + b, 0) / iter
+            ),
+          )
         : 0;
     form.querySelector<HTMLInputElement>("#palette-score")!.valueAsNumber =
       score;

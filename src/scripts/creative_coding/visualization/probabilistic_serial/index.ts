@@ -4,6 +4,7 @@ import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { DragListY } from "@/scripts/utils/dom/element/DragListY.js";
 import { Fraction } from "@/scripts/utils/math/fraction.js";
 import { shuffleArray } from "@/scripts/utils/math/random.js";
+import { sum } from "@/scripts/utils/math/utils.js";
 import { Namespace } from "@/scripts/utils/namespace.js";
 
 import {
@@ -159,7 +160,7 @@ export default function execute() {
       );
       while (!leftover.values().every((v) => v.compare() <= 0)) {
         const share = new Map(leftover.entries().map(([k]) => [k, 0]));
-        const stepsize = prefs.reduce<Fraction>((min, [, items]) => {
+        const stepsize = prefs.reduce((min, [, items]) => {
           if (items.length === 0) return min;
           while (leftover.get(items[0])!.compare() <= 0) {
             items.shift();
@@ -672,7 +673,7 @@ export default function execute() {
     shift: number = 0,
     clockwise: boolean = true,
   ) {
-    const acc = elements.reduce((sum, el) => sum + el.value, 0);
+    const acc = sum(elements.map(({ value }) => value));
     if (acc === 0) return;
     if (!do_shift) shift = 0;
     let startAngle = shift * 2 * Math.PI;

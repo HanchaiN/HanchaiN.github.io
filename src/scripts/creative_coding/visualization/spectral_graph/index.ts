@@ -4,6 +4,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { Grid2D } from "@/scripts/utils/dom/element/Grid.js";
 import { startAnimationLoop } from "@/scripts/utils/dom/utils.js";
+import { average } from "@/scripts/utils/math/utils.js";
 
 import { Graph } from "./graph.js";
 
@@ -47,15 +48,12 @@ export default function execute() {
   }
 
   function project(vs: number[][], n: number) {
-    const center = vs.reduce(
-      (acc, val) => acc.map((x, i) => x + val[i] / vs.length),
-      new Array(vs[0].length).fill(0),
-    );
-    const variance = vs.reduce(
-      (acc, val) =>
-        acc.map((x, i) => x + (val[i] - center[i]) * (val[i] - center[i])),
-      new Array(vs[0].length).fill(0),
-    );
+    const center = new Array(vs[0].length)
+      .fill(0)
+      .map((_, i) => average(vs.map((v) => v[i])));
+    const variance = new Array(vs[0].length)
+      .fill(0)
+      .map((_, i) => average(vs.map((v) => Math.pow(v[i] - center[i], 2), 0)));
     return vs.map((vec) =>
       vec
         .map((x, i) => ({ v: x, p: variance[i] }))
@@ -164,7 +162,7 @@ export default function execute() {
             cell.appendChild(input);
             if (i !== j) {
               input.addEventListener("change", () => {
-                grid2D.get(j, i)!.innerHTML = input.value;
+                grid2D.get(j, i)!.innerHTML = input.valueAsNumber.toString();
               });
               input.dispatchEvent(new Event("change"));
             }

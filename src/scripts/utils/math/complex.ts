@@ -1,5 +1,5 @@
 /* eslint-disable no-loss-of-precision,@typescript-eslint/no-loss-of-precision */
-import { factorial, powneg, product } from "./utils.js";
+import { factorial, powneg, productRange } from "./utils.js";
 
 export type TComplex = [re: number, im: number];
 export function complex_conj(z: TComplex): TComplex {
@@ -146,7 +146,9 @@ export function complex_zeta(s: TComplex, prec: number = 1e-10): TComplex {
   for (let k = 1; k <= n; k++) {
     let T = 0.0;
     for (let j = k; j <= n; j++) {
-      T += (product(n - j + 1, n + j - 1) * Math.pow(4, j)) / factorial(2 * j);
+      T +=
+        (productRange(n - j + 1, n + j - 1) * Math.pow(4, j)) /
+        factorial(2 * j);
     }
     S = complex_add(
       S,
@@ -158,7 +160,8 @@ export function complex_zeta(s: TComplex, prec: number = 1e-10): TComplex {
   }
   let T = 0.0;
   for (let j = 0; j <= n; j++) {
-    T += (product(n - j + 1, n + j - 1) * Math.pow(4, j)) / factorial(2 * j);
+    T +=
+      (productRange(n - j + 1, n + j - 1) * Math.pow(4, j)) / factorial(2 * j);
   }
   const result = complex_div(
     S,
@@ -422,7 +425,7 @@ export class Complex {
     function d(k: number) {
       let S = 0;
       for (let j = k; j <= n; j++) {
-        S += (product(n - j + 1, n + j - 1) * 4 ** j) / factorial(2 * j);
+        S += (productRange(n - j + 1, n + j - 1) * 4 ** j) / factorial(2 * j);
       }
       return n * S;
     }

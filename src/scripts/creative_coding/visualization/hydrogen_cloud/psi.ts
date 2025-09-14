@@ -13,7 +13,8 @@ import {
   combination,
   factorial,
   permutation,
-  product,
+  productRange,
+  sum,
 } from "@/scripts/utils/math/utils.js";
 import {
   TVector,
@@ -47,7 +48,7 @@ function legendre(m: number, l: number, x: number) {
   if (l < 0) l = -l - 1;
   let factor = 1.0;
   if (m < 0) {
-    factor *= Math.pow(-1, m) * product(l - m + 1, l + m);
+    factor *= Math.pow(-1, m) * productRange(l - m + 1, l + m);
     m = -m;
   }
   factor *= Math.pow(-1, m) * Math.pow(2, l);
@@ -82,7 +83,9 @@ function sph_harm(m: number, l: number, theta: number, phi: number) {
   }
   factor *=
     Math.pow(-1, m) *
-    Math.sqrt((f1 * 2 * l + 1) / (4 * Math.PI * product(l - m + 1, l + m)));
+    Math.sqrt(
+      (f1 * 2 * l + 1) / (4 * Math.PI * productRange(l - m + 1, l + m)),
+    );
   const c = legendre(m, l, Math.cos(theta));
   const result = complex_scale(complex_exp([0, phi * m]), factor * c);
   return reflected ? complex_conj(result) : result;
@@ -112,7 +115,9 @@ function sph_harm_der(
     return complex_scale(
       complex_exp([0, m * phi]),
       -Math.pow(-1, m) *
-        Math.sqrt((2 * l + 1) / (4 * Math.PI) / product(l - m + 1, l + m)) *
+        Math.sqrt(
+          (2 * l + 1) / (4 * Math.PI) / productRange(l - m + 1, l + m),
+        ) *
         legendre_der(m, l, Math.cos(theta), order_theta) *
         Math.sin(theta),
     );
@@ -127,7 +132,7 @@ export function psi_orbital(
 ) {
   const normalize_r = Math.sqrt(
     Math.pow((2 * Z) / (n * RADIUS_REDUCED), 3.0) /
-      (product(n - l, n + l) * 2 * n),
+      (productRange(n - l, n + l) * 2 * n),
   );
   const r = Math.sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]); // vector_mag(x);
   const theta = vector_inclination(x);
@@ -156,7 +161,7 @@ export function psi_orbital_der(
 ): TVector<TComplex, 3> {
   const normalize_r = Math.sqrt(
     Math.pow((2 * Z) / (n * RADIUS_REDUCED), 3.0) /
-      (product(n - l, n + l) * 2 * n),
+      (productRange(n - l, n + l) * 2 * n),
   );
   const factor_r = (2 * Z) / (n * RADIUS_REDUCED);
   const r = Math.sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]); // vector_mag(x);
@@ -225,7 +230,7 @@ export function psi_orbital_sample(
     const MAX_SEED = 0.99;
     const normalize_r = Math.sqrt(
       Math.pow((2 * Z) / (n * RADIUS_REDUCED), 3.0) /
-        (product(n - l, n + l) * 2 * n),
+        (productRange(n - l, n + l) * 2 * n),
     );
     const _r_max = RADIUS_REDUCED * Math.pow(n + 5, 2);
     const seed = new Array(counts)
@@ -300,9 +305,7 @@ export function psi_orbital_superposition(
   x: TVector<number, 3>,
   t: number,
 ) {
-  const total_mag = Math.sqrt(
-    state.reduce((prev, { c }) => prev + complex_absSq(c), 0),
-  );
+  const total_mag = Math.sqrt(sum(state.map(({ c }) => complex_absSq(c))));
   console.assert(total_mag > 0, "Total magnitute is not non-negative.");
   const normalization = total_mag === 0 ? 0 : 1 / total_mag;
   const v = state.reduce<TComplex>(
@@ -323,9 +326,7 @@ export function psi_orbital_superposition_der(
   x: TVector<number, 3>,
   t: number,
 ): TVector<TComplex, 3> {
-  const total_mag = Math.sqrt(
-    state.reduce((prev, { c }) => prev + complex_absSq(c), 0),
-  );
+  const total_mag = Math.sqrt(sum(state.map(({ c }) => complex_absSq(c))));
   const normalization = total_mag === 0 ? 0 : 1 / total_mag;
   return state.reduce(
     ([dx, dy, dz], { c, n, l, m }) => {
