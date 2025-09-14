@@ -3,7 +3,7 @@ import { clerp } from "@/scripts/utils/color/interpl.js";
 import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { maxWorkers, startAnimationLoop } from "@/scripts/utils/dom/utils.js";
 
-import { Light, toRGB } from "./colors.js";
+import { LightAccumulator, toRGB } from "./colors.js";
 import "./data/camera_response.json" with { type: "json" };
 import "./data/light.json" with { type: "json" };
 import "./data/material.json" with { type: "json" };
@@ -31,7 +31,9 @@ export default function execute() {
       };
       const acc = new Array(render_size.w)
         .fill(null)
-        .map(() => new Array(render_size.h).fill(null).map(() => Light.black));
+        .map(() =>
+          new Array(render_size.h).fill(null).map(() => new LightAccumulator()),
+        );
       const iter = new Array(render_size.w)
         .fill(null)
         .map(() => new Array(render_size.h).fill(0));
@@ -63,17 +65,12 @@ export default function execute() {
                 requestIdleCallback(() => {
                   field.forEach((col, x) =>
                     col.forEach((pix, y) => {
-                      acc[x0 + x][y0 + y].mix(new Light(pix));
+                      acc[x0 + x][y0 + y].accumulate(pix);
                       iter[x0 + x][y0 + y]++;
                       buffer.data.set(
                         [
                           ...renderConfig
-                            .postProcessor(
-                              acc[x0 + x][y0 + y]
-                                .clone()
-                                .mult(1 / iter[x0 + x][y0 + y])
-                                .rgb(),
-                            )
+                            .postProcessor(acc[x0 + x][y0 + y].rgb())
                             .map((v) => v * 255),
                           255,
                         ],
