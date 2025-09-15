@@ -21,7 +21,7 @@ import type { MessageResponse as WhiteMessageResponse } from "./worker_white.ts"
 export default function execute() {
   let workers: Worker[] = [];
   let isActive = false;
-  const scale = 5;
+  const scale = 1;
   const chunkSize = 8;
 
   return {
