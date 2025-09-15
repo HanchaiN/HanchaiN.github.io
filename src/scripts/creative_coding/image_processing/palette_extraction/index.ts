@@ -199,16 +199,23 @@ export default function execute() {
         isAuto && (target === 0 || n_colors < target);
         n_colors++
       ) {
-        extend(n_colors);
-        cluster();
-        redraw();
-        updateScore();
-        console.info(
-          n_colors,
-          palette.value,
-          form.querySelector<HTMLInputElement>("#palette-score")!.value,
+        await new Promise((resolve) =>
+          requestIdleCallback(
+            () => {
+              extend(n_colors);
+              cluster();
+              redraw();
+              updateScore();
+              console.info(
+                n_colors,
+                palette.value,
+                form.querySelector<HTMLInputElement>("#palette-score")!.value,
+              );
+              resolve(true);
+            },
+            { timeout: 1000 },
+          ),
         );
-        await new Promise((resolve) => requestIdleCallback(resolve));
       }
     } finally {
       unlock();

@@ -5,7 +5,12 @@ const { execSync } = require("child_process");
 
 const options = {
   basedir: path.join(__dirname, ".."),
+  isDev:
+    process.argv.includes("--dev") || process.env.NODE_ENV !== "production",
 };
+if (options.isDev) {
+  console.log("Running in development mode");
+}
 
 const outputPath = path.join(__dirname, "..", "..", "dist");
 
@@ -34,6 +39,7 @@ function buildPublic() {
     _buildPublic();
   } catch (e) {
     console.error("Failed to build public");
+    if (options.isDev) console.error(e);
   }
 }
 function _buildPages() {
@@ -61,6 +67,7 @@ function buildPages() {
     _buildPages();
   } catch (e) {
     console.error("Failed to build pages");
+    if (options.isDev) console.error(e);
   }
 }
 function buildScripts() {
@@ -69,6 +76,7 @@ function buildScripts() {
     execSync("yarn run build:script", { stdio: "inherit" });
   } catch (e) {
     console.error("Failed to build scripts");
+    if (options.isDev) console.error(e);
   }
 }
 function buildAll() {

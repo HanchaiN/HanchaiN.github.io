@@ -18,27 +18,55 @@ block content
   #ray-tracing.preview-container
     canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
     form#config.data-container
+      label(for='color-mapping') Spectrum Color Mapping
+      select#color-mapping
+        option(value='camera') Camera Response
+        option(value='approx') Approximation (RGB)
+        option(value='approxXYZ' selected) Approximation (XYZ)
+      label(for='spectrum-ref') Spectrum Reference
+      select#spectrum-ref
+        option(value='Uniform' selected) Uniform
+        option(value='D65') D65
+      label(for='channel-ref') Channel Reference
+      select#channel-ref
+        option(value='global' selected) Global Max
+        option(value='channel') Channel Max
+      br
       label(for='white-balance') White Balance
       input#white-balance(type='checkbox' checked)
-      label(for='white-balance-reference') Reference (Wall-Light)
-      input#white-balance-reference(type='range' min='0' max='1' value='0' step='1e-5')
+      div#white-balance-options(data-select)
+        label(for='white-balance-reference') Reference
+        select#white-balance-reference
+          option(value='Uniform') Uniform
+          option(value='D65' selected) D65
+          option(value='Wall-Light') Wall-Light
+        div#white-balance-reference-container
+          label(for='white-balance-reference-itpl' data-select='Wall-Light') Reference (Wall-Light)
+          input#white-balance-reference-itpl(type='range' min='0' max='1' value='0' step='1e-5' data-select='Wall-Light')
       br
       label(for='tone-mapping') Tone Mapping
       input#tone-mapping(type='checkbox' checked)
-      label(for='tone-mapping-reference') Reference (Wall-Light)
-      input#tone-mapping-reference(type='range' min='0' max='1' value='1' step='1e-5')
-      br
-      label(for='tone-mapper') Tone Mapper
-      select#tone-mapper
-        option(value='scaler') Scale
-        option(value='scaler_lum') Scale (Luminance)
-        option(value='reinhard') Reinhard
-        option(value='reinhard_lum') Reinhard (Luminance)
-        option(value='reinhard_jodie') Reinhard-Jodie
-        option(value='reinhard_jodie_lum') Reinhard-Jodie (Luminance)
-        option(value='reinhard_ext') Extended Reinhard
-        option(value='reinhard_lum_ext') Extended Reinhard (Luminance)
-        option(value='reinhard_jodie_ext') Extended Reinhard-Jodie
-        option(value='reinhard_jodie_lum_ext' selected) Extended Reinhard-Jodie (Luminance)
+      div#tone-mapping-options(data-select)
+        label(for='tone-mapping-reference') Reference
+        select#tone-mapping-reference
+          option(value='Uniform') Uniform
+          option(value='D65') D65
+          option(value='Wall-Light' selected) Wall-Light
+        div#tone-mapping-reference-container
+          label(for='tone-mapping-reference-itpl' data-select='Wall-Light') Reference (Wall-Light)
+          input#tone-mapping-reference-itpl(type='range' min='0' max='1' value='1' step='1e-5' data-select='Wall-Light')
+        br
+        label(for='tone-mapper') Tone Mapper
+        select#tone-mapper
+          option(value='scaler') Scale
+          option(value='scaler_lum') Scale (Luminance)
+          option(value='reinhard') Reinhard
+          option(value='reinhard_lum') Reinhard (Luminance)
+          option(value='reinhard_jodie') Reinhard-Jodie
+          option(value='reinhard_jodie_lum') Reinhard-Jodie (Luminance)
+          option(value='reinhard_ext') Extended Reinhard
+          option(value='reinhard_lum_ext') Extended Reinhard (Luminance)
+          option(value='reinhard_jodie_ext') Extended Reinhard-Jodie
+          option(value='reinhard_jodie_lum_ext' selected) Extended Reinhard-Jodie (Luminance)
   p.
     In 3D computer graphics, ray tracing is a technique for modeling light transport for use in a wide variety of rendering algorithms for generating digital images. On a spectrum of computational cost and visual fidelity, ray tracing-based rendering techniques, such as ray casting, recursive ray tracing, distribution ray tracing, photon mapping and path tracing, are generally slower and higher fidelity than scanline rendering methods. Thus, ray tracing was first deployed in applications where taking a relatively long time to render could be tolerated, such as still computer-generated images, and film and television visual effects (VFX), but was less suited to real-time applications such as video games, where speed is critical in rendering each frame. Ray tracing is capable of simulating a variety of optical effects, such as reflection, refraction, soft shadows, scattering, depth of field, motion blur, caustics, ambient occlusion and dispersion phenomena (such as chromatic aberration). It can also be used to trace the path of sound waves in a similar fashion to light waves, making it a viable option for more immersive sound design in video games by rendering realistic reverberation and echoes. In fact, any physical wave or particle phenomenon with approximately linear motion can be simulated with ray tracing.

@@ -1,5 +1,3 @@
-import type { RGBColor } from "@/scripts/utils/color/conversion.ts";
-import { sum } from "@/scripts/utils/math/utils.js";
 import {
   vector_add,
   vector_mult,
@@ -8,42 +6,16 @@ import {
 } from "@/scripts/utils/math/vector.js";
 
 import { MAX_LUM, MIN_LUM } from "./const.js";
-import { readSpectrum, wavelengths } from "./data.js";
-import type { TSpectrum } from "./data.ts";
-
-const _camera_response = (
-  await import("./data/camera_response.json", { with: { type: "json" } })
-).default;
-// const _ref_light = (await import("./data/light.json", { with: { type: "json" } })).default;
-
-const camera_response: [r: TSpectrum, g: TSpectrum, b: TSpectrum] = [
-  await readSpectrum(_camera_response, "R"),
-  await readSpectrum(_camera_response, "G"),
-  await readSpectrum(_camera_response, "B"),
-];
-const max_response = _toRGB(
-  wavelengths.map(() => MAX_LUM) as TSpectrum,
-  // await readSpectrum(_ref_light, "intensity")
-);
-function _toRGB(v: TSpectrum): RGBColor {
-  return new Array(3)
-    .fill(0)
-    .map((_, i) =>
-      sum(v.map((val, j) => val * camera_response[i][j])),
-    ) as RGBColor;
-}
-export function toRGB(v: TSpectrum): RGBColor {
-  const rgb = _toRGB(v);
-  return rgb.map((c, i) => c / max_response[i]) as RGBColor;
-}
+import { default_mode, toRGB, wavelengths } from "./spectrum.js";
+import type { TSpectrum } from "./spectrum.ts";
 
 export class Light {
   color: TSpectrum;
   constructor(color: TSpectrum) {
     this.color = color;
   }
-  rgb() {
-    return toRGB(this.color);
+  async rgb(mode = default_mode) {
+    return await toRGB(this.color, mode);
   }
   clone() {
     return new Light([...this.color] as TSpectrum);
@@ -73,8 +45,8 @@ export class Dye {
   constructor(color: TSpectrum) {
     this.color = color;
   }
-  rgb() {
-    return Light.white.apply(this).rgb();
+  async rgb(mode = default_mode) {
+    return await Light.white.apply(this).rgb(mode);
   }
   clone() {
     return new Dye([...this.color] as TSpectrum);
@@ -126,8 +98,8 @@ export class LightAccumulator {
       : this._acc;
   }
 
-  rgb() {
-    return toRGB(this.color);
+  async rgb(mode = default_mode) {
+    return await toRGB(this.color, mode);
   }
 
   accumulate(light: Light | TSpectrum) {

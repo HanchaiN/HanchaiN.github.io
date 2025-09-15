@@ -1,5 +1,4 @@
 import { LightAccumulator } from "./colors.js";
-import type { TSpectrum } from "./data.ts";
 import { Ray, trace } from "./ray.js";
 import {
   CAMERA_POSITION,
@@ -7,6 +6,7 @@ import {
   SCENE_REF as SCENE,
   WALL_DIRECTION,
 } from "./scene.js";
+import type { TSpectrum } from "./spectrum.ts";
 
 type LandmarkKey = "light" | "wall";
 

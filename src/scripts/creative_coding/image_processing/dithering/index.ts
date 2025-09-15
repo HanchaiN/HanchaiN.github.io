@@ -84,7 +84,7 @@ export default function execute() {
       );
       const algo = new SelectDisplay(
         config.querySelector<HTMLSelectElement>("#algorithm")!,
-        config.querySelector("#advanced")!,
+        config.querySelector<HTMLElement>("#advanced")!,
       );
       palette = new PaletteInput(
         config.querySelector("#palette")!,

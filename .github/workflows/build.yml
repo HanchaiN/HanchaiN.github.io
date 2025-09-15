@@ -60,7 +60,7 @@ jobs:
           ${{ steps.detect-package-manager.outputs.manager }} run lint
           ${{ steps.detect-package-manager.outputs.manager }} run format:check
       - name: Build
-        run: ${{ steps.detect-package-manager.outputs.manager }} run build
+        run: NODE_ENV="production" ${{ steps.detect-package-manager.outputs.manager }} run build
       - name: Upload artifact
         id: deployment
         uses: actions/upload-pages-artifact@v4

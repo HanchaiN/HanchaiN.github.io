@@ -1,4 +1,4 @@
-import { sum } from "./utils.js";
+import { lerp, sum } from "./utils.js";
 
 export type TVector<T = number, N extends number = number> = T[] & {
   readonly length: N;
@@ -131,6 +131,14 @@ export class Vector {
   }
   static zero(dim: number) {
     return new this(...new Array(dim).fill(0));
+  }
+  getAt(i: number) {
+    return this._val[i] ?? 0;
+  }
+  setAt(i: number, v: number) {
+    if (i < 0 || i >= this.dim) throw new RangeError();
+    this._val[i] = v;
+    return this;
   }
   set(...val: number[]) {
     if (val.length === 0) val = [0, 0, 0];
@@ -281,4 +289,7 @@ export class Vector {
     const vz = Math.random() * 2 - 1;
     return this.fromSphere(1, Math.acos(vz), angle);
   }
+}
+export function vlerp<T extends number[]>(t: number, c0: T, c1: T): T {
+  return c0.map((_, i) => lerp(t, c0[i], c1[i])) as T;
 }

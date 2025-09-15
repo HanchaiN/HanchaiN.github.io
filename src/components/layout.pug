@@ -25,6 +25,20 @@ html(lang='en')
       script(type='module').
         import renderMathInElement from "katex/contrib/auto-render.mjs";
         renderMathInElement(document.querySelector("main"));
+    if isDev
+      script.
+        window.devtools = {};
+        {
+          let clearCounter = null;
+          function setClearInterval(interval = 1000) {
+            if (clearCounter) clearInterval(clearCounter);
+            clearCounter = setInterval(() => {
+              console.clear();
+              console.log(`Console cleared automatically after ${interval / 1000} seconds`);
+            }, interval);
+          }
+          window.devtools.setClearInterval = setClearInterval;
+        }
   body
     header.container-fluid
       include /components/navbar.pug

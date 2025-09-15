@@ -1,4 +1,4 @@
-import type { TSpectrum } from "./data.js";
+import type { TSpectrum } from "./spectrum.ts";
 import { trace_screen } from "./utils.js";
 
 export type MessageRequest = {

@@ -23,7 +23,7 @@ export function lambertianEmitter(color: Light): IEmittance {
 }
 export function phongEmitter(color: Light, exponent: number): IEmittance {
   return (toViewer, norm) => {
-    const emit_rate = Math.pow(Math.max(-norm.dot(toViewer), 0), exponent);
+    const emit_rate = Math.pow(Math.max(norm.dot(toViewer), 0), exponent);
     return color.clone().mult(emit_rate);
   };
 }

@@ -1,8 +1,24 @@
-import { lerp, softargmax } from "../math/utils.js";
-import { vector_add, vector_scale } from "../math/vector.js";
+import { softargmax } from "../math/utils.js";
+import { vector_add, vector_scale, vlerp } from "../math/vector.js";
+import type { ColorSpace, ColorSpaceMap } from "./conversion.js";
+import convert_color from "./conversion.js";
 
-export function clerp<T extends number[]>(t: number, c0: T, c1: T): T {
-  return c0.map((_, i) => lerp(t, c0[i], c1[i])) as T;
+export function clerp<
+  C1 extends ColorSpace = "rgb",
+  C2 extends ColorSpace = C1,
+>(
+  t: number,
+  c0: ColorSpaceMap[C1],
+  c1: ColorSpaceMap[C1],
+  mode_val: C1 = "rgb" as C1,
+  mode_calc: C2 = mode_val as ColorSpace as C2,
+): ColorSpaceMap[C1] {
+  const to = convert_color(mode_val, mode_calc)!;
+  const from = convert_color(mode_calc, mode_val)!;
+  const c0_ = to(c0) as ColorSpaceMap[C2];
+  const c1_ = to(c1) as ColorSpaceMap[C2];
+  const c_ = vlerp(t, c0_, c1_);
+  return from(c_) as ColorSpaceMap[C1];
 }
 
 export function generateGradient<T extends number[]>(

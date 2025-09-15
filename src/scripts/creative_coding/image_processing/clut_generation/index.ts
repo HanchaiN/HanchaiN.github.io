@@ -56,9 +56,9 @@ export default function execute() {
         applyGaussianRBF(
           buffer,
           palette_,
-          algo_view.display.querySelector<HTMLInputElement>("#temperature")!
+          algo_view.container.querySelector<HTMLInputElement>("#temperature")!
             .valueAsNumber,
-          algo_view.display.querySelector<HTMLInputElement>("#count")!
+          algo_view.container.querySelector<HTMLInputElement>("#count")!
             .valueAsNumber,
         );
         break;
@@ -67,7 +67,7 @@ export default function execute() {
         applyInverseRBF(
           buffer,
           palette_,
-          algo_view.display.querySelector<HTMLInputElement>("#count")!
+          algo_view.container.querySelector<HTMLInputElement>("#count")!
             .valueAsNumber,
         );
         break;
@@ -76,12 +76,12 @@ export default function execute() {
         applyCustomRBF(
           buffer,
           palette_,
-          algo_view.display.querySelector<HTMLInputElement>("#count")!
+          algo_view.container.querySelector<HTMLInputElement>("#count")!
             .valueAsNumber,
           try_catch<(d: number) => number>(
             () =>
               eval?.(
-                `"use strict";(${algo_view.display.querySelector<HTMLInputElement>("#rbf")!.value})`,
+                `"use strict";(${algo_view.container.querySelector<HTMLInputElement>("#rbf")!.value})`,
               ),
             (d) => Math.exp(-Math.pow(d, 2) / 0.05),
             (e) => {
@@ -94,12 +94,12 @@ export default function execute() {
       case Algorithm.MAP:
         applyCustomMap(
           buffer,
-          algo_view.display.querySelector<HTMLSelectElement>("#color-space")!
+          algo_view.container.querySelector<HTMLSelectElement>("#color-space")!
             .value as ColorSpace,
           try_catch<(c: [number, number, number]) => [number, number, number]>(
             () =>
               eval?.(
-                `"use strict";(${algo_view.display.querySelector<HTMLInputElement>("#mapper")!.value})`,
+                `"use strict";(${algo_view.container.querySelector<HTMLInputElement>("#mapper")!.value})`,
               ),
             ([c1, c2, c3]) => [c1, c2, c3],
             (e) => {

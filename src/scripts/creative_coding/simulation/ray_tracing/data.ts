@@ -1,8 +1,8 @@
 import { binarySearchBound } from "@/scripts/utils/algo/datastructure.js";
 import { map } from "@/scripts/utils/math/utils.js";
 
-export type TSpectrum = number[] & { readonly length: 7 };
-export const wavelengths: TSpectrum = [400, 450, 500, 550, 600, 650, 700];
+import { wavelengths } from "./spectrum.js";
+import type { TSpectrum } from "./spectrum.ts";
 
 type SpectrumData = {
   header: string[];
