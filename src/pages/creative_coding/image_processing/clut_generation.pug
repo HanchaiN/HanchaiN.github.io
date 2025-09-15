@@ -32,13 +32,13 @@ block content
         div(data-select='gaussian')
           label(for='temperature') Temperature:
           input#temperature(type='number', value='0.05', min='0', step='1e-5')
-        div(data-select='gaussian,inverse,rbf')
+        div(data-select='gaussian inverse rbf')
           label(for='count') Color Count:
           input#count(type='number', value='3', min='0', step='1')
         div(data-select='rbf')
           label(for='rbf') RBF:
           input#rbf(type='text', value='(d) => Math.exp(-Math.pow(d, 2) / 0.05)', placeholder='(distance) => weight')
-        div(data-select='nearest,gaussian,inverse,rbf')
+        div(data-select='nearest gaussian inverse rbf')
           textarea#palette-text
           div#palette
         div(data-select='map')

@@ -60,11 +60,7 @@ export class SelectDisplay<
   T extends string = string,
   E extends HTMLElement = HTMLElement,
 > extends ConditionalDisplay<T, HTMLSelectElement, E> {
-  constructor(
-    _select: HTMLSelectElement,
-    _container: E,
-    private separator: string = ",",
-  ) {
+  constructor(_select: HTMLSelectElement, _container: E) {
     super(_select, _container, false);
   }
 
@@ -75,7 +71,10 @@ export class SelectDisplay<
     el.value = value as string;
   }
   protected _getSelection(attr: string): T[] {
-    return attr.split(this.separator).map((v) => v.trim() as T);
+    return attr
+      .split(" ")
+      .filter(Boolean)
+      .map((v) => v.trim() as T);
   }
 }
 export class CheckDisplay<

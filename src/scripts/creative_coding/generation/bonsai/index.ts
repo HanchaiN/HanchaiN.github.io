@@ -7,6 +7,7 @@ export default function execute() {
   let ncurses: NCursesScreen;
   let gen: Generator;
   let anim: number = -1;
+  const scale = 4;
 
   function draw() {
     if (!canvas) return;
@@ -25,8 +26,12 @@ export default function execute() {
   return {
     start: (sketch: HTMLCanvasElement) => {
       canvas = sketch;
+      canvas.style.width = `${canvas.width}px`;
+      canvas.style.height = `${canvas.height}px`;
+      canvas.width = Math.round(canvas.width * scale);
+      canvas.height = Math.round(canvas.height * scale);
       ctx = canvas.getContext("2d", { alpha: false, desynchronized: true })!;
-      ncurses = new NCursesScreen(100, 80);
+      ncurses = new NCursesScreen(100, 50);
       canvas.addEventListener("click", redraw);
       redraw();
     },

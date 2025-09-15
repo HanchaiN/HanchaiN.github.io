@@ -163,7 +163,7 @@ const z_close = SCENE_REF.objects[0].a.z;
 
 export function getRigDir(pos: Vector, normal: Vector): Vector {
   const toLight = Vector.sub(LIGHT_POSITION, pos).normalize();
-  const y_min = 5 / 6;
+  const y_min = 5 / 6; // Leaving artifact when y_min < 5/6 to check if it's averaged as needed
   const d = 0.5 / Math.sqrt(y_min * y_min + 0.5);
   if (toLight.dot(normal) > d) return toLight;
   if (new Ray(pos, normal).intersect(SCENE_REF) === null) {
