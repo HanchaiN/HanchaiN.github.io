@@ -24,7 +24,11 @@ export function blackBody(temp: number): TSpectrum {
 export type CMapMode = "camera" | "approx" | "approxXYZ";
 export type CRefIllum = "Uniform" | "D65";
 export type CMaxMode = "global" | "channel";
-export type CMode = { mode: CMapMode; max_ref: CRefIllum; max_mode: CMaxMode };
+export type CMode = {
+  mode: CMapMode;
+  max_ref: CRefIllum | "none";
+  max_mode: CMaxMode;
+};
 export const default_mode: CMode = {
   mode: "approx",
   max_ref: "Uniform",
@@ -116,6 +120,8 @@ async function getToRGB({ mode, max_ref, max_mode }: CMode) {
     _toRGBs.set(mode, { _toRGB, ref_illum: new Map() });
   }
   const { _toRGB, ref_illum } = _toRGBs.get(mode)!;
+  if (max_ref === "none")
+    return { _toRGB, max_response: [1, 1, 1] as RGBColor };
   if (!ref_illum.has(max_ref)) {
     ref_illum.set(max_ref, _toRGB(REF_ILLUM[max_ref]!));
   }

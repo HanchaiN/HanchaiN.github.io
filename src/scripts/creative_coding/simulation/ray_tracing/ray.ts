@@ -29,7 +29,7 @@ export class Ray {
       total_dist += d = Math.max(Math.abs(d) * STEP_SCALE, MIN_DIST);
       position.add(direction.copy().mult(d));
     }
-    const s = Math.sign(object.distance(position, direction));
+    const s = Math.sign(d);
     // push into another surface
     while ((d = s * object.distance(position, direction)) > MIN_DIST) {
       total_dist += d = Math.max(
@@ -54,15 +54,18 @@ export class Ray {
   }
 }
 
-export function trace(ray: Ray, object: SceneObject, depth = 0) {
-  if (depth > MAX_DEPTH) return Light.black;
+function _trace(
+  ray: Ray,
+  object: SceneObject,
+  depth = 0,
+): { light: Light; depth: number } {
+  if (depth > MAX_DEPTH) return { light: Light.black, depth };
   const intersect = ray.intersect(object);
   const toViewer = ray.direction.copy().mult(-1);
-  if (intersect === null) return Light.black;
+  if (intersect === null) return { light: Light.black, depth };
   const { position, total_dist, isInside } = intersect;
   const light = Light.black;
-  const material = object.materialAt(position);
-  const normal = object.normal(position);
+  const { material, normal } = object.getNormalAndMaterial(position);
   if (material.emittance !== null) {
     const emit = material.emittance(toViewer, normal);
     light.mix(emit);
@@ -100,14 +103,23 @@ export function trace(ray: Ray, object: SceneObject, depth = 0) {
     );
     if (bdf !== null && !bdf.isBlack()) {
       const nextPos = position.copy();
-      const next = trace(new Ray(nextPos, nextDir), object, depth + 1);
+      const { light: next, depth: nextDepth } = _trace(
+        new Ray(nextPos, nextDir),
+        object,
+        depth + 1,
+      );
       next.mult(1 / (1 - RIG_PROB + RIG_PROB * amp_ratio));
       light.mix(next.apply(bdf));
+      depth = nextDepth;
     }
   }
   if (!isInside && material.interior !== null)
     light.apply(
       material.interior(ray.position.copy(), ray.direction.copy(), total_dist),
     );
-  return light;
+  return { light, depth };
+}
+
+export function trace(ray: Ray, object: SceneObject): Light {
+  return _trace(ray, object).light;
 }

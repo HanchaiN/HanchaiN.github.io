@@ -54,21 +54,21 @@ export function sum(x: numberArray, order: number = 2): number {
   // iterative Kahan–Babuška algorithm
   const cs: number[] = new Array(order + 1).fill(0.0);
   for (let i = 0; i < x.length; i++) {
-    let t, e;
-    const c = new Array(order + 1).fill(0.0);
-    c[0] = x[i];
+    let t,
+      e,
+      cj = x[i];
     for (let j = 0; j < order; j++) {
-      t = cs[j] + c[j];
-      if (Math.abs(cs[j]) >= Math.abs(c[j])) {
+      t = cs[j] + cj;
+      if (Math.abs(cs[j]) >= Math.abs(cj)) {
         e = cs[j] - t;
-        c[j + 1] = e + c[j];
+        cj = e + cj;
       } else {
-        e = c[j] - t;
-        c[j + 1] = e + cs[j];
+        e = cj - t;
+        cj = e + cs[j];
       }
       cs[j] = t;
     }
-    cs[order] += c[order];
+    cs[order] += cj;
   }
   return cs.reduce((a, b) => a + b, 0);
 }

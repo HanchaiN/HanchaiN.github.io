@@ -79,9 +79,7 @@ export default function execute() {
       });
       startAnimationLoop(async function draw() {
         if (!isActive) return false;
-        await createImageBitmap(buffer).then((bmp) =>
-          ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height),
-        );
+        ctx.putImageData(buffer, 0, 0);
         return !done;
       });
       canvas.addEventListener("mousedown", (e) => {

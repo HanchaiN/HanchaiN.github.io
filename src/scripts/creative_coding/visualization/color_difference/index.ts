@@ -164,28 +164,26 @@ export default function execute() {
               _distance_o === "inner" ? distance_i : distance_fn[_distance_o];
           redraw(distance_i, distance_o);
         });
-      startAnimationLoop(async function draw() {
+      startAnimationLoop(function draw() {
         if (!isActive) return false;
-        await createImageBitmap(buffer).then((bmp) => {
-          ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
-          for (const c of palette.value) {
-            const [l0, a0, b0] = remapColor(str2lab(c));
-            ctx.fillStyle = lab2hex([l0, a0, b0]);
-            ctx.strokeStyle = l < 0.5 ? "#fff" : "#000";
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.arc(
-              map(a0, -c_max, +c_max, 0, canvas.width),
-              map(b0, +c_max, -c_max, 0, canvas.height),
-              2,
-              0,
-              2 * Math.PI,
-            );
-            ctx.fill();
-            ctx.stroke();
-            ctx.closePath();
-          }
-        });
+        ctx.putImageData(buffer, 0, 0);
+        for (const c of palette.value) {
+          const [l0, a0, b0] = remapColor(str2lab(c));
+          ctx.fillStyle = lab2hex([l0, a0, b0]);
+          ctx.strokeStyle = l < 0.5 ? "#fff" : "#000";
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.arc(
+            map(a0, -c_max, +c_max, 0, canvas.width),
+            map(b0, +c_max, -c_max, 0, canvas.height),
+            2,
+            0,
+            2 * Math.PI,
+          );
+          ctx.fill();
+          ctx.stroke();
+          ctx.closePath();
+        }
         return true;
       });
       startLoop(function update() {

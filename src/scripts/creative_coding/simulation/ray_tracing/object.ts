@@ -12,7 +12,7 @@ import { Material } from "./material.js";
 export abstract class SceneObject {
   constructor() {}
   abstract distance(pos: Vector, dir?: Vector): number;
-  normal(pos: Vector): Vector {
+  getNormal(pos: Vector): Vector {
     const vec = new Vector(
       this.distance(new Vector(+MIN_DIST, 0, 0).add(pos)) -
         this.distance(new Vector(-MIN_DIST, 0, 0).add(pos)),
@@ -24,7 +24,10 @@ export abstract class SceneObject {
     if (vec.magSq() === 0) return Vector.normalize(pos).mult(-1);
     return vec.normalize();
   }
-  abstract materialAt(pos: Vector): Material;
+  abstract getMaterial(pos: Vector): Material;
+  getNormalAndMaterial(pos: Vector): { normal: Vector; material: Material } {
+    return { normal: this.getNormal(pos), material: this.getMaterial(pos) };
+  }
 }
 export abstract class ProxyObject extends SceneObject {
   constructor(public object: SceneObject) {
@@ -33,11 +36,14 @@ export abstract class ProxyObject extends SceneObject {
   distance(pos: Vector, dir?: Vector) {
     return this.object.distance(pos, dir);
   }
-  normal(pos: Vector) {
-    return this.object.normal(pos);
+  getNormal(pos: Vector) {
+    return this.object.getNormal(pos);
   }
-  materialAt(pos: Vector) {
-    return this.object.materialAt(pos);
+  getMaterial(pos: Vector) {
+    return this.object.getMaterial(pos);
+  }
+  getNormalAndMaterial(pos: Vector) {
+    return this.object.getNormalAndMaterial(pos);
   }
 }
 
@@ -53,11 +59,14 @@ export abstract class JointObject<
       : Object.values(this.objects);
   }
   protected abstract objectAt(pos: Vector): SceneObject;
-  normal(pos: Vector) {
-    return this.objectAt(pos).normal(pos);
+  getNormal(pos: Vector) {
+    return this.objectAt(pos).getNormal(pos);
   }
-  materialAt(pos: Vector) {
-    return this.objectAt(pos).materialAt(pos);
+  getMaterial(pos: Vector) {
+    return this.objectAt(pos).getMaterial(pos);
+  }
+  getNormalAndMaterial(pos: Vector) {
+    return this.objectAt(pos).getNormalAndMaterial(pos);
   }
 }
 export class UnionObject<
@@ -108,11 +117,11 @@ export class NegateObject extends SceneObject {
   distance(pos: Vector, dir?: Vector) {
     return -this.object.distance(pos, dir);
   }
-  normal(pos: Vector) {
-    return this.object.normal(pos).mult(-1);
+  getNormal(pos: Vector) {
+    return this.object.getNormal(pos).mult(-1);
   }
-  materialAt(pos: Vector) {
-    return this.object.materialAt(pos);
+  getMaterial(pos: Vector) {
+    return this.object.getMaterial(pos);
   }
 }
 export class DifferenceObject extends IntersectObject {
@@ -134,11 +143,17 @@ export abstract class TransformObject extends SceneObject {
       dir ? this.inv_dir(dir) : dir,
     );
   }
-  normal(pos: Vector) {
-    return this.trn_dir(this.object.normal(this.inv_pos(pos)));
+  getNormal(pos: Vector) {
+    return this.trn_dir(this.object.getNormal(this.inv_pos(pos)));
   }
-  materialAt(pos: Vector) {
-    return this.object.materialAt(this.inv_pos(pos));
+  getMaterial(pos: Vector) {
+    return this.object.getMaterial(this.inv_pos(pos));
+  }
+  getNormalAndMaterial(pos: Vector) {
+    const { normal, material } = this.object.getNormalAndMaterial(
+      this.inv_pos(pos),
+    );
+    return { normal: this.trn_dir(normal), material };
   }
 }
 export class TranslateObject extends TransformObject {
@@ -201,7 +216,7 @@ abstract class PrimitiveObject extends SceneObject {
   constructor(private mat: Material | ((pos: Vector) => Material)) {
     super();
   }
-  materialAt(pos: Vector) {
+  getMaterial(pos: Vector) {
     if (this.mat instanceof Material) return this.mat;
     return this.mat(pos);
   }
@@ -215,7 +230,7 @@ export class Horizon extends PrimitiveObject {
   distance(pos: Vector) {
     return Math.max(MAX_DIST - pos.mag(), 0);
   }
-  normal(pos: Vector) {
+  getNormal(pos: Vector) {
     return Vector.normalize(pos).mult(-1);
   }
 }
@@ -239,7 +254,7 @@ class _Sphere extends PrimitiveObject {
     if (t < 0) return Infinity;
     return Math.sign(d) * t;
   }
-  normal(pos: Vector) {
+  getNormal(pos: Vector) {
     return pos.copy().normalize();
   }
 }
@@ -313,7 +328,7 @@ class _Plane extends PrimitiveObject {
     if (Math.sign(p) * Math.sign(d) > 0) return Math.sign(p) * Infinity;
     return p / Math.abs(d);
   }
-  normal() {
+  getNormal() {
     return this.norm.copy();
   }
 }
@@ -389,7 +404,7 @@ export class Triangle extends PrimitiveObject {
       )
     );
   }
-  normal(p: Vector) {
+  getNormal(p: Vector) {
     const n = this.norm.copy();
     if (this.signed !== 0) return n.mult(this.signed);
     const pa = Vector.sub(p, this.a);
@@ -399,7 +414,6 @@ export class Triangle extends PrimitiveObject {
   }
 }
 export class Quad extends PrimitiveObject {
-  private o: number;
   private norm: Vector;
   private ba: Vector;
   private cb: Vector;
@@ -423,8 +437,10 @@ export class Quad extends PrimitiveObject {
     this.dc = Vector.sub(this.d, this.c).normalize();
     this.ad = Vector.sub(this.a, this.d).normalize();
     this.norm = Vector.cross(this.ba, this.ad);
-    this.o = -Vector.dot(this.a, this.norm);
-    if (Math.abs(Vector.dot(this.c, this.norm) - this.o) > 1e-5)
+    if (
+      Math.abs(Vector.dot(this.c, this.norm) - Vector.dot(this.a, this.norm)) >
+      1e-5
+    )
       console.warn("The quad might be non-planar.");
     this.ba_ = Vector.cross(this.ba, this.norm);
     this.cb_ = Vector.cross(this.cb, this.norm);
@@ -432,32 +448,44 @@ export class Quad extends PrimitiveObject {
     this.ad_ = Vector.cross(this.ad, this.norm);
   }
   distance(p: Vector, dir?: Vector): number {
+    let np: number | null = null;
     const pa = Vector.sub(p, this.a);
     const s =
-      this.signed === 0 ? 1 : Math.sign(this.norm.dot(pa)) * this.signed;
+      this.signed === 0
+        ? 1
+        : Math.sign((np ??= this.norm.dot(pa))) * this.signed;
+    let t = 0;
     if (dir) {
-      if (this.norm.dot(dir) === 0) return s * Infinity;
-      const t = -(this.o + this.norm.dot(p)) / this.norm.dot(dir);
+      const nd = this.norm.dot(dir);
+      if (nd === 0) return s * Infinity;
+      t = -(np ??= this.norm.dot(pa)) / nd;
       if (t < 0) return s * Infinity;
-      const p_ = Vector.add(p, dir.copy().mult(t));
-      const pa_ = Vector.sub(p_, this.a);
-      const pb_ = Vector.sub(p_, this.b);
-      const pc_ = Vector.sub(p_, this.c);
-      const pd_ = Vector.sub(p_, this.d);
-      const sa = Math.sign(2 * MIN_DIST + this.ba_.dot(pa_));
-      const sb = Math.sign(2 * MIN_DIST + this.cb_.dot(pb_));
-      const sc = Math.sign(2 * MIN_DIST + this.dc_.dot(pc_));
-      const sd = Math.sign(2 * MIN_DIST + this.ad_.dot(pd_));
-      if (sa + sb + sc + sd >= 3) return s * t;
     }
     const pb = Vector.sub(p, this.b);
     const pc = Vector.sub(p, this.c);
     const pd = Vector.sub(p, this.d);
-    const sa = Math.sign(this.ba_.dot(pa));
-    const sb = Math.sign(this.cb_.dot(pb));
-    const sc = Math.sign(this.dc_.dot(pc));
-    const sd = Math.sign(this.ad_.dot(pd));
-    if (sa + sb + sc + sd >= 3) return s * Math.abs(this.norm.dot(pa));
+    const _a = this.ba_.dot(pa);
+    const _b = this.cb_.dot(pb);
+    const _c = this.dc_.dot(pc);
+    const _d = this.ad_.dot(pd);
+    if (dir) {
+      const _a_ = _a + this.ba_.dot(dir) * t;
+      const _b_ = _b + this.cb_.dot(dir) * t;
+      const _c_ = _c + this.dc_.dot(dir) * t;
+      const _d_ = _d + this.ad_.dot(dir) * t;
+      const sa = Math.sign(2 * MIN_DIST + _a_);
+      const sb = Math.sign(2 * MIN_DIST + _b_);
+      const sc = Math.sign(2 * MIN_DIST + _c_);
+      const sd = Math.sign(2 * MIN_DIST + _d_);
+      if (sa + sb + sc + sd >= 3) return s * t;
+      return s * MAX_DIST;
+    }
+    const sa = Math.sign(_a);
+    const sb = Math.sign(_b);
+    const sc = Math.sign(_c);
+    const sd = Math.sign(_d);
+    if (sa + sb + sc + sd >= 3)
+      return s * Math.max(t, Math.abs((np ??= this.norm.dot(pa))));
     const va = Math.max(this.ba.dot(pa), 0);
     const vb = Math.max(this.cb.dot(pb), 0);
     const vc = Math.max(this.dc.dot(pc), 0);
@@ -474,7 +502,7 @@ export class Quad extends PrimitiveObject {
       )
     );
   }
-  normal(p: Vector) {
+  getNormal(p: Vector) {
     const n = this.norm.copy();
     if (this.signed !== 0) return n.mult(this.signed);
     const pa = Vector.sub(p, this.a);

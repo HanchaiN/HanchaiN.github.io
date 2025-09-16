@@ -97,9 +97,17 @@ export default function execute() {
           worker.addEventListener(
             "message",
             async function ({ data }: MessageEvent<MessageResponse>) {
+              let task = render_queue.shift(),
+                pushed = false;
+              if (isActive && typeof task !== "undefined") {
+                worker.postMessage(task!);
+                pushed = true;
+              }
               if (data !== null) {
                 const { x0, y0, x1, y1, field } = data;
-                render_queue.push({ x0, x1, y0, y1, ...render_size });
+                if (typeof task === "undefined")
+                  task = { x0, y0, x1, y1, ...render_size };
+                else render_queue.push({ x0, x1, y0, y1, ...render_size });
                 requestIdleCallback(
                   async () => {
                     await Promise.all(
@@ -130,12 +138,16 @@ export default function execute() {
                   { timeout: 1000 },
                 );
               }
-              let task = render_queue.shift();
-              while (isActive && typeof task === "undefined") {
+              if (pushed) return;
+              if (!isActive) {
+                if (typeof task !== "undefined") render_queue.push(task);
+                return;
+              }
+              while (typeof task === "undefined") {
                 await new Promise((resolve) => setTimeout(resolve, 0));
+                if (!isActive) return;
                 task = render_queue.shift();
               }
-              if (!isActive) return;
               worker.postMessage(task!);
             },
           );
@@ -168,12 +180,12 @@ export default function execute() {
           });
         renderConfig.c_mode.max_ref = config.querySelector<HTMLSelectElement>(
           "#spectrum-ref",
-        )!.value as CRefIllum;
+        )!.value as CRefIllum | "none";
         config
           .querySelector<HTMLSelectElement>("#spectrum-ref")!
           .addEventListener("change", (e) => {
             renderConfig.c_mode.max_ref = (e.target as HTMLSelectElement)
-              .value as CRefIllum;
+              .value as CRefIllum | "none";
           });
         renderConfig.c_mode.max_mode = config.querySelector<HTMLSelectElement>(
           "#channel-ref",
@@ -263,9 +275,7 @@ export default function execute() {
       });
       startAnimationLoop(async function draw() {
         if (!isActive) return false;
-        await createImageBitmap(buffer).then((bmp) =>
-          ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height),
-        );
+        ctx.putImageData(buffer, 0, 0);
         return true;
       });
     },

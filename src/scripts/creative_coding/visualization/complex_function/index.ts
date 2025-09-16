@@ -80,11 +80,9 @@ export default function execute() {
       const renderer = kernelGenerator(main, { R, l0, l1, s0, s1 }, buffer);
       const step = renderer();
       let done = false;
-      startAnimationLoop(async function draw() {
+      startAnimationLoop(function draw() {
         if (!isActive) return false;
-        await createImageBitmap(buffer).then((bmp) =>
-          ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height),
-        );
+        ctx.putImageData(buffer, 0, 0);
         return !done;
       });
       startLoop(function update() {

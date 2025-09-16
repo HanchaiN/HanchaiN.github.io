@@ -1,5 +1,5 @@
-export const MAX_DEPTH = 3;
-export const STEP_SCALE = 1 - Math.pow(1 / 1024, 1 / 5); // 5 steps to 1/1024
+export const MAX_DEPTH = 10;
+export const STEP_SCALE = 1 - Math.pow(1 / 1024, 1 / 2); // 2 steps to 1/1024
 // Distance
 export const MIN_DIST = 1e-2;
 export const MAX_DIST = 1e4;

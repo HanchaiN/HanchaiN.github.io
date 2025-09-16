@@ -5,7 +5,9 @@ import { constrain, constrainLerp, lerp } from "@/scripts/utils/math/utils.js";
 type IToneMapper = (ref: RGBColor) => (col: RGBColor) => RGBColor;
 
 // https://64.github.io/tonemapping/
-const rgb2lum = convert_color("rgb", "lum")!;
+const rgb2lum = convert_color("rgb", "lum")!,
+  rgb2xyz = convert_color("rgb", "xyz")!,
+  xyz2rgb = convert_color("xyz", "rgb")!;
 export const luminance = ([r, g, b]: RGBColor) => rgb2lum([r, g, b])[0];
 const exposture =
   (exposture: number) =>
@@ -15,9 +17,6 @@ const exposture =
     b * exposture,
   ];
 const white_balance = ([ref_r, ref_g, ref_b]: RGBColor) => {
-  const rgb2xyz = convert_color("rgb", "xyz")!,
-    xyz2rgb = convert_color("xyz", "rgb")!;
-
   const [x0, y0, z0] = rgb2xyz([ref_r, ref_g, ref_b]);
   const [xw, yw, zw] = rgb2xyz([1, 1, 1]);
   return ([r, g, b]: RGBColor): RGBColor => {

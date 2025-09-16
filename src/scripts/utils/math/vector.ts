@@ -153,9 +153,7 @@ export class Vector {
   }
   dot(v: Vector) {
     if (this.dim !== v.dim) throw new TypeError();
-    return sum(
-      new Array(this.dim).fill(0).map((_, i) => this._val[i] * v._val[i]),
-    );
+    return sum(this._val.map((_, i) => this._val[i] * v._val[i]));
   }
   static dot(a: Vector, b: Vector) {
     return a.dot(b);

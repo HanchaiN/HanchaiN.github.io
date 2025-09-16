@@ -168,7 +168,7 @@ export function getRigDir(pos: Vector, normal: Vector): Vector {
   if (toLight.dot(normal) > d) return toLight;
   if (new Ray(pos, normal).intersect(SCENE_REF) === null) {
     const dy = y_floor - pos.y;
-    const dz = (z_close + pos.z) / 2 - pos.z;
+    const dz = (z_close - pos.z) * 0.95;
     const a = normal.x;
     const b = 2 * (normal.y * dy + normal.z * dz);
     const c = -normal.x * (dy * dy + dz * dz);
