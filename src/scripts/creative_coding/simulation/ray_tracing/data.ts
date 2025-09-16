@@ -33,7 +33,7 @@ export async function readSpectrum(
     );
     if (il < 0 || ih > data_.length - 1) {
       console.warn(`Wavelength ${w}nm is out of range`);
-      return 0;
+      return il < 0 ? data_.at(0)![1] : data_.at(-1)![1];
     }
     const [wl, dl] = data_[il];
     const [wh, dh] = data_[ih];

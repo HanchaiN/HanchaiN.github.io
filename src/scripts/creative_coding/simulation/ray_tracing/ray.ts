@@ -1,3 +1,4 @@
+import { lerp } from "@/scripts/utils/math/utils.js";
 import { Vector } from "@/scripts/utils/math/vector.js";
 
 import { Light } from "./colors.js";
@@ -70,30 +71,35 @@ function _trace(
     const emit = material.emittance(toViewer, normal);
     light.mix(emit);
   }
-  if (material.bdf !== null) {
+  if (material.bdf !== null && (material.bdf.BRDF || material.bdf.BTDF)) {
     let nextDir: Vector = Vector.random3D();
     let amp_ratio: number = 0;
+    const bdf_sign =
+      material.bdf.BRDF && material.bdf.BTDF ? 0 : material.bdf.BRDF ? 1 : -1;
     const rigDir = getRigDir(position, normal);
-    const isRigged = Math.random() < RIG_PROB;
+    const rigProb =
+      rigDir.magSq() < 1e-6 || rigDir.dot(normal) * bdf_sign >= 0
+        ? RIG_PROB
+        : 0;
+    const isRigged = Math.random() < rigProb;
     if (isRigged) {
       const d0 = rigDir.copy().normalize();
-      const v = Vector.random3D().cross(d0).normalize();
-      console.assert(
-        Math.abs(v.dot(d0)) < 1e-6,
-        `v is not perpendicular to d0 ${v.dot(d0)} ${v.magSq()} ${d0.magSq()}`,
+      let v;
+      while ((v = Vector.random3D().cross(d0)).magSq() < 1e-6);
+      v.normalize().mult(
+        Math.tan(Math.acos(lerp(Math.random(), Math.cos(RIG_THETA), 1))),
       );
-      const theta = Math.acos(
-        (1 - Math.cos(RIG_THETA)) * Math.random() + Math.cos(RIG_THETA),
-      );
-      const a = Math.tan(theta);
-      v.mult(a);
-      nextDir = d0.copy().add(v).normalize();
+      nextDir = d0.add(v).normalize();
+    } else if (bdf_sign * nextDir.dot(normal) < 0) {
+      nextDir.mult(-1);
     }
-    const h = 1 - Math.cos(RIG_THETA);
-    if (nextDir.dot(rigDir) > 1 - h) {
-      amp_ratio = 2 / (1 - Math.cos(RIG_THETA));
-    } else {
-      console.assert(!isRigged, "rigged but not in rig cone");
+    if (rigProb !== 0) {
+      const h = 1 - Math.cos(RIG_THETA);
+      if (nextDir.dot(rigDir) > 1 - h) {
+        amp_ratio = (bdf_sign ? 2 : 1) / (1 - Math.cos(RIG_THETA));
+      } else {
+        console.assert(!isRigged, "rigged but not in rig cone");
+      }
     }
     const bdf = material.bdf(
       toViewer,
@@ -101,14 +107,14 @@ function _trace(
       nextDir,
       isInside ? 1 / material.index : material.index,
     );
-    if (bdf !== null && !bdf.isBlack()) {
+    if (!bdf.isBlack()) {
       const nextPos = position.copy();
       const { light: next, depth: nextDepth } = _trace(
         new Ray(nextPos, nextDir),
         object,
         depth + 1,
       );
-      next.mult(1 / (1 - RIG_PROB + RIG_PROB * amp_ratio));
+      next.mult(1 / (1 - rigProb + rigProb * amp_ratio));
       light.mix(next.apply(bdf));
       depth = nextDepth;
     }

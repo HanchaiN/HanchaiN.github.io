@@ -10,12 +10,16 @@ type IBTDF = (
   toSource: Vector,
   rel_index: number,
 ) => Dye;
-type IBDF = (
+type _IBDF = (
   toViewer: Vector,
   norm: Vector,
   toSource: Vector,
   rel_index: number,
 ) => Dye;
+interface IBDF extends _IBDF {
+  BRDF: IBRDF | null;
+  BTDF: IBTDF | null;
+}
 type IInterior = (from: Vector, direction: Vector, distance: number) => Dye;
 
 export function lambertianEmitter(color: Light): IEmittance {
@@ -27,7 +31,7 @@ export function phongEmitter(color: Light, exponent: number): IEmittance {
     return color.clone().mult(emit_rate);
   };
 }
-function BDF(BRDF: IBRDF | null = null, BTDF: IBTDF | null = null): IBDF {
+function _BDF(BRDF: IBRDF | null = null, BTDF: IBTDF | null = null): _IBDF {
   if (BRDF === null && BTDF === null) {
     return () => Dye.black;
   }
@@ -39,7 +43,7 @@ function BDF(BRDF: IBRDF | null = null, BTDF: IBTDF | null = null): IBDF {
       return Dye.black;
     };
   if (BRDF === null)
-    return (toViewer, norm, toSource, rel_index: number) => {
+    return (toViewer, norm, toSource, rel_index) => {
       if (norm.dot(toViewer) * norm.dot(toSource) < 0) {
         return BTDF!(toViewer, norm, toSource, rel_index).lightMult(2);
       }
@@ -63,6 +67,12 @@ function BDF(BRDF: IBRDF | null = null, BTDF: IBTDF | null = null): IBDF {
     }
     return Dye.black;
   };
+}
+function BDF(BRDF: IBRDF | null = null, BTDF: IBTDF | null = null): IBDF {
+  const bdf: IBDF = _BDF(BRDF, BTDF) as IBDF;
+  bdf.BRDF = BRDF;
+  bdf.BTDF = BTDF;
+  return bdf;
 }
 export function lambertianBRDF(color: Dye): IBRDF {
   return (toViewer, norm, toSource) => {
