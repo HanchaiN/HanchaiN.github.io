@@ -32,26 +32,28 @@ block content
       input#palette-count(type='number', value='0', min='0', step='1')
       details
         summary Palette:
+          button#calc(type='button') Calculate
+          button#snap(type='button') Snap to pixels
         textarea#palette-text
         div#palette
-      button#calc(type='button') Calculate
-      button#snap(type='button') Snap to pixels
       br
       button#draw-raw(type='button') Draw (Raw)
       button#draw-quant(type='button') Quantize
       br
       label(for='sample-size-eval') Sampling size (evaluation):
       input#sample-size-eval(type='number', value='1000', min='0', step='1')
+      wbr
       label(for='eval-iter') Iterations (evaluation):
       input#eval-iter(type='number', value='3', min='0', step='1')
+      br
       label(for='simplify-a') Simplify Intracluster distance:
       input#simplify-a(type='checkbox')
       label(for='simplify-b') Simplify Intercluster distance:
       input#simplify-b(type='checkbox' checked)
       br
-      button#eval(type='button') Evaluate
       label(for='palette-score') Silhouette Score:
       input#palette-score(type='number', value='0', readonly, disabled)
+      button#eval(type='button') Evaluate
 
   p.
     In computer graphics, color quantization or color image quantization is quantization applied to color spaces;

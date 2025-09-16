@@ -20,26 +20,34 @@ block content
     form#config.data-container
       label(for='image') Image:
       input#image(type='file', accept='image/*')
+      br
       label(for='range')
         | Initial Range:
         slot#range-value
       input#range(type='range', min='0', max='1', step='1e-5')
+      wbr
       label(for='learning-rate')
         | Initial Learning Rate:
         slot#learning-rate-value
       input#learning-rate(type='range', min='0', max='1', step='1e-5')
+      br
       label(for='range-decay-rate') Range Decay Rate:
       input#range-decay-rate(type='number', min='0')
+      wbr
       label(for='learning-decay-rate') Learning Rate Decay Rate:
       input#learning-decay-rate(type='number', min='0')
-      label(for='color-choices')
-        | Color Choices:
-        slot#color-choices-value
+      br
       input#color-choices(type='number', min='1', max='10', step='1')
       label(for='weight-positions') Position Weighting:
       input#weight-positions(type='number')
+      wbr
       label(for='weight-colors') Color Weighting:
       input#weight-colors(type='number')
+      br
+      label(for='color-choices')
+        | Color Choices:
+        slot#color-choices-value
+      wbr
       label(for='iteration-count') Iteration Count:
       input#iteration-count(type='number', disabled)
   p.

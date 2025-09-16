@@ -28,12 +28,16 @@ block content
         summary Parameters (for advanced users)
         label(for='temperature', data-select='order error') Temperature:
         input#temperature(type='number', value='1', min='0', step='1e-5', data-select='order error')
+        wbr
         label(for='err_decay', data-select='error') Error Decay:
         input#err_decay(type='number', value='0.5', min='0', max='1', step='1e-5', data-select='error')
+        wbr
         label(for='mask_order', data-select='order') Mask Order:
         input#mask_order(type='number', value='4', min='0', step='1', data-select='order')
+        wbr
         label(for='candidate_count', data-select='order') Candidate count:
         input#candidate_count(type='number', value='2', min='0', step='1', data-select='order')
+        wbr
         label(for='order_mode', data-select='order') Order Mode:
         select#order_mode(data-select='order')
           option(value='cie' selected) CIE

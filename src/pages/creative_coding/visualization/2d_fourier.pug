@@ -22,14 +22,17 @@ block content
     form.data-container#config
       label(for='image') Image:
       input#image(type='file', accept='image/*')
+      br
       label(for='fft-size')
         | FFT Size:
         slot#fft-size-value
       input#fft-size(type='number', step='1')
+      wbr
       label(for='render-size')
         | Render Size:
         slot#render-size-value
       input#render-size(type='number', step='1')
+      br
       label(for='overlay')
         | Overlay:
         slot#overlay-value

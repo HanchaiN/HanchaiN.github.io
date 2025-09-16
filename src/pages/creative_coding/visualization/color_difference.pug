@@ -16,7 +16,7 @@ block append script
 block content
   h1 Color Difference
   #color-difference.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='1000', height='1000')
+    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='1000', height='1000', style='width: 500px; height: 500px;')
     form.data-container#config
       label(for='lightness') Lightness:
       input#lightness(type='number', min='0', max='1', value='0.5' step='0.01')
@@ -30,7 +30,7 @@ block content
       br
       label(for='range-i') Range (inner):
       input#range-i(type='number', min='0', max='1', value='0.01' step='0.01')
-      br
+      wbr
       label(for='algorithm-i') Algorithm (inner):
       select#algorithm-i
         option(value='red-mean') Red Mean
@@ -44,7 +44,7 @@ block content
       br
       label(for='range-o') Range (outer):
       input#range-o(type='number', min='0', max='1', value='0.02' step='0.01')
-      br
+      wbr
       label(for='algorithm-o') Algorithm (outer):
       select#algorithm-o
         option(value='inner', selected) (Same as Inner)
