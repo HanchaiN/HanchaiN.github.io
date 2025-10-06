@@ -20,7 +20,7 @@
     "@types/three": "^0.180.0",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
     "@typescript-eslint/parser": "^8.44.1",
-    "eslint": "^9.36.0",
+    "eslint": "^9.37.0",
     "katex": "^0.16.22",
     "mathjs": "^14.8.1",
     "p5": "^2.0.5",
