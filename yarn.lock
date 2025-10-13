@@ -1360,7 +1360,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:^8.46.0"
     eslint: "npm:^9.37.0"
     katex: "npm:^0.16.25"
-    mathjs: "npm:^14.8.2"
+    mathjs: "npm:^15.0.0"
     p5: "npm:^2.0.5"
     prettier: "npm:^3.6.2"
     pug: "npm:^3.0.3"
@@ -1731,9 +1731,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mathjs@npm:^14.8.2":
-  version: 14.8.2
-  resolution: "mathjs@npm:14.8.2"
+"mathjs@npm:^15.0.0":
+  version: 15.0.0
+  resolution: "mathjs@npm:15.0.0"
   dependencies:
     "@babel/runtime": "npm:^7.26.10"
     complex.js: "npm:^2.2.5"
@@ -1746,7 +1746,7 @@ __metadata:
     typed-function: "npm:^4.2.1"
   bin:
     mathjs: bin/cli.js
-  checksum: 10c0/863d4db0f4d17f914b48941d66f303620facc42e1e250670ed751d9fc67d2232a19a7d988f0cfc2b516a5c42b2e35f8006bbbbe90ea37923cea59bf9ed7a75b9
+  checksum: 10c0/f79fc152d563f6c1957cd3f28863deffb1b71f36b080b988269945ffd4b6663f898469403539d1be0191c7d9a6a156837c4e47a7b39ebe3b6c5cb01b8d1c1e6b
   languageName: node
   linkType: hard
 
