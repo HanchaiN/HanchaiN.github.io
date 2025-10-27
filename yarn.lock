@@ -454,10 +454,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/p5@npm:^1.7.6":
-  version: 1.7.6
-  resolution: "@types/p5@npm:1.7.6"
-  checksum: 10c0/92f53b7666a346a70c144fd72e09d06b9ef54a099098629717d0a70043d2ce96f1e3f49e6d36c7afa7f27ceaa4b833cca50d9d33878d201fce7105658ace0a6e
+"@types/p5@npm:^1.7.7":
+  version: 1.7.7
+  resolution: "@types/p5@npm:1.7.7"
+  checksum: 10c0/d0681a51f82111ef81a8dfa42b7287e91b62851bce1836b066aebc54e7eacdc2c2f8af7099d401ab41f1cc63ecb9fdc16543a7fdbdb87deee9e08e7ec70fd3b0
   languageName: node
   linkType: hard
 
@@ -1283,7 +1283,7 @@ __metadata:
     "@trivago/prettier-plugin-sort-imports": "npm:^5.2.2"
     "@types/eslint": "npm:^9.6.1"
     "@types/katex": "npm:^0.16.7"
-    "@types/p5": "npm:^1.7.6"
+    "@types/p5": "npm:^1.7.7"
     "@types/serve-handler": "npm:^6.1.4"
     "@types/three": "npm:^0.180.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.46.1"
