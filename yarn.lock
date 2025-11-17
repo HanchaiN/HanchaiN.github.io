@@ -1324,7 +1324,7 @@ __metadata:
     eslint: "npm:^9.39.1"
     katex: "npm:^0.16.25"
     mathjs: "npm:^15.1.0"
-    p5: "npm:^2.0.5"
+    p5: "npm:^2.1.1"
     prettier: "npm:^3.6.2"
     pug: "npm:^3.0.3"
     serve-handler: "npm:^6.1.6"
@@ -1838,9 +1838,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"p5@npm:^2.0.5":
-  version: 2.0.5
-  resolution: "p5@npm:2.0.5"
+"p5@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "p5@npm:2.1.1"
   dependencies:
     "@davepagurek/bezier-path": "npm:^0.0.2"
     "@japont/unicode-range": "npm:^1.0.0"
@@ -1857,7 +1857,7 @@ __metadata:
     pako: "npm:^2.1.0"
     pixelmatch: "npm:^7.1.0"
     zod: "npm:^3.25.51"
-  checksum: 10c0/c6a72f83491a9777db7062e04d0ced8d2e63e174830e78dab210b00a0cd4c9b5abfc5ea2e3095b80fc66a49b55e2f572686483dec5c65e908e858d9ff9b88dae
+  checksum: 10c0/247d31155eb9e7e1e69964a7b87a3769aeb32966c3053c029dc51c89df2147fdb20741fee7a8fe487cf33b88e4dce7338721c6b827ced66d5c8e8d90a1a366c4
   languageName: node
   linkType: hard
 
