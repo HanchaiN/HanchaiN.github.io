@@ -54,11 +54,9 @@ jobs:
       - name: Install dependencies
         run: |
           ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
-      - name: Lint
+      - name: Validate code quality
         run: |
-          ${{ steps.detect-package-manager.outputs.manager }} run typecheck
-          ${{ steps.detect-package-manager.outputs.manager }} run lint
-          ${{ steps.detect-package-manager.outputs.manager }} run format:check
+          ${{ steps.detect-package-manager.outputs.manager }} run validate
       - name: Build
         run: NODE_ENV="production" ${{ steps.detect-package-manager.outputs.manager }} run build
       - name: Upload artifact
