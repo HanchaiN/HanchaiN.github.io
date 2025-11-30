@@ -1,10 +1,17 @@
+//-@meta
+//- Mixins for rendering category sections and project cards
 mixin navDropdownItem(item)
   if item.href
     li.dropdown-item
       a.nav-link(href=item.href)= item.text
   else if item.children
-    li.dropdown-item.dropend
-      span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false')= item.text
+    li.dropdown-item.dropdown
+      if item.href
+        a.nav-link(href=item.href)= item.text
+        span.navbar-text.dropdown-toggle.dropdown-toggle-split(role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false')
+          span.visually-hidden Toggle Dropdown
+      else
+        span.navbar-text.dropdown-toggle(role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false')= item.text
       ul.dropdown-menu
         each child in item.children
           +navDropdownItem(child)

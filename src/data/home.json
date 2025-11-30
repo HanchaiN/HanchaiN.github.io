@@ -1,0 +1,83 @@
+{
+  "hero": {
+    "title": "Welcome to My Creative Coding Lab",
+    "description": "Explore the intersection of mathematics, programming, and art through interactive visualizations, generative algorithms, and computational experiments. Each project is a journey into the beauty of code and creativity.",
+    "buttons": [
+      {
+        "text": "Explore Projects",
+        "icon": "&#xf121;",
+        "href": "/creative_coding",
+        "class": "btn-primary"
+      },
+      {
+        "text": "View on GitHub",
+        "icon": "&#xea84;",
+        "href": "https://github.com/HanchaiN",
+        "class": "btn-outline-primary",
+        "external": true
+      }
+    ],
+    "featuredCategories": [
+      {
+        "text": "Audio Processing",
+        "icon": "&#xf028;",
+        "color": "primary",
+        "href": "/creative_coding#audio-processing"
+      },
+      {
+        "text": "Generative Art",
+        "icon": "&#xf1fc;",
+        "color": "success",
+        "href": "/creative_coding#generation"
+      },
+      {
+        "text": "Image Processing",
+        "icon": "&#xf03e;",
+        "color": "info",
+        "href": "/creative_coding#image-processing"
+      },
+      {
+        "text": "Simulations",
+        "icon": "&#xf013;",
+        "color": "warning",
+        "href": "/creative_coding#simulation"
+      },
+      {
+        "text": "Data Visualization",
+        "icon": "&#xf1fe;",
+        "color": "danger",
+        "href": "/creative_coding#visualization"
+      }
+    ]
+  },
+  "highlights": [
+    {
+      "title": "Fractal Trees",
+      "icon": "&#xf1fe;",
+      "color": "primary",
+      "description": "Explore the mesmerizing patterns of recursive tree generation using various fractal algorithms including Hilbert curves and spiral variations.",
+      "href": "/creative_coding/generation/fractal/fractal_tree"
+    },
+    {
+      "title": "Reaction-Diffusion",
+      "icon": "&#xf674;",
+      "color": "success",
+      "description": "Simulate chemical reactions and pattern formation through reaction-diffusion systems, creating organic and dynamic visual patterns.",
+      "href": "/creative_coding/simulation/reaction_diffusion"
+    },
+    {
+      "title": "Ray Tracing",
+      "icon": "&#xf2db;",
+      "color": "info",
+      "description": "Implement a physically-based rendering system with ray tracing to create photorealistic 3D visualizations.",
+      "href": "/creative_coding/simulation/ray_tracing"
+    }
+  ],
+  "about": {
+    "title": "About This Project",
+    "paragraphs": [
+      "This portfolio showcases various creative coding experiments built with modern web technologies. Each project demonstrates different computational techniques, from audio analysis and image processing to complex simulations and mathematical visualizations.",
+      "Technologies used include TypeScript, P5.js, Three.js, WebGL, and various mathematical libraries. All projects are interactive and run directly in your browser."
+    ]
+  }
+}

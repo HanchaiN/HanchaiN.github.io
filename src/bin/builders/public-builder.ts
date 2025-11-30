@@ -1,14 +1,21 @@
-const path = require("path");
-const { getFiles, copyFile, shouldSkipFile } = require("../utils/file-utils");
+import * as path from "path";
 
-class PublicBuilder {
-  constructor(basedir, outputPath, logger) {
-    this.inputPath = path.join(basedir, "public");
+import { copyFile, getFiles, shouldSkipFile } from "../utils/file-utils";
+import { Logger } from "../utils/logger";
+import { getSrcPaths } from "../utils/paths";
+
+export class PublicBuilder {
+  private inputPath: string;
+  private outputPath: string;
+  private logger: Logger;
+
+  constructor(basedir: string, outputPath: string, logger: Logger) {
+    this.inputPath = getSrcPaths(basedir).public;
     this.outputPath = outputPath;
     this.logger = logger;
   }
 
-  buildFile(relativeFile) {
+  buildFile(relativeFile: string): void {
     if (shouldSkipFile(relativeFile)) {
       return;
     }
@@ -19,7 +26,7 @@ class PublicBuilder {
     this.logger.info(`  Copied ${relativeFile}`);
   }
 
-  build(files = null) {
+  build(files: string[] | null = null): void {
     this.logger.info("Building public files...");
     try {
       if (files && files.length > 0) {
@@ -38,10 +45,8 @@ class PublicBuilder {
 
       this.logger.success("Public files built");
     } catch (e) {
-      this.logger.error("Failed to build public files", e);
+      this.logger.error("Failed to build public files", e as Error);
       throw e;
     }
   }
 }
-
-module.exports = PublicBuilder;

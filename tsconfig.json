@@ -14,7 +14,7 @@
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "outDir": "./dist/static/scripts",
+    "outDir": "./dist/pages/static/scripts",
     "plugins": [
       {
         "transform": "typescript-transform-paths",

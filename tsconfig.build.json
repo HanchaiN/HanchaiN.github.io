@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "baseUrl": ".",
+    "paths": {
+      "@bin/*": ["src/bin/*"]
+    },
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "outDir": "./dist/bin",
+    "rootDir": "./src/bin",
+    "declaration": true,
+    "sourceMap": true,
+    "noEmitOnError": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["./src/bin/**/*"],
+  "exclude": ["node_modules", "dist", "build", ".yarn"]
+}

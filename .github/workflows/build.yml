@@ -58,12 +58,14 @@ jobs:
         run: |
           ${{ steps.detect-package-manager.outputs.manager }} run validate
       - name: Build
-        run: NODE_ENV="production" ${{ steps.detect-package-manager.outputs.manager }} run build
+        run: |
+          NODE_ENV="production" ${{ steps.detect-package-manager.outputs.manager }} run build:bin
+          NODE_ENV="production" ${{ steps.detect-package-manager.outputs.manager }} run build
       - name: Upload artifact
         id: deployment
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./dist
+          path: ./dist/pages
 
   deploy:
     environment:

@@ -1,3 +1,6 @@
+//-@meta
+//- @data: projects
+
 extends /components/layout.pug
 include /components/mixins.pug
 
@@ -12,5 +15,5 @@ block content
       | expressive instead of something functional. Explore interactive experiments in audio processing,
       | generative art, image manipulation, simulations, and data visualization.
 
-  each category in pagesData.categories
+  each category in pagesData.projects.categories
     +categorySection(category)

@@ -12,7 +12,7 @@ src/bin/
 ├── build-manager.js      # Orchestrates build process
 ├── builders/
 │   ├── public-builder.js # Copies static assets
-│   ├── pages-builder.js  # Compiles Pug templates
+│   ├── pages-builder.js  # Compiles Pug templates with dependency tracking
 │   └── scripts-builder.js # Programmatic TypeScript compilation
 ├── watchers/
 │   └── file-watcher.js   # Watch mode implementation
@@ -20,8 +20,33 @@ src/bin/
 │   └── dev-server.js     # Development server
 └── utils/
     ├── file-utils.js     # File system utilities
-    └── logger.js         # Logging utilities
+    ├── logger.js         # Logging utilities
+    ├── pug-metadata.js   # Pug metadata parser for frontmatter
+    └── dependency-tracker.js # Dependency tracking and analysis
 ```
+
+### Dependency Tracking & Metadata System
+
+The build system includes a sophisticated metadata/frontmatter system for Pug templates:
+
+- **Metadata comments** at the top of Pug files declare dependencies
+- **Minimal data passing** - only required data is passed to each template
+- **Smart rebuilds** - only affected pages rebuild when data/components change
+- **Auto-detection** - automatically detects components, scripts, and dependencies
+- **Dependency reports** - analyze and visualize page dependencies
+
+**Example:**
+
+```pug
+//-@meta
+//- @data: navbar, home
+//- @components: layout, mixins
+//- @cache: true
+
+extends /components/layout.pug
+```
+
+See [DEPENDENCY_TRACKING.md](./DEPENDENCY_TRACKING.md) for complete documentation.
 
 ### TypeScript Compilation
 
@@ -55,6 +80,8 @@ The file watcher implements intelligent incremental rebuilds:
 - `yarn build:public` - Build only public assets
 - `yarn build:pages` - Build only Pug pages
 - `yarn build:scripts` - Build only TypeScript scripts
+- `yarn deps` - Generate dependency report
+- `yarn deps:json` - Generate JSON dependency report
 - `yarn typecheck` - Run TypeScript type checking
 - `yarn lint` - Run ESLint
 - `yarn lint:fix` - Auto-fix ESLint issues

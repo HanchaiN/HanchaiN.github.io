@@ -1,7 +1,17 @@
-const path = require("path");
-const BuildManager = require("./build-manager");
+#!/usr/bin/env node
+import { BuildManager } from "./build-manager";
+import { getProjectPaths } from "./utils/paths";
 
-function parseArgs() {
+interface Args {
+  isDev: boolean;
+  watch: boolean;
+  serve: boolean;
+  publicOnly: boolean;
+  pagesOnly: boolean;
+  scriptsOnly: boolean;
+}
+
+function parseArgs(): Args {
   return {
     isDev:
       process.argv.includes("--dev") || process.env.NODE_ENV !== "production",
@@ -13,16 +23,18 @@ function parseArgs() {
   };
 }
 
-function main() {
+function main(): void {
   const args = parseArgs();
 
+  const paths = getProjectPaths();
   const manager = new BuildManager({
-    basedir: path.join(__dirname, ".."),
+    srcPath: paths.src,
+    outputPath: paths.distPages,
     isDev: args.isDev,
   });
 
   if (args.isDev) {
-    manager.logger.info("Running in development mode");
+    console.log("Running in development mode");
   }
 
   if (args.publicOnly) {

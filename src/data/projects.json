@@ -1,0 +1,214 @@
+{
+  "categories": [
+    {
+      "id": "audio-processing",
+      "title": "Audio Processing",
+      "icon": "&#xf028;",
+      "color": "primary",
+      "description": "Analyze audio signals using autocorrelation for pitch detection.",
+      "projects": [
+        {
+          "title": "Autocorrelation",
+          "description": "Analyze audio signals using autocorrelation for pitch detection.",
+          "href": "/creative_coding/audio_processing/autocorrelation"
+        },
+        {
+          "title": "Spectrogram",
+          "description": "Visualize frequency spectrum of audio over time.",
+          "href": "/creative_coding/audio_processing/spectrogram"
+        },
+        {
+          "title": "DTMF",
+          "description": "Decode dual-tone multi-frequency signaling.",
+          "href": "/creative_coding/audio_processing/dtmf"
+        }
+      ]
+    },
+    {
+      "id": "generation",
+      "title": "Generative Art",
+      "icon": "&#xf1fc;",
+      "color": "success",
+      "description": "Generate procedural art with organic growth patterns.",
+      "projects": [
+        {
+          "title": "Bonsai Generator",
+          "description": "Generate procedural bonsai trees with organic growth patterns.",
+          "href": "/creative_coding/generation/bonsai"
+        },
+        {
+          "title": "Dungeon Generation",
+          "description": "Create procedural dungeon layouts for games.",
+          "href": "/creative_coding/generation/dungeon"
+        },
+        {
+          "title": "Fractal Trees",
+          "description": "Explore recursive fractal tree algorithms.",
+          "href": "/creative_coding/generation/fractal/fractal_tree"
+        },
+        {
+          "title": "Spiral Fractal Trees",
+          "description": "Generate fractal trees with spiral patterns.",
+          "href": "/creative_coding/generation/fractal/fractal_tree_curve"
+        },
+        {
+          "title": "Hilbert Curve",
+          "description": "Visualize space-filling Hilbert curves.",
+          "href": "/creative_coding/generation/fractal/hilbert"
+        },
+        {
+          "title": "Perlin Noise",
+          "description": "Generate natural-looking patterns with Perlin noise.",
+          "href": "/creative_coding/generation/perlin_noise"
+        }
+      ]
+    },
+    {
+      "id": "image-processing",
+      "title": "Image Processing",
+      "icon": "&#xf03e;",
+      "color": "info",
+      "description": "Process and manipulate images with various algorithms.",
+      "projects": [
+        {
+          "title": "CLUT Generation",
+          "description": "Create color lookup tables for grading.",
+          "href": "/creative_coding/image_processing/clut_generation"
+        },
+        {
+          "title": "Color Grading",
+          "description": "Apply cinematic color grading to images.",
+          "href": "/creative_coding/image_processing/color_grading"
+        },
+        {
+          "title": "Dithering",
+          "description": "Convert images using various dithering algorithms.",
+          "href": "/creative_coding/image_processing/dithering"
+        },
+        {
+          "title": "Edge Detection",
+          "description": "Detect edges in images using computer vision.",
+          "href": "/creative_coding/image_processing/edge_detection"
+        },
+        {
+          "title": "Palette Extraction",
+          "description": "Extract dominant color palettes from images.",
+          "href": "/creative_coding/image_processing/palette_extraction"
+        }
+      ]
+    },
+    {
+      "id": "simulation",
+      "title": "Simulations",
+      "icon": "&#xf013;",
+      "color": "warning",
+      "description": "Simulate physical systems and computational models.",
+      "projects": [
+        {
+          "title": "Brainfuck Interpreter",
+          "description": "Run Brainfuck programs in the browser.",
+          "href": "/creative_coding/simulation/compute/brainfuck"
+        },
+        {
+          "title": "Cellular Automata",
+          "description": "Explore elementary cellular automata rules.",
+          "href": "/creative_coding/simulation/compute/elementary_cellular_automata"
+        },
+        {
+          "title": "Turing Machine",
+          "description": "Simulate a universal Turing machine.",
+          "href": "/creative_coding/simulation/compute/turing_machine"
+        },
+        {
+          "title": "Boids",
+          "description": "Simulate flocking behavior with boids algorithm.",
+          "href": "/creative_coding/simulation/particles/boids"
+        },
+        {
+          "title": "Dynamical Systems",
+          "description": "Visualize chaotic dynamical systems.",
+          "href": "/creative_coding/simulation/particles/dynamical_system"
+        },
+        {
+          "title": "Ideal Gas",
+          "description": "Simulate ideal gas particle behavior.",
+          "href": "/creative_coding/simulation/particles/ideal_gas"
+        },
+        {
+          "title": "Ray Tracing",
+          "description": "Render 3D scenes with ray tracing.",
+          "href": "/creative_coding/simulation/ray_tracing"
+        },
+        {
+          "title": "Reaction-Diffusion",
+          "description": "Simulate reaction-diffusion patterns.",
+          "href": "/creative_coding/simulation/reaction_diffusion"
+        },
+        {
+          "title": "Sandpile",
+          "description": "Model self-organized criticality with sandpiles.",
+          "href": "/creative_coding/simulation/sandpile"
+        },
+        {
+          "title": "Self-Organizing Map",
+          "description": "Visualize neural network learning with SOMs.",
+          "href": "/creative_coding/simulation/self_organizing_map"
+        },
+        {
+          "title": "Slit Experiment",
+          "description": "Simulate quantum double-slit experiment.",
+          "href": "/creative_coding/simulation/slit_experiment"
+        }
+      ]
+    },
+    {
+      "id": "visualization",
+      "title": "Data Visualization",
+      "icon": "&#xf1fe;",
+      "color": "danger",
+      "description": "Visualize mathematical concepts and data.",
+      "projects": [
+        {
+          "title": "2D Fourier Transform",
+          "description": "Visualize 2D Fourier transforms of images.",
+          "href": "/creative_coding/visualization/2d_fourier"
+        },
+        {
+          "title": "Color Difference",
+          "description": "Compare color difference metrics visually.",
+          "href": "/creative_coding/visualization/color_difference"
+        },
+        {
+          "title": "Complex Functions",
+          "description": "Visualize complex-valued functions.",
+          "href": "/creative_coding/visualization/complex_function"
+        },
+        {
+          "title": "Hydrogen Cloud",
+          "description": "Render hydrogen wave functions as clouds.",
+          "href": "/creative_coding/visualization/hydrogen_cloud"
+        },
+        {
+          "title": "Hydrogen Pilot",
+          "description": "Visualize hydrogen orbitals with pilot waves.",
+          "href": "/creative_coding/visualization/hydrogen_pilot"
+        },
+        {
+          "title": "Poincaré Disk",
+          "description": "Explore hyperbolic geometry on Poincaré disk.",
+          "href": "/creative_coding/visualization/poincare_disk"
+        },
+        {
+          "title": "Probabilistic Serial",
+          "description": "Visualize probabilistic allocation mechanisms.",
+          "href": "/creative_coding/visualization/probabilistic_serial"
+        },
+        {
+          "title": "Spectral Graph",
+          "description": "Analyze graphs using spectral methods.",
+          "href": "/creative_coding/visualization/spectral_graph"
+        }
+      ]
+    }
+  ]
+}

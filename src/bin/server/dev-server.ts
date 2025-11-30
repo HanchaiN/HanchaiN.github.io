@@ -1,15 +1,22 @@
-const http = require("http");
-const handler = require("serve-handler");
+import * as http from "http";
+import handler from "serve-handler";
 
-class DevServer {
-  constructor(outputPath, port, logger) {
+import { Logger } from "../utils/logger";
+
+export class DevServer {
+  private outputPath: string;
+  private port: number;
+  private logger: Logger;
+  private server: http.Server | null;
+
+  constructor(outputPath: string, port: number, logger: Logger) {
     this.outputPath = outputPath;
     this.port = port;
     this.logger = logger;
     this.server = null;
   }
 
-  start() {
+  start(): void {
     this.server = http.createServer((req, res) =>
       handler(req, res, { public: this.outputPath }),
     );
@@ -19,12 +26,10 @@ class DevServer {
     });
   }
 
-  stop() {
+  stop(): void {
     if (this.server) {
       this.server.close();
       this.server = null;
     }
   }
 }
-
-module.exports = DevServer;

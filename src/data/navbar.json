@@ -1,0 +1,193 @@
+{
+  "brand": {
+    "text": "HanchaiN",
+    "icon": "&#xf489;",
+    "href": "/"
+  },
+  "items": [
+    {
+      "text": "Home",
+      "icon": "&#xf015;",
+      "href": "/"
+    },
+    {
+      "text": "Creative Coding",
+      "icon": "&#xf121;",
+      "href": "/creative_coding",
+      "dropdown": [
+        {
+          "text": "Audio Processing",
+          "children": [
+            {
+              "text": "Autocorrelation",
+              "href": "/creative_coding/audio_processing/autocorrelation"
+            },
+            {
+              "text": "Spectrogram",
+              "href": "/creative_coding/audio_processing/spectrogram"
+            },
+            {
+              "text": "DTMF",
+              "href": "/creative_coding/audio_processing/dtmf"
+            }
+          ]
+        },
+        {
+          "text": "Generation",
+          "children": [
+            {
+              "text": "Bonsai",
+              "href": "/creative_coding/generation/bonsai"
+            },
+            {
+              "text": "Dungeon Generation",
+              "href": "/creative_coding/generation/dungeon"
+            },
+            {
+              "text": "Fractal",
+              "children": [
+                {
+                  "text": "Fractal Trees",
+                  "href": "/creative_coding/generation/fractal/fractal_tree"
+                },
+                {
+                  "text": "Spiral Fractal Trees",
+                  "href": "/creative_coding/generation/fractal/fractal_tree_curve"
+                },
+                {
+                  "text": "Hilbert Curve",
+                  "href": "/creative_coding/generation/fractal/hilbert"
+                }
+              ]
+            },
+            {
+              "text": "Perlin Noise",
+              "href": "/creative_coding/generation/perlin_noise"
+            }
+          ]
+        },
+        {
+          "text": "Image Processing",
+          "children": [
+            {
+              "text": "Clut generation",
+              "href": "/creative_coding/image_processing/clut_generation"
+            },
+            {
+              "text": "Color Grading",
+              "href": "/creative_coding/image_processing/color_grading"
+            },
+            {
+              "text": "Dithering",
+              "href": "/creative_coding/image_processing/dithering"
+            },
+            {
+              "text": "Edge Detection",
+              "href": "/creative_coding/image_processing/edge_detection"
+            },
+            {
+              "text": "Palette Extraction",
+              "href": "/creative_coding/image_processing/palette_extraction"
+            }
+          ]
+        },
+        {
+          "text": "Simulation",
+          "children": [
+            {
+              "text": "Computation",
+              "children": [
+                {
+                  "text": "Brainfuck",
+                  "href": "/creative_coding/simulation/compute/brainfuck"
+                },
+                {
+                  "text": "Elementary Cellular Automata",
+                  "href": "/creative_coding/simulation/compute/elementary_cellular_automata"
+                },
+                {
+                  "text": "Turing Machine",
+                  "href": "/creative_coding/simulation/compute/turing_machine"
+                }
+              ]
+            },
+            {
+              "text": "Particle-based",
+              "children": [
+                {
+                  "text": "Boids",
+                  "href": "/creative_coding/simulation/particles/boids"
+                },
+                {
+                  "text": "Dynamical System",
+                  "href": "/creative_coding/simulation/particles/dynamical_system"
+                },
+                {
+                  "text": "Ideal Gas",
+                  "href": "/creative_coding/simulation/particles/ideal_gas"
+                }
+              ]
+            },
+            {
+              "text": "Ray Tracing",
+              "href": "/creative_coding/simulation/ray_tracing"
+            },
+            {
+              "text": "Reaction-Diffusion",
+              "href": "/creative_coding/simulation/reaction_diffusion"
+            },
+            {
+              "text": "Sandpile",
+              "href": "/creative_coding/simulation/sandpile"
+            },
+            {
+              "text": "Self-Organizing Map",
+              "href": "/creative_coding/simulation/self_organizing_map"
+            },
+            {
+              "text": "Slit Experiment",
+              "href": "/creative_coding/simulation/slit_experiment"
+            }
+          ]
+        },
+        {
+          "text": "Visualization",
+          "children": [
+            {
+              "text": "2D Fourier Transform",
+              "href": "/creative_coding/visualization/2d_fourier"
+            },
+            {
+              "text": "Color Difference",
+              "href": "/creative_coding/visualization/color_difference"
+            },
+            {
+              "text": "Complex Function",
+              "href": "/creative_coding/visualization/complex_function"
+            },
+            {
+              "text": "Hydrogen Wave Function (Cloud)",
+              "href": "/creative_coding/visualization/hydrogen_cloud"
+            },
+            {
+              "text": "Hydrogen Wave Function (Pilot)",
+              "href": "/creative_coding/visualization/hydrogen_pilot"
+            },
+            {
+              "text": "Poincare Disk",
+              "href": "/creative_coding/visualization/poincare_disk"
+            },
+            {
+              "text": "Probabilistic Serial",
+              "href": "/creative_coding/visualization/probabilistic_serial"
+            },
+            {
+              "text": "Spectral Graph",
+              "href": "/creative_coding/visualization/spectral_graph"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

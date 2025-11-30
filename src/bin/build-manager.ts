@@ -1,44 +1,67 @@
-const path = require("path");
-const { removeDir, ensureDir, writeFile } = require("./utils/file-utils");
-const Logger = require("./utils/logger");
-const PublicBuilder = require("./builders/public-builder");
-const PagesBuilder = require("./builders/pages-builder");
-const ScriptsBuilder = require("./builders/scripts-builder");
-const FileWatcher = require("./watchers/file-watcher");
-const DevServer = require("./server/dev-server");
+import * as path from "path";
 
-class BuildManager {
-  constructor(options = {}) {
-    this.basedir = options.basedir || path.join(__dirname, "..");
-    this.outputPath =
-      options.outputPath || path.join(__dirname, "..", "..", "dist");
+import { PagesBuilder } from "./builders/pages-builder";
+import { PublicBuilder } from "./builders/public-builder";
+import { ScriptsBuilder } from "./builders/scripts-builder";
+import { DevServer } from "./server/dev-server";
+import { ensureDir, removeDir, writeFile } from "./utils/file-utils";
+import { Logger } from "./utils/logger";
+import { FileWatcher } from "./watchers/file-watcher";
+
+interface BuildManagerOptions {
+  srcPath: string;
+  outputPath: string;
+  isDev?: boolean;
+  port?: number;
+}
+
+interface PugOptions {
+  basedir: string;
+  isDev: boolean;
+}
+
+export class BuildManager {
+  private srcPath: string;
+  private outputPath: string;
+  private isDev: boolean;
+  private port: number;
+  private logger: Logger;
+  private publicBuilder: PublicBuilder;
+  private pagesBuilder: PagesBuilder;
+  private scriptsBuilder: ScriptsBuilder;
+  private watcher: FileWatcher | null;
+  private server: DevServer | null;
+
+  constructor(options: BuildManagerOptions) {
+    this.srcPath = options.srcPath;
+    this.outputPath = options.outputPath;
     this.isDev = options.isDev ?? process.env.NODE_ENV !== "production";
     this.port = options.port || 3000;
 
     this.logger = new Logger(this.isDev);
 
-    const pugOptions = {
-      basedir: this.basedir,
+    const pugOptions: PugOptions = {
+      basedir: this.srcPath,
       isDev: this.isDev,
     };
 
     this.publicBuilder = new PublicBuilder(
-      this.basedir,
+      this.srcPath,
       this.outputPath,
       this.logger,
     );
     this.pagesBuilder = new PagesBuilder(
-      this.basedir,
+      this.srcPath,
       this.outputPath,
       pugOptions,
       this.logger,
     );
-    this.scriptsBuilder = new ScriptsBuilder(this.logger, this.basedir);
+    this.scriptsBuilder = new ScriptsBuilder(this.logger, this.srcPath);
     this.watcher = null;
     this.server = null;
   }
 
-  clean() {
+  clean(): void {
     this.logger.info("Cleaning output directory...");
     removeDir(this.outputPath);
     ensureDir(this.outputPath);
@@ -46,19 +69,19 @@ class BuildManager {
     this.logger.success("Output directory cleaned");
   }
 
-  buildPublicOnly() {
+  buildPublicOnly(): void {
     this.publicBuilder.build();
   }
 
-  buildPagesOnly() {
+  buildPagesOnly(): void {
     this.pagesBuilder.build();
   }
 
-  buildScriptsOnly() {
+  buildScriptsOnly(): void {
     this.scriptsBuilder.build();
   }
 
-  buildAll() {
+  buildAll(): void {
     this.clean();
     this.publicBuilder.build();
     this.pagesBuilder.build();
@@ -66,15 +89,14 @@ class BuildManager {
     this.logger.success("Build complete");
   }
 
-  watch() {
+  watch(): void {
     if (!this.watcher) {
       this.watcher = new FileWatcher(
-        this.basedir,
+        this.srcPath,
         {
           publicBuilder: this.publicBuilder,
           pagesBuilder: this.pagesBuilder,
           scriptsBuilder: this.scriptsBuilder,
-          buildAll: () => this.buildAll(),
         },
         this.logger,
       );
@@ -82,14 +104,14 @@ class BuildManager {
     }
   }
 
-  serve() {
+  serve(): void {
     if (!this.server) {
       this.server = new DevServer(this.outputPath, this.port, this.logger);
       this.server.start();
     }
   }
 
-  stop() {
+  stop(): void {
     if (this.watcher) {
       this.watcher.stop();
       this.watcher = null;
@@ -100,5 +122,3 @@ class BuildManager {
     }
   }
 }
-
-module.exports = BuildManager;

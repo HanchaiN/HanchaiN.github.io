@@ -1,34 +1,63 @@
-const path = require("path");
-const ts = require("typescript");
+import * as path from "path";
+import * as ts from "typescript";
 
-class ScriptsBuilder {
-  constructor(logger, basedir) {
+import { Logger } from "../utils/logger";
+import { CONFIG_FILES } from "../utils/paths";
+
+interface PluginConfig {
+  transform: string;
+  [key: string]: unknown;
+}
+
+interface CustomTransformers {
+  before?: ts.TransformerFactory<ts.SourceFile>[];
+  after?: ts.TransformerFactory<ts.SourceFile>[];
+  afterDeclarations?: ts.TransformerFactory<ts.SourceFile>[];
+}
+
+export class ScriptsBuilder {
+  private logger: Logger;
+  private basedir: string;
+  private rootDir: string;
+  private program?: ts.Program;
+
+  constructor(logger: Logger, basedir: string) {
     this.logger = logger;
     this.basedir = basedir;
     this.rootDir = path.join(basedir, "..");
   }
 
-  loadTransformers(program, options) {
-    const transformers = { before: [], after: [], afterDeclarations: [] };
+  loadTransformers(
+    program: ts.Program,
+    options: ts.CompilerOptions,
+  ): CustomTransformers {
+    const transformers: CustomTransformers = {
+      before: [],
+      after: [],
+      afterDeclarations: [],
+    };
 
-    if (!options.plugins || options.plugins.length === 0) {
+    const plugins = (options as unknown as { plugins?: PluginConfig[] })
+      .plugins;
+    if (!plugins || plugins.length === 0) {
       return transformers;
     }
 
-    for (const plugin of options.plugins) {
+    for (const plugin of plugins) {
       if (plugin.transform === "typescript-transform-paths") {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const transformPathsModule = require("typescript-transform-paths");
           const transformer =
             transformPathsModule.default || transformPathsModule;
 
           if (typeof transformer === "function") {
-            transformers.before.push(transformer(program, plugin));
+            transformers.before!.push(transformer(program, plugin));
           }
         } catch (e) {
           this.logger.error(
             `Failed to load transformer: ${plugin.transform}`,
-            e,
+            e as Error,
           );
         }
       }
@@ -37,8 +66,8 @@ class ScriptsBuilder {
     return transformers;
   }
 
-  readConfigFile() {
-    const configPath = path.join(this.rootDir, "tsconfig.json");
+  readConfigFile(): ts.ParsedCommandLine {
+    const configPath = path.join(this.rootDir, CONFIG_FILES.TSCONFIG);
 
     const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
     if (configFile.error) {
@@ -72,7 +101,7 @@ class ScriptsBuilder {
     return parsedConfig;
   }
 
-  build(files = null) {
+  build(files: string[] | null = null): void {
     this.logger.info("Building scripts...");
     try {
       const parsedConfig = this.readConfigFile();
@@ -107,7 +136,7 @@ class ScriptsBuilder {
         undefined,
         undefined,
         undefined,
-        transformers,
+        transformers as ts.CustomTransformers,
       );
 
       const allDiagnostics = ts
@@ -133,10 +162,8 @@ class ScriptsBuilder {
 
       this.logger.success("Scripts built");
     } catch (e) {
-      this.logger.error("Failed to build scripts", e);
+      this.logger.error("Failed to build scripts", e as Error);
       throw e;
     }
   }
 }
-
-module.exports = ScriptsBuilder;
