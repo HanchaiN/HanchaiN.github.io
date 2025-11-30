@@ -1,9 +1,240 @@
 extends /components/layout.pug
 
 block title
-  title Creative Coding
+  title Creative Coding - Interactive Experiments & Visualizations
 
 block content
-  h1 Creative Coding
-  p.
-    Creative coding is a type of computer programming in which the goal is to create something expressive instead of something functional.
+  .content-header.mb-5
+    h1.display-5.fw-bold Creative Coding
+    p.lead
+      | Creative coding is a type of computer programming in which the goal is to create something
+      | expressive instead of something functional. Explore interactive experiments in audio processing,
+      | generative art, image manipulation, simulations, and data visualization.
+
+  section#audio-processing.category-section.mb-5
+    h2.h3.fw-bold.mb-4
+      span.category-icon.text-primary(aria-hidden='true') &#xf028;
+      |  Audio Processing
+    .row.g-3
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Autocorrelation
+            p.card-text.small Analyze audio signals using autocorrelation for pitch detection.
+            a.stretched-link(href='/creative_coding/audio_processing/autocorrelation')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Spectrogram
+            p.card-text.small Visualize frequency spectrum of audio over time.
+            a.stretched-link(href='/creative_coding/audio_processing/spectrogram')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title DTMF
+            p.card-text.small Decode dual-tone multi-frequency signaling.
+            a.stretched-link(href='/creative_coding/audio_processing/dtmf')
+
+  section#generation.category-section.mb-5
+    h2.h3.fw-bold.mb-4
+      span.category-icon.text-success(aria-hidden='true') &#xf1fc;
+      |  Generative Art
+    .row.g-3
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Bonsai Generator
+            p.card-text.small Generate procedural bonsai trees with organic growth patterns.
+            a.stretched-link(href='/creative_coding/generation/bonsai')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Dungeon Generation
+            p.card-text.small Create procedural dungeon layouts for games.
+            a.stretched-link(href='/creative_coding/generation/dungeon')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Fractal Trees
+            p.card-text.small Explore recursive fractal tree algorithms.
+            a.stretched-link(href='/creative_coding/generation/fractal/fractal_tree')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Spiral Fractal Trees
+            p.card-text.small Generate fractal trees with spiral patterns.
+            a.stretched-link(href='/creative_coding/generation/fractal/fractal_tree_curve')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Hilbert Curve
+            p.card-text.small Visualize space-filling Hilbert curves.
+            a.stretched-link(href='/creative_coding/generation/fractal/hilbert')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Perlin Noise
+            p.card-text.small Generate natural-looking patterns with Perlin noise.
+            a.stretched-link(href='/creative_coding/generation/perlin_noise')
+
+  section#image-processing.category-section.mb-5
+    h2.h3.fw-bold.mb-4
+      span.category-icon.text-info(aria-hidden='true') &#xf03e;
+      |  Image Processing
+    .row.g-3
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title CLUT Generation
+            p.card-text.small Create color lookup tables for grading.
+            a.stretched-link(href='/creative_coding/image_processing/clut_generation')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Color Grading
+            p.card-text.small Apply cinematic color grading to images.
+            a.stretched-link(href='/creative_coding/image_processing/color_grading')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Dithering
+            p.card-text.small Convert images using various dithering algorithms.
+            a.stretched-link(href='/creative_coding/image_processing/dithering')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Edge Detection
+            p.card-text.small Detect edges in images using computer vision.
+            a.stretched-link(href='/creative_coding/image_processing/edge_detection')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Palette Extraction
+            p.card-text.small Extract dominant color palettes from images.
+            a.stretched-link(href='/creative_coding/image_processing/palette_extraction')
+
+  section#simulation.category-section.mb-5
+    h2.h3.fw-bold.mb-4
+      span.category-icon.text-warning(aria-hidden='true') &#xf013;
+      |  Simulations
+    .row.g-3
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Brainfuck Interpreter
+            p.card-text.small Run Brainfuck programs in the browser.
+            a.stretched-link(href='/creative_coding/simulation/compute/brainfuck')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Cellular Automata
+            p.card-text.small Explore elementary cellular automata rules.
+            a.stretched-link(href='/creative_coding/simulation/compute/elementary_cellular_automata')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Turing Machine
+            p.card-text.small Simulate a universal Turing machine.
+            a.stretched-link(href='/creative_coding/simulation/compute/turing_machine')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Boids
+            p.card-text.small Simulate flocking behavior with boids algorithm.
+            a.stretched-link(href='/creative_coding/simulation/particles/boids')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Dynamical Systems
+            p.card-text.small Visualize chaotic dynamical systems.
+            a.stretched-link(href='/creative_coding/simulation/particles/dynamical_system')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Ideal Gas
+            p.card-text.small Simulate ideal gas particle behavior.
+            a.stretched-link(href='/creative_coding/simulation/particles/ideal_gas')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Ray Tracing
+            p.card-text.small Render 3D scenes with ray tracing.
+            a.stretched-link(href='/creative_coding/simulation/ray_tracing')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Reaction-Diffusion
+            p.card-text.small Simulate reaction-diffusion patterns.
+            a.stretched-link(href='/creative_coding/simulation/reaction_diffusion')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Sandpile
+            p.card-text.small Model self-organized criticality with sandpiles.
+            a.stretched-link(href='/creative_coding/simulation/sandpile')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Self-Organizing Map
+            p.card-text.small Visualize neural network learning with SOMs.
+            a.stretched-link(href='/creative_coding/simulation/self_organizing_map')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Slit Experiment
+            p.card-text.small Simulate quantum double-slit experiment.
+            a.stretched-link(href='/creative_coding/simulation/slit_experiment')
+
+  section#visualization.category-section.mb-5
+    h2.h3.fw-bold.mb-4
+      span.category-icon.text-danger(aria-hidden='true') &#xf1fe;
+      |  Data Visualization
+    .row.g-3
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title 2D Fourier Transform
+            p.card-text.small Visualize 2D Fourier transforms of images.
+            a.stretched-link(href='/creative_coding/visualization/2d_fourier')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Color Difference
+            p.card-text.small Compare color difference metrics visually.
+            a.stretched-link(href='/creative_coding/visualization/color_difference')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Complex Functions
+            p.card-text.small Visualize complex-valued functions.
+            a.stretched-link(href='/creative_coding/visualization/complex_function')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Hydrogen Cloud
+            p.card-text.small Render hydrogen wave functions as clouds.
+            a.stretched-link(href='/creative_coding/visualization/hydrogen_cloud')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Hydrogen Pilot
+            p.card-text.small Visualize hydrogen orbitals with pilot waves.
+            a.stretched-link(href='/creative_coding/visualization/hydrogen_pilot')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Poincaré Disk
+            p.card-text.small Explore hyperbolic geometry on Poincaré disk.
+            a.stretched-link(href='/creative_coding/visualization/poincare_disk')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Probabilistic Serial
+            p.card-text.small Visualize probabilistic allocation mechanisms.
+            a.stretched-link(href='/creative_coding/visualization/probabilistic_serial')
+      .col-md-6.col-lg-4
+        .card.project-card.h-100
+          .card-body
+            h3.h6.card-title Spectral Graph
+            p.card-text.small Analyze graphs using spectral methods.
+            a.stretched-link(href='/creative_coding/visualization/spectral_graph')

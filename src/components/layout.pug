@@ -3,16 +3,18 @@ doctype html
 html(lang='en')
   head
     block title
-      title HanchaiN
+      title HanchaiN - Creative Coding & Development
     meta(charset='utf-8')
+    meta(name='description', content='A creative coding portfolio showcasing interactive visualizations, simulations, and generative art projects.')
     meta(name='supported-color-schemes', content='light dark')
     meta(name='viewport', content='width=device-width, initial-scale=1')
-    link(rel='preload', href='/static/fonts/MonaspaceNeonVar.woff2', as='font', type='font/woff2')
-    link(rel='preload', href='/static/fonts/MonaspaceArgonVar.woff2', as='font', type='font/woff2')
-    link(rel='preload', href='/static/fonts/MonaspaceKryptonVar.woff2', as='font', type='font/woff2')
-    link(rel='preload', href='/static/fonts/MonaspaceXenonVar.woff2', as='font', type='font/woff2')
-    link(rel='preload', href='/static/fonts/MonaspaceRadonVar.woff2', as='font', type='font/woff2')
-    link(rel='preload', href='/static/fonts/SymbolsNerdFont.woff2', as='font', type='font/woff2')
+    meta(name='theme-color', content='#24837b')
+    link(rel='preload', href='/static/fonts/MonaspaceNeonVar.woff2', as='font', type='font/woff2', crossorigin)
+    link(rel='preload', href='/static/fonts/MonaspaceArgonVar.woff2', as='font', type='font/woff2', crossorigin)
+    link(rel='preload', href='/static/fonts/MonaspaceKryptonVar.woff2', as='font', type='font/woff2', crossorigin)
+    link(rel='preload', href='/static/fonts/MonaspaceXenonVar.woff2', as='font', type='font/woff2', crossorigin)
+    link(rel='preload', href='/static/fonts/MonaspaceRadonVar.woff2', as='font', type='font/woff2', crossorigin)
+    link(rel='preload', href='/static/fonts/SymbolsNerdFont.woff2', as='font', type='font/woff2', crossorigin)
     block style
       link(rel='stylesheet', href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css', integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH', crossorigin='anonymous')
       link(rel='stylesheet', href='https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css', integrity='sha384-zh0CIslj+VczCZtlzBcjt5ppRcsAmDnRem7ESsYwWwg3m/OaJ2l4x7YBZl9Kxxib', crossorigin='anonymous')
@@ -40,8 +42,22 @@ html(lang='en')
           window.devtools.setClearInterval = setClearInterval;
         }
   body
-    header.container-fluid
-      include /components/navbar.pug
-    main
-        block content
-    footer This is the footer
+    .page-wrapper
+      header
+        include /components/navbar.pug
+      main.main-content
+        .container-fluid.py-4
+          block content
+      footer.footer
+        .container-fluid.py-4
+          .row
+            .col-md-6.mb-3.mb-md-0
+              h5.footer-title HanchaiN
+              p.footer-description Exploring the intersection of code, art, and mathematics through creative coding experiments.
+            .col-md-6.text-md-end
+              p.footer-links
+                a.footer-link(href='https://github.com/HanchaiN', target='_blank', rel='noopener noreferrer', aria-label='GitHub Profile')
+                  span(aria-hidden='true') &#xea84;
+                  span.visually-hidden GitHub
+              //- p.footer-copyright
+              //-   small &copy; #{new Date().getFullYear()} HanchaiN. All rights reserved.

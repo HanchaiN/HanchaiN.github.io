@@ -1,14 +1,20 @@
-nav.navbar.navbar-expand-lg.sticky-top.bg-body-tertiary
-  .container-fluid
-    a.navbar-brand(href='/') HanchaiN
-    button.navbar-toggler(type='button', data-bs-toggle='collapse', data-bs-target='#navbarNav', aria-controls='navbarNav', aria-expanded='false', aria-label='Toggle navigation')
+nav.navbar.navbar-expand-lg.sticky-top.navbar-glass
+  .container-fluid.px-lg-4
+    a.navbar-brand.fw-bold(href='/')
+      span.brand-icon(aria-hidden='true') &#xf489;
+      |  HanchaiN
+    button.navbar-toggler.border-0(type='button', data-bs-toggle='collapse', data-bs-target='#navbarNav', aria-controls='navbarNav', aria-expanded='false', aria-label='Toggle navigation')
       span &#xeb94;
     #navbarNav.collapse.navbar-collapse
-      ul.navbar-nav.navbar-nav-scroll
+      ul.navbar-nav.navbar-nav-scroll.ms-auto
         li.nav-item
-          a.nav-link(href='/') Home
+          a.nav-link.active(href='/', aria-current='page')
+            span.nav-icon(aria-hidden='true') &#xf015;
+            |  Home
         li.nav-item.dropdown
-          a.nav-link.dropdown-toggle(href='/creative_coding', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Creative Coding
+          a.nav-link.dropdown-toggle(href='/creative_coding', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false')
+            span.nav-icon(aria-hidden='true') &#xf121;
+            |  Creative Coding
           ul.dropdown-menu
             li.dropdown-item.dropend
               span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Audio Processing
