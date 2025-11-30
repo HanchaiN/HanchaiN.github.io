@@ -4,22 +4,32 @@ import { getProjectPaths } from "./utils/paths";
 
 interface Args {
   isDev: boolean;
+  port: number;
   watch: boolean;
   serve: boolean;
-  publicOnly: boolean;
-  pagesOnly: boolean;
-  scriptsOnly: boolean;
+  clean: boolean;
+  buildNone: boolean;
+  buildPublic: boolean;
+  buildPages: boolean;
+  buildScripts: boolean;
 }
 
 function parseArgs(): Args {
   return {
     isDev:
       process.argv.includes("--dev") || process.env.NODE_ENV !== "production",
+    port: process.argv.includes("--port")
+      ? parseInt(process.argv[process.argv.indexOf("--port") + 1], 10)
+      : process.env.PORT
+        ? parseInt(process.env.PORT, 10)
+        : 3000,
     watch: process.argv.includes("--watch"),
     serve: process.argv.includes("--serve"),
-    publicOnly: process.argv.includes("--public-only"),
-    pagesOnly: process.argv.includes("--pages-only"),
-    scriptsOnly: process.argv.includes("--scripts-only"),
+    clean: process.argv.includes("--clean"),
+    buildNone: process.argv.includes("--no-build"),
+    buildPublic: process.argv.includes("--public"),
+    buildPages: process.argv.includes("--pages"),
+    buildScripts: process.argv.includes("--scripts"),
   };
 }
 
@@ -31,20 +41,37 @@ function main(): void {
     srcPath: paths.src,
     outputPath: paths.distPages,
     isDev: args.isDev,
+    port: args.port,
   });
 
   if (args.isDev) {
     console.log("Running in development mode");
   }
 
-  if (args.publicOnly) {
-    manager.buildPublicOnly();
-  } else if (args.pagesOnly) {
-    manager.buildPagesOnly();
-  } else if (args.scriptsOnly) {
-    manager.buildScriptsOnly();
+  if (args.clean) {
+    console.log("Cleaning output directory...");
+    manager.clean();
+  }
+
+  if (args.buildNone) {
+    console.log("Skipping build step");
   } else {
-    manager.buildAll();
+    let buildAll = true;
+    if (args.buildPublic) {
+      manager.buildPublicOnly();
+      buildAll = false;
+    }
+    if (args.buildPages) {
+      manager.buildPagesOnly();
+      buildAll = false;
+    }
+    if (args.buildScripts) {
+      manager.buildScriptsOnly();
+      buildAll = false;
+    }
+    if (buildAll) {
+      manager.buildAll();
+    }
   }
 
   if (args.watch) {

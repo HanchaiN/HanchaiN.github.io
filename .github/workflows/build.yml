@@ -59,6 +59,7 @@ jobs:
           ${{ steps.detect-package-manager.outputs.manager }} run validate
       - name: Build
         run: |
+          NODE_ENV="production" ${{ steps.detect-package-manager.outputs.manager }} run clean
           NODE_ENV="production" ${{ steps.detect-package-manager.outputs.manager }} run build:bin
           NODE_ENV="production" ${{ steps.detect-package-manager.outputs.manager }} run build
       - name: Upload artifact

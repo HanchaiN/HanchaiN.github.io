@@ -64,9 +64,13 @@ export class BuildManager {
   clean(): void {
     this.logger.info("Cleaning output directory...");
     removeDir(this.outputPath);
+    this.logger.success("Output directory cleaned");
+  }
+
+  initialize(): void {
     ensureDir(this.outputPath);
     writeFile(path.join(this.outputPath, ".gitignore"), "*");
-    this.logger.success("Output directory cleaned");
+    this.logger.success("Output directory initialized");
   }
 
   buildPublicOnly(): void {
@@ -82,7 +86,7 @@ export class BuildManager {
   }
 
   buildAll(): void {
-    this.clean();
+    this.initialize();
     this.publicBuilder.build();
     this.pagesBuilder.build();
     this.scriptsBuilder.build();
