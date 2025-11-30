@@ -1,108 +1,14 @@
+include mixins.pug
+
 nav.navbar.navbar-expand-lg.sticky-top.navbar-glass
   .container-fluid.px-lg-4
-    a.navbar-brand.fw-bold(href='/')
-      span.brand-icon(aria-hidden='true') &#xf489;
-      |  HanchaiN
+    a.navbar-brand.fw-bold(href=pagesData.navbar.brand.href)
+      span.brand-icon(aria-hidden='true')!= pagesData.navbar.brand.icon
+      | #{' '}
+      = pagesData.navbar.brand.text
     button.navbar-toggler.border-0(type='button', data-bs-toggle='collapse', data-bs-target='#navbarNav', aria-controls='navbarNav', aria-expanded='false', aria-label='Toggle navigation')
       span &#xeb94;
     #navbarNav.collapse.navbar-collapse
       ul.navbar-nav.navbar-nav-scroll.ms-auto
-        li.nav-item
-          a.nav-link.active(href='/', aria-current='page')
-            span.nav-icon(aria-hidden='true') &#xf015;
-            |  Home
-        li.nav-item.dropdown
-          a.nav-link.dropdown-toggle(href='/creative_coding', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false')
-            span.nav-icon(aria-hidden='true') &#xf121;
-            |  Creative Coding
-          ul.dropdown-menu
-            li.dropdown-item.dropend
-              span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Audio Processing
-              ul.dropdown-menu
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/audio_processing/autocorrelation') Autocorrelation
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/audio_processing/spectrogram') Spectrogram
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/audio_processing/dtmf') DTMF
-            li.dropdown-item.dropend
-              span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Generation
-              ul.dropdown-menu
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/generation/bonsai') Bonsai
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/generation/dungeon') Dungeon Generation
-                li.dropdown-item.dropend
-                  span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Fractal
-                  ul.dropdown-menu
-                    li.dropdown-item
-                      a.nav-link(href='/creative_coding/generation/fractal/fractal_tree') Fractal Trees
-                    li.dropdown-item
-                      a.nav-link(href='/creative_coding/generation/fractal/fractal_tree_curve') Spiral Fractal Trees
-                    li.dropdown-item
-                      a.nav-link(href='/creative_coding/generation/fractal/hilbert') Hilbert Curve
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/generation/perlin_noise') Perlin Noise
-            li.dropdown-item.dropend
-              span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Image Processing
-              ul.dropdown-menu
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/image_processing/clut_generation') Clut generation
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/image_processing/color_grading') Color Grading
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/image_processing/dithering') Dithering
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/image_processing/edge_detection') Edge Detection
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/image_processing/palette_extraction') Palette Extraction
-            li.dropdown-item.dropend
-              span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Simulation
-              ul.dropdown-menu
-                li.dropdown-item.dropend
-                  span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Computation
-                  ul.dropdown-menu
-                    li.dropdown-item
-                      a.nav-link(href='/creative_coding/simulation/compute/brainfuck') Brainfuck
-                    li.dropdown-item
-                      a.nav-link(href='/creative_coding/simulation/compute/elementary_cellular_automata') Elementary Cellular Automata
-                    li.dropdown-item
-                      a.nav-link(href='/creative_coding/simulation/compute/turing_machine') Turing Machine
-                li.dropdown-item.dropend
-                  span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Particle-based
-                  ul.dropdown-menu
-                    li.dropdown-item
-                      a.nav-link(href='/creative_coding/simulation/particles/boids') Boids
-                    li.dropdown-item
-                      a.nav-link(href='/creative_coding/simulation/particles/dynamical_system') Dynamical System
-                    li.dropdown-item
-                      a.nav-link(href='/creative_coding/simulation/particles/ideal_gas') Ideal Gas
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/simulation/ray_tracing') Ray Tracing
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/simulation/reaction_diffusion') Reaction-Diffusion
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/simulation/sandpile') Sandpile
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/simulation/self_organizing_map') Self-Organizing Map
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/simulation/slit_experiment') Slit Experiment
-            li.dropdown-item.dropend
-              span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false') Visualization
-              ul.dropdown-menu.dropdown-submenu
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/visualization/2d_fourier') 2D Fourier Transform
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/visualization/color_difference') Color Difference
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/visualization/complex_function') Complex Function
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/visualization/hydrogen_cloud') Hydrogen Wave Function (Cloud)
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/visualization/hydrogen_pilot') Hydrogen Wave Function (Pilot)
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/visualization/poincare_disk') Poincare Disk
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/visualization/probabilistic_serial') Probabilistic Serial
-                li.dropdown-item
-                  a.nav-link(href='/creative_coding/visualization/spectral_graph') Spectral Graph
+        each item in pagesData.navbar.items
+          +navbarItem(item)

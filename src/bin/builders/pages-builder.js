@@ -1,6 +1,7 @@
 const path = require("path");
 const pug = require("pug");
 const { getFiles, writeFile } = require("../utils/file-utils");
+const fs = require("fs");
 
 class PagesBuilder {
   constructor(basedir, outputPath, options, logger) {
@@ -9,6 +10,19 @@ class PagesBuilder {
     this.outputPath = outputPath;
     this.options = options;
     this.logger = logger;
+
+    this.pagesData = this.loadPagesData(basedir);
+  }
+
+  loadPagesData(basedir) {
+    const dataPath = path.join(basedir, "data", "pages.json");
+    try {
+      const data = fs.readFileSync(dataPath, "utf-8");
+      return JSON.parse(data);
+    } catch (e) {
+      this.logger?.warn("Could not load pages.json, using empty data");
+      return {};
+    }
   }
 
   buildFile(relativeFile) {
@@ -23,7 +37,10 @@ class PagesBuilder {
       path.basename(relativeFile, ".pug") + ".html",
     );
 
-    const html = pug.renderFile(inFile, { ...this.options });
+    const html = pug.renderFile(inFile, {
+      ...this.options,
+      pagesData: this.pagesData,
+    });
     writeFile(outFile, html);
     this.logger.info(`  Rendered ${relativeFile}`);
   }

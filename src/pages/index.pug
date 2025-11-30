@@ -1,4 +1,5 @@
 extends /components/layout.pug
+include /components/mixins.pug
 
 block title
   title HanchaiN - Creative Coding & Development
@@ -7,80 +8,48 @@ block content
   section.hero-section.mb-5
     .row.align-items-center
       .col-lg-8
-        h1.display-4.fw-bold.mb-4 Welcome to My Creative Coding Lab
-        p.lead.mb-4
-          | Explore the intersection of mathematics, programming, and art through interactive visualizations,
-          | generative algorithms, and computational experiments. Each project is a journey into the beauty
-          | of code and creativity.
+        h1.display-4.fw-bold.mb-4= pagesData.home.hero.title
+        p.lead.mb-4= pagesData.home.hero.description
         .d-flex.gap-3.flex-wrap
-          a.btn.btn-primary.btn-lg(href='/creative_coding')
-            span(aria-hidden='true') &#xf121;
-            |  Explore Projects
-          a.btn.btn-outline-primary.btn-lg(href='https://github.com/HanchaiN', target='_blank', rel='noopener noreferrer')
-            span(aria-hidden='true') &#xea84;
-            |  View on GitHub
+          each button in pagesData.home.hero.buttons
+            a.btn.btn-lg(
+              class=button.class,
+              href=button.href,
+              target=button.external ? '_blank' : false,
+              rel=button.external ? 'noopener noreferrer' : false
+            )
+              span(aria-hidden='true')!= button.icon
+              | #{' '}
+              = button.text
       .col-lg-4.mt-4.mt-lg-0
         .feature-preview.p-4.rounded-3.bg-body-secondary
           h5.text-center.mb-3 Featured Categories
           ul.list-unstyled.mb-0
-            li.mb-2
-              a.text-decoration-none(href='/creative_coding#audio-processing')
-                span.text-primary(aria-hidden='true') &#xf028;
-                |  Audio Processing
-            li.mb-2
-              a.text-decoration-none(href='/creative_coding#generation')
-                span.text-success(aria-hidden='true') &#xf1fc;
-                |  Generative Art
-            li.mb-2
-              a.text-decoration-none(href='/creative_coding#image-processing')
-                span.text-info(aria-hidden='true') &#xf03e;
-                |  Image Processing
-            li.mb-2
-              a.text-decoration-none(href='/creative_coding#simulation')
-                span.text-warning(aria-hidden='true') &#xf013;
-                |  Simulations
-            li.mb-2
-              a.text-decoration-none(href='/creative_coding#visualization')
-                span.text-danger(aria-hidden='true') &#xf1fe;
-                |  Data Visualization
+            each category in pagesData.home.hero.featuredCategories
+              li.mb-2
+                a.text-decoration-none(href=category.href)
+                  span(class=`text-${category.color}`, aria-hidden='true')!= category.icon
+                  | #{' '}
+                  = category.text
 
   section.highlights-section.mb-5
     h2.h3.fw-bold.mb-4 Highlighted Projects
     .row.g-4
-      .col-md-6.col-lg-4
-        .card.project-card.h-100
-          .card-body
-            h3.h5.card-title
-              span.text-primary(aria-hidden='true') &#xf1fe;
-              |  Fractal Trees
-            p.card-text Explore the mesmerizing patterns of recursive tree generation using various fractal algorithms including Hilbert curves and spiral variations.
-            a.stretched-link(href='/creative_coding/generation/fractal/fractal_tree') Learn more
-      .col-md-6.col-lg-4
-        .card.project-card.h-100
-          .card-body
-            h3.h5.card-title
-              span.text-success(aria-hidden='true') &#xf674;
-              |  Reaction-Diffusion
-            p.card-text Simulate chemical reactions and pattern formation through reaction-diffusion systems, creating organic and dynamic visual patterns.
-            a.stretched-link(href='/creative_coding/simulation/reaction_diffusion') Learn more
-      .col-md-6.col-lg-4
-        .card.project-card.h-100
-          .card-body
-            h3.h5.card-title
-              span.text-info(aria-hidden='true') &#xf2db;
-              |  Ray Tracing
-            p.card-text Implement a physically-based rendering system with ray tracing to create photorealistic 3D visualizations.
-            a.stretched-link(href='/creative_coding/simulation/ray_tracing') Learn more
+      each highlight in pagesData.home.highlights
+        .col-md-6.col-lg-4
+          .card.project-card.h-100
+            .card-body
+              h3.h5.card-title
+                span(class=`text-${highlight.color}`, aria-hidden='true')!= highlight.icon
+                | #{' '}
+                = highlight.title
+              p.card-text= highlight.description
+              a.stretched-link(href=highlight.href) Learn more
 
   section.about-section
     .row
       .col-lg-8.mx-auto
         .p-4.rounded-3.bg-body-tertiary
-          h2.h4.fw-bold.mb-3 About This Project
-          p.mb-3
-            | This portfolio showcases various creative coding experiments built with modern web technologies.
-            | Each project demonstrates different computational techniques, from audio analysis and image processing
-            | to complex simulations and mathematical visualizations.
-          p.mb-0
-            | Technologies used include TypeScript, P5.js, Three.js, WebGL, and various mathematical libraries.
-            | All projects are interactive and run directly in your browser.
+          h2.h4.fw-bold.mb-3= pagesData.home.about.title
+          each paragraph, index in pagesData.home.about.paragraphs
+            p(class=index === pagesData.home.about.paragraphs.length - 1 ? 'mb-0' : 'mb-3')= paragraph

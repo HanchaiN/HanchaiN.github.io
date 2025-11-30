@@ -1,0 +1,47 @@
+mixin navDropdownItem(item)
+  if item.href
+    li.dropdown-item
+      a.nav-link(href=item.href)= item.text
+  else if item.children
+    li.dropdown-item.dropend
+      span.navbar-text.dropdown-toggle(href='#', role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false')= item.text
+      ul.dropdown-menu
+        each child in item.children
+          +navDropdownItem(child)
+
+mixin navbarItem(item)
+  if item.dropdown
+    li.nav-item.dropdown
+      a.nav-link.dropdown-toggle(href=item.href, role='button', data-bs-toggle='dropdown', data-bs-auto-close='outside', aria-expanded='false')
+        if item.icon
+          span.nav-icon(aria-hidden='true')!= item.icon
+          | #{' '}
+        = item.text
+      ul.dropdown-menu
+        each dropdownItem in item.dropdown
+          +navDropdownItem(dropdownItem)
+  else
+    li.nav-item
+      a.nav-link(class=item.active ? 'active' : '', href=item.href, aria-current=item.active ? 'page' : false)
+        if item.icon
+          span.nav-icon(aria-hidden='true')!= item.icon
+          | #{' '}
+        = item.text
+
+mixin projectCard(project)
+  .col-md-6.col-lg-4
+    .card.project-card.h-100
+      .card-body
+        h3.h6.card-title= project.title
+        p.card-text.small= project.description
+        a.stretched-link(href=project.href)
+
+mixin categorySection(category)
+  section(id=category.id).category-section.mb-5
+    h2.h3.fw-bold.mb-4
+      span.category-icon(class=`text-${category.color}`, aria-hidden='true')!= category.icon
+      | #{' '}
+      = category.title
+    .row.g-3
+      each project in category.projects
+        +projectCard(project)
