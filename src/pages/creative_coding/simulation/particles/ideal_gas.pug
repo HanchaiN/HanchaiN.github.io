@@ -20,34 +20,60 @@ block content
     form#config.data-container
       label(for='volume')
         | Volume:
-        span#volume-value
+        output#volume-value(for='volume')
       input#volume(type='range', step='1e-5')
       br
-      label(for='temperature')
-        | Temperature:
-        span#temperature-value
-      input#temperature(type='range', step='1e-16')
+      label(for='wall-temperature')
+        | Wall Temperature:
+        output#wall-temperature-value(for='wall-temperature')
+      input#wall-temperature(type='range', step='1e-16')
       br
-      label(for='pressure')
-        | Pressure:
-        span#pressure-value
-      output#pressure(type='range', step='1e-16')
+      label(for='gas-temperature')
+        | Gas Temperature:
+        output#gas-temperature-value(for='gas-temperature')
+      input#gas-temperature(type='range', step='1e-16', readonly)
+      br
+      label(for='wall-pressure')
+        | Wall Pressure:
+        output#wall-pressure-value(for='wall-pressure')
+      input#wall-pressure(type='range', step='1e-16', readonly)
+      br
+      label(for='calc-pressure')
+        | Calculated Pressure:
+        output#calc-pressure-value(for='calc-pressure')
+      input#calc-pressure(type='range', step='1e-16', readonly)
       br
       label(for="entropy")
         | Entropy:
-        span#entropy-value
-      output#entropy(type='range', step='1e-16')
+        output#entropy-value(for='entropy')
+      input#entropy(type='range', step='1e-16', readonly)
   p.
     An ideal gas is a theoretical gas composed of many randomly moving point particles that are not subject to interparticle interactions.
     The ideal gas concept is useful because it obeys the ideal gas law, a simplified equation of state, and is amenable to analysis under statistical mechanics.
     The requirement of zero interaction can often be relaxed if, for example, the interaction is perfectly elastic or regarded as point-like collisions.
+  p.
+    The van der Waals equation is a mathematical formula that describes the behavior of real gases.
+    It is an equation of state that relates the pressure, volume, number of molecules, and temperature in a fluid.
+  p.
+    One explicit way to write the van der Waals equation is:
+    \[\displaystyle p={\frac {T}{v-b}}-{\frac {a}{v^{2}}}\]
+    where \(p\) is pressure, \(T\) is fundamental temperature,
+    and \(v = V / N\) is molar volume, the ratio of volume, \(V\), to quantity of matter, \(N\).
+    Also \(a\) and \(b\) are experimentally determinable, substance-specific constants.
+  p.
+    The simplest conception of a particle, and the easiest to model mathematically, was a hard sphere of volume \(V_{0}\); this is what Van der Waals used,
+    and he found the total excluded volume was \(B=4NV_{0}\), namely 4 times the volume of all the particles.
+    The constant \(b=B/N\), has the dimension of molar volume, [v].
+    The constant \(a\) expresses the strength of the hypothesized inter-particle attraction.
+    Van der Waals only had Newton's law of gravitation, in which two particles are attracted in proportion to the product of their masses, as a model.
+    Thus he argued that, in his case, the attractive pressure was proportional to the density squared.
+    The proportionality constant, \(a\), when written in the form used above, has the dimension [pv2] (pressure times molar volume squared).
   p.
     The Sackur–Tetrode equation expresses the entropy \(S\) of a monatomic ideal gas
     in terms of its thermodynamic state—specifically,
     its volume \(V\),
     internal energy \(U\),
     and the number of particles \(N\):
-  p.
     \[\displaystyle {\frac {S}{k_{\rm {B}}N}}=\ln \left[{\frac {V}{N}}\left({\frac {4\pi m}{3h^{2}}}{\frac {U}{N}}\right)^{3/2}\right]+{\frac {5}{2}},\]
     where \(k_{\mathrm {B}}\) is the Boltzmann constant,
     \(m\) is the mass of a gas particle and \(h\) is

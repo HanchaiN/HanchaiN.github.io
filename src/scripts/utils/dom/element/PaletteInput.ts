@@ -25,7 +25,7 @@ export class PaletteInput {
   set value(palette: string[]) {
     this.palette_ = palette.map((x) => str2hex(x));
     this.textInput.value = "";
-    this.inputContainer.innerHTML = "";
+    this.inputContainer.textContent = "";
     palette.forEach((color, i) => {
       const input = document.createElement("input");
       input.type = "color";

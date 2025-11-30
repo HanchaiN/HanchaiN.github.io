@@ -248,22 +248,25 @@ export default function execute() {
     constants.weight_colors = +config.querySelector<HTMLInputElement>(
       "input#weight-colors",
     )!.value;
-    config.querySelector<HTMLInputElement>("input#iteration-count")!.value =
-      "0";
     renderer = kernelGenerator(apply_step, {}, buffer!);
     i = 0;
-    handlerId = setTimeout(async function update() {
-      if (!isActive) return;
-      await createImageBitmap(buffer).then((bmp) =>
-        ctx.drawImage(bmp, 0, 0, ctx.canvas.width, ctx.canvas.height),
-      );
-      step();
-      config.querySelector<HTMLInputElement>("input#iteration-count")!.value = (
-        1 +
-        +config.querySelector<HTMLInputElement>("input#iteration-count")!.value
-      ).toString();
-      handlerId = setTimeout(update, 0);
-    }, 0);
+    {
+      const iteration_count_elem = config.querySelector<HTMLOutputElement>(
+        "output#iteration-count",
+      )!;
+      iteration_count_elem.value = "0";
+      handlerId = setTimeout(async function update() {
+        if (!isActive) return;
+        await createImageBitmap(buffer).then((bmp) =>
+          ctx.drawImage(bmp, 0, 0, ctx.canvas.width, ctx.canvas.height),
+        );
+        step();
+        iteration_count_elem.value = (
+          1 + Number(iteration_count_elem.value)
+        ).toString();
+        handlerId = setTimeout(update, 0);
+      }, 0);
+    }
   }
   function step() {
     const values = new Array(constants.color_choices)
@@ -366,23 +369,22 @@ export default function execute() {
       config
         .querySelector<HTMLInputElement>("input#range")!
         .addEventListener("input", function () {
-          config.querySelector<HTMLInputElement>(
-            "slot#range-value",
-          )!.innerText = (+this.value).toFixed(3);
+          config.querySelector<HTMLOutputElement>("output#range-value")!.value =
+            (+this.value).toFixed(3);
         });
       config
         .querySelector<HTMLInputElement>("input#learning-rate")!
         .addEventListener("input", function () {
-          config.querySelector<HTMLInputElement>(
-            "slot#learning-rate-value",
-          )!.innerText = (+this.value).toFixed(3);
+          config.querySelector<HTMLOutputElement>(
+            "output#learning-rate-value",
+          )!.value = (+this.value).toFixed(3);
         });
       config
         .querySelector<HTMLInputElement>("input#color-choices")!
         .addEventListener("input", function () {
-          config.querySelector<HTMLInputElement>(
-            "slot#color-choices-value",
-          )!.innerText = (+this.value).toFixed(3);
+          config.querySelector<HTMLOutputElement>(
+            "output#color-choices-value",
+          )!.value = (+this.value).toFixed(3);
         });
       // canvas.addEventListener("click", function () {
       //   generate(buffer);

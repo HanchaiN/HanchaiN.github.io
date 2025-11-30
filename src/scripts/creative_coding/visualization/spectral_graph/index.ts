@@ -23,7 +23,7 @@ export default function execute() {
 
   function writeTable() {
     const n = mainelem.order;
-    grid2D.setSize(n);
+    grid2D.size = n;
     for (let i = 0; i < n; i++) {
       for (let j = 0; j <= i; j++) {
         const cell = grid2D.get(i, j)?.querySelector("input");
@@ -150,19 +150,36 @@ export default function execute() {
       grid2D.addChangeHandler((grid2D) => {
         const n = grid2D.size;
         for (let i = 0; i < n; i++) {
+          for (let j = i + 1; j < n; j++) {
+            const cell = grid2D.get(i, j);
+            if (!cell) continue;
+            if (cell.innerHTML !== "") continue;
+            const old_value = cell.querySelector("output")?.value;
+            cell.textContent = "";
+            const output = document.createElement("output");
+            output.value = old_value ?? "-";
+            cell.appendChild(output);
+          }
+        }
+        for (let i = 0; i < n; i++) {
           for (let j = 0; j <= i; j++) {
             const cell = grid2D.get(i, j);
             if (!cell) continue;
-            cell.innerHTML = "";
+            if (cell.innerHTML !== "") continue;
+            const old_value = cell.querySelector("input")?.valueAsNumber;
+            console.log(i, j, cell, old_value);
+            cell.textContent = "";
             const input = document.createElement("input");
             input.type = "number";
-            input.valueAsNumber = 0;
+            input.valueAsNumber = old_value ?? 0;
             input.min = "0";
             input.step = "1";
             cell.appendChild(input);
             if (i !== j) {
+              const symmetricCell = grid2D.get(j, i)?.querySelector("output");
               input.addEventListener("change", () => {
-                grid2D.get(j, i)!.innerHTML = input.valueAsNumber.toString();
+                if (symmetricCell)
+                  symmetricCell.value = input.valueAsNumber.toString();
               });
               input.dispatchEvent(new Event("change"));
             }

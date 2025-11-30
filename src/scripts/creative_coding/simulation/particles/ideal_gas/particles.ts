@@ -53,7 +53,7 @@ export class ParticleSystem {
     bottom: number | null;
   };
   particles: Particle[];
-  Pressure: number;
+  WallPressure: number;
   private _dt!: number;
   private _dp!: number;
   constructor(w: number, h: number, n: number, temp: number) {
@@ -86,7 +86,7 @@ export class ParticleSystem {
       );
     });
     this.Temperature = temp;
-    this.Pressure = 0;
+    this.WallPressure = 0;
     this.resetStat();
   }
   get w() {
@@ -167,12 +167,15 @@ export class ParticleSystem {
     );
     */
   }
+  get CalcPressure() {
+    return this.getPressure();
+  }
   getPressure(volume = this.Volume, temperature = this.Temperature) {
     // Van der Waals equation
     const a = 0;
-    const b = Math.PI * Math.pow(SETTING.DIAMETER / 2, 2);
+    const b = 2 * Math.PI * Math.pow(SETTING.DIAMETER / 2, 2);
     return (
-      (this.particles.length * SETTING.BOLTZMANN * temperature) /
+      (this.particles.length * temperature) /
         (volume - this.particles.length * b) -
       a * Math.pow(this.particles.length / volume, 2)
     );
@@ -248,7 +251,7 @@ export class ParticleSystem {
       this._dt += deltaTime / n;
     }
     const P = this._dp / this._dt / (2 * (this.w + this.h));
-    this.Pressure = P;
+    this.WallPressure = P;
     if (this._dt > SETTING.UPDATE_RATE) this.resetStat();
   }
   _eval_particle(particle: Particle) {

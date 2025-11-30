@@ -44,9 +44,9 @@ export default function execute() {
     const count =
       config.querySelector<HTMLInputElement>("#count")!.valueAsNumber;
     const lists = config.querySelector<HTMLDivElement>("div#lists")!;
-    lists.innerHTML = "";
+    lists.textContent = "";
     const select = config.querySelector<HTMLSelectElement>("select#item")!;
-    select.innerHTML = "";
+    select.textContent = "";
     dragLists = [];
     for (let i = 0; i < count; i++) {
       const list = document.createElement("div");

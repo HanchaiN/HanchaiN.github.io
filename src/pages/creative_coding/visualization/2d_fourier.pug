@@ -25,17 +25,17 @@ block content
       br
       label(for='fft-size')
         | FFT Size:
-        slot#fft-size-value
+        output#fft-size-value
       input#fft-size(type='number', step='1')
       wbr
       label(for='render-size')
         | Render Size:
-        slot#render-size-value
+        output#render-size-value
       input#render-size(type='number', step='1')
       br
       label(for='overlay')
         | Overlay:
-        slot#overlay-value
+        output#overlay-value
       input#overlay(type='number', min='0', max='1', step='0.01', value='0.25')
   p.
     In magnetic resonance imaging (MRI), the k-space or reciprocal space (a mathematical space of spatial frequencies) is obtained as the 2D or 3D Fourier transform of the image measured. It was introduced in 1979 by Likes and in 1983 by Ljunggren and Twieg.

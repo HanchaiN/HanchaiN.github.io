@@ -21,13 +21,17 @@ export default function execute() {
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
   let volume_slider: HTMLInputElement;
-  let volume_value: HTMLSlotElement;
-  let temperature_slider: HTMLInputElement;
-  let temperature_value: HTMLSlotElement;
-  let pressure_slider: HTMLInputElement;
-  let pressure_value: HTMLSlotElement;
+  let volume_value: HTMLOutputElement;
+  let wall_temperature_slider: HTMLInputElement;
+  let wall_temperature_value: HTMLOutputElement;
+  let gas_temperature_slider: HTMLInputElement;
+  let gas_temperature_value: HTMLOutputElement;
+  let wall_pressure_slider: HTMLInputElement;
+  let wall_pressure_value: HTMLOutputElement;
+  let calc_pressure_slider: HTMLInputElement;
+  let calc_pressure_value: HTMLOutputElement;
   let entropy_slider: HTMLInputElement;
-  let entropy_value: HTMLSlotElement;
+  let entropy_value: HTMLOutputElement;
   let system: ParticleSystem;
   const getBackground = () => getPaletteBaseColor(0);
   const getForeground = () => getPaletteBaseColor(1);
@@ -64,13 +68,17 @@ export default function execute() {
       volume_slider.max = ((canvas.height / scale) * system.w).toString();
       volume_slider.value = system.Volume.toString();
     }
-    temperature_slider.min = symlog(SETTING.TempMin).toString();
-    temperature_slider.max = symlog(SETTING.TempMax).toString();
-    temperature_slider.value = symlog(system.Temperature).toString();
-    pressure_slider.min = symlog(
+    wall_temperature_slider.min = gas_temperature_slider.min = symlog(
+      SETTING.TempMin,
+    ).toString();
+    wall_temperature_slider.max = gas_temperature_slider.max = symlog(
+      SETTING.TempMax,
+    ).toString();
+    wall_temperature_slider.value = symlog(system.Temperature).toString();
+    wall_pressure_slider.min = calc_pressure_slider.min = symlog(
       system.getPressure(Number.parseFloat(volume_slider.max), SETTING.TempMin),
     ).toString();
-    pressure_slider.max = symlog(
+    wall_pressure_slider.max = calc_pressure_slider.max = symlog(
       system.getPressure(Number.parseFloat(volume_slider.min), SETTING.TempMax),
     ).toString();
     entropy_slider.min = system
@@ -124,22 +132,26 @@ export default function execute() {
     ctx.moveTo(0, system.h * scale);
     ctx.lineTo(canvas.width, system.h * scale);
     ctx.stroke();
-    temperature_value.innerText = system.Temperature.toExponential(2);
-    pressure_slider.value = symlog(system.Pressure).toString();
-    pressure_value.innerText = system.Pressure.toExponential(2);
+    gas_temperature_slider.value = symlog(system.Temperature).toString();
+    gas_temperature_value.value = system.Temperature.toExponential(2);
+    wall_pressure_slider.value = symlog(system.WallPressure).toString();
+    wall_pressure_value.value = system.WallPressure.toExponential(2);
+    calc_pressure_slider.value = symlog(system.CalcPressure).toString();
+    calc_pressure_value.value = system.CalcPressure.toExponential(2);
     entropy_slider.value = system.Entropy.toString();
-    entropy_value.innerText = system.Entropy.toExponential(2);
+    entropy_value.value = system.Entropy.toExponential(2);
     return true;
   }
 
   function volume_handler() {
     const value = volume_slider.valueAsNumber / system.w;
     system.wall.bottom = value;
-    volume_value.innerText = system.Volume.toExponential(2);
+    volume_value.value = system.Volume.toExponential(2);
   }
   function temperature_handler() {
-    const value = symlog_inv(temperature_slider.valueAsNumber);
+    const value = symlog_inv(wall_temperature_slider.valueAsNumber);
     system.wall_temp.bottom = value;
+    wall_temperature_value.value = value.toExponential(2);
   }
   return {
     start: (sketch: HTMLCanvasElement, config: HTMLFormElement) => {
@@ -163,16 +175,22 @@ export default function execute() {
       );
       volume_slider = config.querySelector("#volume")!;
       volume_value = config.querySelector("#volume-value")!;
-      temperature_slider = config.querySelector("#temperature")!;
-      temperature_value = config.querySelector("#temperature-value")!;
-      pressure_slider = config.querySelector("#pressure")!;
-      pressure_value = config.querySelector("#pressure-value")!;
+      wall_temperature_slider = config.querySelector("#wall-temperature")!;
+      wall_temperature_value = config.querySelector("#wall-temperature-value")!;
+      gas_temperature_slider = config.querySelector("#gas-temperature")!;
+      gas_temperature_value = config.querySelector("#gas-temperature-value")!;
+      wall_pressure_slider = config.querySelector("#wall-pressure")!;
+      wall_pressure_value = config.querySelector("#wall-pressure-value")!;
+      calc_pressure_slider = config.querySelector("#calc-pressure")!;
+      calc_pressure_value = config.querySelector("#calc-pressure-value")!;
       entropy_slider = config.querySelector("#entropy")!;
       entropy_value = config.querySelector("#entropy-value")!;
       volume_slider.addEventListener("input", volume_handler);
-      temperature_slider.addEventListener("input", temperature_handler);
+      wall_temperature_slider.addEventListener("input", temperature_handler);
       volume_slider.addEventListener("change", () => system.resetStat(0));
-      temperature_slider.addEventListener("change", () => system.resetStat(0));
+      wall_temperature_slider.addEventListener("change", () =>
+        system.resetStat(0),
+      );
       setup();
       volume_handler();
       temperature_handler();

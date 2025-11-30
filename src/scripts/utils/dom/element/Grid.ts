@@ -11,15 +11,20 @@ export class Grid2D {
 
   private update() {
     const n = this.sizeInput.valueAsNumber;
-    this.container.innerHTML = "";
+    const fragment = document.createDocumentFragment();
     for (let i = 0; i < n; i++) {
       const row = document.createElement("tr");
       for (let j = 0; j < n; j++) {
-        const cell = document.createElement("td");
+        const cell = this.get(i, j) ?? document.createElement("td");
+        this.get(i, j)?.parentNode?.replaceChild(
+          document.createElement("td"),
+          cell,
+        );
         row.appendChild(cell);
       }
-      this.container.appendChild(row);
+      fragment.appendChild(row);
     }
+    this.container.replaceChildren(fragment);
     this.listeners.forEach((x) => x(this));
   }
 
@@ -32,7 +37,7 @@ export class Grid2D {
   get size(): number {
     return this.sizeInput.valueAsNumber;
   }
-  setSize(n: number) {
+  set size(n: number) {
     this.sizeInput.value = n.toString();
     this.update();
   }

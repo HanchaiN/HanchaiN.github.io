@@ -41,11 +41,11 @@ export default function execute() {
   let kspace_canvas: HTMLCanvasElement;
   let kspace_ctx: CanvasRenderingContext2D;
   let fft_size_slider: HTMLInputElement;
-  let fft_size_value: HTMLSlotElement;
+  let fft_size_value: HTMLOutputElement;
   let render_size_slider: HTMLInputElement;
-  let render_size_value: HTMLSlotElement;
+  let render_size_value: HTMLOutputElement;
   let overlay_slider: HTMLInputElement;
-  let overlay_value: HTMLSlotElement;
+  let overlay_value: HTMLOutputElement;
   const getColor = () =>
     [str2embed(getPaletteBaseColor(0)), str2embed(getPaletteBaseColor(1))].sort(
       (a, b) => embed2lum(a)[0] - embed2lum(b)[0],
@@ -69,12 +69,12 @@ export default function execute() {
   function redraw(img: HTMLImageElement) {
     if (!isActive) return;
     if (fft_size_slider.valueAsNumber === 0)
-      fft_size_value.innerText = fft_size_slider.value = Math.min(
+      fft_size_value.value = fft_size_slider.value = Math.min(
         img.width,
         img.height,
       ).toString();
     if (render_size_slider.valueAsNumber === 0)
-      render_size_value.innerText = render_size_slider.value = Math.min(
+      render_size_value.value = render_size_slider.value = Math.min(
         img.width,
         img.height,
       ).toString();
@@ -406,13 +406,13 @@ export default function execute() {
       overlay_slider = config.querySelector("#overlay")!;
       overlay_value = config.querySelector("#overlay-value")!;
       fft_size_slider.addEventListener("input", () => {
-        fft_size_value.innerText = fft_size_slider.value;
+        fft_size_value.value = fft_size_slider.value;
       });
       render_size_slider.addEventListener("input", () => {
-        render_size_value.innerText = render_size_slider.value;
+        render_size_value.value = render_size_slider.value;
       });
       overlay_slider.addEventListener("input", () => {
-        overlay_value.innerText = overlay_slider.valueAsNumber.toFixed(3);
+        overlay_value.value = overlay_slider.valueAsNumber.toFixed(3);
       });
       setup();
       isActive = true;
