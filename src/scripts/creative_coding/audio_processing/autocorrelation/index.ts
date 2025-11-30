@@ -3,8 +3,9 @@ import {
   getNoteString,
 } from "@/scripts/utils/audio_processing.js";
 import type { TNote } from "@/scripts/utils/audio_processing.ts";
+import { getPaletteBaseColor } from "@/scripts/utils/color/palette.js";
 import { startAnimationLoop } from "@/scripts/utils/dom/utils.js";
-import { map } from "@/scripts/utils/math/utils.js";
+import { lerp, map } from "@/scripts/utils/math/utils.js";
 
 import {
   autocorrelation,
@@ -26,6 +27,7 @@ export default function execute() {
   const HIST_SIZE = Math.pow(2, 12);
   const BIN_COUNT = Math.pow(2, 10);
   const THRESHOLD_FRAC = 0.8;
+  const SMOOTHEN_COUNT = 3;
 
   function clear() {
     ctx.fillStyle = "black";
@@ -58,19 +60,29 @@ export default function execute() {
   function draw() {
     if (!isActive) return false;
     analyser.getFloatTimeDomainData(bufferArray);
-    ctx.fillStyle = "black";
+    ctx.fillStyle = getPaletteBaseColor(0);
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    const corr = autocorrelation(bufferArray, BIN_COUNT);
-    ctx.strokeStyle = "white";
-    ctx.beginPath();
-    for (let k = 0; k < BIN_COUNT; k++) {
-      const x = map(k, 0, BIN_COUNT, 0, ctx.canvas.width);
-      const y = map(corr[k], -1, 1, ctx.canvas.height, 0);
-      if (k === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+    let corr = bufferArray;
+    {
+      let i = 0;
+      while (true) {
+        ctx.strokeStyle = getPaletteBaseColor(lerp(i / SMOOTHEN_COUNT, 0.5, 1));
+        ctx.beginPath();
+        for (let k = 0; k < BIN_COUNT; k++) {
+          const x = map(k, 0, BIN_COUNT, 0, ctx.canvas.width);
+          const y = map(corr[k], -1, 1, ctx.canvas.height, 0);
+          if (k === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        if (i < SMOOTHEN_COUNT)
+          corr = autocorrelation(corr, BIN_COUNT); // smoothen
+        else break;
+        i++;
+      }
     }
-    ctx.stroke();
-    let peaks = extractPeaks(corr);
+    const corr2 = corr.map((v) => v * v);
+    let peaks = extractPeaks(corr2);
     for (let j = 1; j < peaks.length; j++) {
       const k = peaks[j];
       ctx.fillStyle = "blue";
@@ -84,7 +96,7 @@ export default function execute() {
       );
       ctx.fill();
     }
-    peaks = filterPeaks(peaks, corr, THRESHOLD_FRAC);
+    peaks = filterPeaks(peaks, corr2, THRESHOLD_FRAC);
     for (let j = 1; j < peaks.length; j++) {
       const k = peaks[j];
       ctx.fillStyle = "red";

@@ -2,7 +2,9 @@ import { average } from "@/scripts/utils/math/utils.js";
 
 export function autocorrelation(buffer: Float32Array, bin_count: number) {
   const mean = average(buffer);
-  return new Float32Array(bin_count)
+  const mean2 = average(buffer.map((v) => v * v));
+  const variance = mean2 - mean * mean;
+  const ret = new Float32Array(bin_count)
     .fill(0)
     .map((_, k) =>
       buffer.reduce(
@@ -13,7 +15,8 @@ export function autocorrelation(buffer: Float32Array, bin_count: number) {
         0,
       ),
     )
-    .map((val, _, arr) => val / arr[0]);
+    .map((val, k) => val / (variance * (buffer.length - k)));
+  return ret.map((v, _, arr) => v / arr[0]);
 }
 
 export function extractPeaks(buffer: Float32Array) {

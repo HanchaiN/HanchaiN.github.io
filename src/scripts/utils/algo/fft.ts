@@ -9,6 +9,10 @@ export function fft<T extends Tensor>(arr: T): T {
 }
 export default fft;
 
+export function ifft<T extends Tensor>(arr: T): T {
+  return _ndIfft(arr);
+}
+
 function _arraySize(arr: Tensor | Complex): number[] {
   if (!Array.isArray(arr) || arr.length === 0) return [];
   return [arr.length, ..._arraySize(arr[0])];
@@ -98,4 +102,18 @@ function _czt(arr: Tensor1D): Tensor1D {
     ret.push(Complex.mult(ifftProduct[i], chirp[i]));
   }
   return ret;
+}
+
+function _ndIfft<T extends Tensor>(arr: T, normFactor: number = 1): T {
+  const size = _arraySize(arr);
+  if (size.length === 1) return _ifft(arr as Tensor1D, normFactor) as T;
+  return arr.map((slice) =>
+    _ndIfft(slice as Tensor, normFactor * size[0]),
+  ) as T;
+}
+
+function _ifft(arr: Tensor1D, normFactor: number = 1): Tensor1D {
+  return _fft((arr as Tensor1D).map(Complex.conj))
+    .map(Complex.conj)
+    .map((v) => Complex.div(v, normFactor * arr.length)) as Tensor1D;
 }
