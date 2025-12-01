@@ -1,25 +1,30 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Fractal Trees
+block variable
+  - var page_title = 'Fractal Trees'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/generation/fractal/fractal_tree_curve/index.js';
-
     const root = document.getElementById('fractral-tree-curve');
-    execute().start(
-      root.querySelector('#canvas'),
-      root.querySelector('#config'),
-    );
+    execute().start(root.querySelector('#canvas'), root.querySelector('#config'));
 
-block content
-  h1 Fractal Trees
-  #fractral-tree-curve.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
-    form#config.data-container
-      button#set(type='button') Regenerate
-      button#box(type='button') Toggle Box
-      button#reset(type='button') Restart
+block canvas_container
+  +canvasContainer({ id: 'fractral-tree-curve', canvasId: 'canvas', width: 500, height: 500, hasConfig: true })
+    +buttonInput({ id: 'set', label: 'Regenerate' })
+    +buttonInput({ id: 'box', label: 'Toggle Box' })
+    +buttonInput({ id: 'reset', label: 'Restart' })
+
+block page_description
   p.
     The #[a(href='https://en.wikipedia.org/wiki/Fibonacci_sequence') Fibonacci spiral]: an approximation of the golden spiral created by drawing circular arcs connecting the opposite corners of squares in the Fibonacci tiling.
+  p.
+    <strong>How to interact:</strong>
+  ul
+    li <strong>Regenerate:</strong> Create a new random variation
+    li <strong>Toggle Box:</strong> Show/hide the underlying square grid
+    li <strong>Restart:</strong> Reset the animation to the beginning
+  p.
+    The algorithm divides space using Fibonacci numbers (1, 1, 2, 3, 5, 8, 13...),
+    with each iteration creating smaller rectangles following the golden ratio φ ≈ 1.618.
+    This spiral appears in nautilus shells, sunflower seed patterns, galaxy arms, and many other natural formations.

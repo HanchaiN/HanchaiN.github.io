@@ -1,35 +1,39 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Fractal Trees
+block variable
+  - var page_title = 'Fractal Trees'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/generation/fractal/fractal_tree/index.js';
+    const root = document.getElementById('fractal-tree');
+    execute().start(root, root.querySelector('#canvas'), root.querySelector('#config'));
 
-    const root = document.getElementById('fractral-tree');
-    execute().start(
-      root,
-      root.querySelector('#canvas'),
-      root.querySelector('#config'),
-    );
+block canvas_container
+  +canvasContainer({ id: 'fractal-tree', canvasId: 'canvas', width: 500, height: 500, hasConfig: true })
+    +numberInput({ id: 'alpha', label: 'Unbranched:', value: 0, min: -1, max: 1, step: 0.00001, type: 'range' })
+    br
+    +numberInput({ id: 'beta1', label: 'Branched (new):', value: 0, min: -1, max: 1, step: 0.00001, type: 'range' })
+    br
+    +numberInput({ id: 'beta2', label: 'Branched (old):', value: 0, min: -1, max: 1, step: 0.00001, type: 'range' })
+    br
+    +buttonInput({ id: 'reset', label: 'Toggle Leaves' })
 
-block content
-  h1 Fractal Trees
-  #fractral-tree.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
-    form#config.data-container
-      label(for='alpha') Unbranched:
-      input#alpha(type='range', value='0', min='-1', max='1', step='1e-5')
-      br
-      label(for='beta1') Branched (new):
-      input#beta1(type='range', value='0', min='-1', max='1', step='1e-5')
-      br
-      label(for='beta2') Branched (old):
-      input#beta2(type='range', value='0', min='-1', max='1', step='1e-5')
-      br
-      button#reset(type='button') Toggle Leaves
+block page_description
   p.
     An L-system or Lindenmayer system is a parallel rewriting system and a type of formal grammar.
   p.
     Lindenmayer's original L-system for modelling the growth of algae. The result is the sequence of Fibonacci words. If we count the length of each string, we obtain the famous Fibonacci sequence of numbers (skipping the first 1, due to our choice of axiom).
+  p.
+    <strong>How to interact:</strong>
+  ul
+    li <strong>Unbranched slider:</strong> Controls the angle of the main trunk growth
+    li <strong>Branched (new) slider:</strong> Sets the branching angle for fresh branches
+    li <strong>Branched (old) slider:</strong> Sets the branching angle for mature branches
+    li <strong>Toggle Leaves button:</strong> Show/hide animated falling leaves
+  p.
+    Watch as leaves fall naturally using wind simulation. The tree structure is generated using
+    recursive rules that mimic how real trees grow, with each branch splitting according to the golden ratio (φ).
+  p.
+    <strong>Mathematical basis:</strong> The tree follows Fibonacci patterns found in nature,
+    where each generation follows simple rewriting rules to create complex organic structures.

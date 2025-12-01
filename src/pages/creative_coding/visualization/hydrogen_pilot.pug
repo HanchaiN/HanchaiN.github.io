@@ -1,20 +1,28 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Hydrogen Pilot Wave
+block variable
+  - var page_title = 'Hydrogen Pilot Wave'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/visualization/hydrogen_pilot/index.js';
-
     const root = document.getElementById('h-pilot');
-    execute().start(
-      root.querySelector('#canvas'),
-    );
+    execute().start(root.querySelector('#canvas'));
 
-block content
-  h1 Hydrogen Pilot Wave
-  #h-pilot.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+block canvas_container
+  +canvasContainer({ id: 'h-pilot', canvasId: 'canvas', width: 500, height: 500 })
+
+block page_description
   p.
     The de Broglie–Bohm theory, also known as the pilot wave theory, Bohmian mechanics, Bohm's interpretation, and the causal interpretation, is an interpretation of quantum mechanics. In addition to the wavefunction, it also postulates an actual configuration of particles exists even when unobserved. The evolution over time of the configuration of all particles is defined by a guiding equation. The evolution of the wave function over time is given by the Schrödinger equation.
+  p.
+    <strong>What you're seeing:</strong>
+  ul
+    li Particles follow deterministic paths guided by the quantum wavefunction
+    li The wave function creates a "pilot wave" that steers particle motion
+    li Particles tend to concentrate in high-probability regions
+    li The resulting distribution matches standard quantum predictions
+  p.
+    This interpretation suggests particles have definite positions at all times,
+    with their motion determined by both the wavefunction and their initial conditions.
+    While controversial, it's mathematically equivalent to standard quantum mechanics.

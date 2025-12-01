@@ -1,20 +1,23 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Dynamical System
+block variable
+  - var page_title = 'Dynamical System'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/simulation/particles/dynamical_system/index.js';
-
     const root = document.getElementById('dynamic-system');
-    execute().start(
-      root.querySelector('#canvas'),
-    );
+    execute().start(root.querySelector('#canvas'));
 
-block content
-  h1 Dynamical System
-  #dynamic-system.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+block canvas_container
+  +canvasContainer({ id: 'dynamic-system', canvasId: 'canvas', width: 500, height: 500 })
+
+block page_description
   p.
-    In physics, a dynamical system is described as a “particle or ensemble of particles whose state varies over time and thus obeys differential equations involving time derivatives”.
+    In physics, a dynamical system is described as a "particle or ensemble of particles whose state varies over time and thus obeys differential equations involving time derivatives".
+  p.
+    <strong>What you're seeing:</strong> Particles following deterministic equations of motion,
+    creating intricate trajectories based on their initial conditions and the forces acting on them.
+  p.
+    This visualization demonstrates chaos theory - how small changes in initial conditions
+    can lead to vastly different outcomes. The system may be deterministic, but it's often unpredictable.

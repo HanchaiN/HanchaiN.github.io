@@ -1,69 +1,81 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Color Difference
+block variable
+  - var page_title = 'Color Difference'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/visualization/color_difference/index.js';
-
     const root = document.getElementById('color-difference');
-    execute().start(
-      root.querySelector('#canvas'),
-      root.querySelector('#config'),
-    );
+    execute().start(root.querySelector('#canvas'), root.querySelector('#config'));
 
-block content
-  h1 Color Difference
-  #color-difference.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='1000', height='1000', style='width: 500px; height: 500px;')
-    form.data-container#config
-      label(for='lightness') Lightness:
-      input#lightness(type='number', min='0', max='1', value='0.5' step='0.01')
-      input#snap-lightness(type='checkbox', checked)
-      label(for='snap-lightness') Snap
-      br
-      label(for='chroma') Chroma:
-      input#chroma(type='number', min='0', max='1', value='0.5' step='0.01')
-      input#snap-chroma(type='checkbox', checked)
-      label(for='snap-chroma') Snap
-      br
-      label(for='range-i') Range (inner):
-      input#range-i(type='number', min='0', max='1', value='0.01' step='0.01')
-      wbr
-      label(for='algorithm-i') Algorithm (inner):
-      select#algorithm-i
-        option(value='red-mean') Red Mean
-        option(value='hybrid-ab') Hybrid AB
-        option(value='cie76') CIE76
-        option(value='cie2:1', selected) CIE 2:1
-        option(value='cie1:1') CIE 1:1
-        option(value='cie94-graphics') CIE94 (Graphic Arts)
-        option(value='cie94-textiles') CIE94 (Textiles)
-        option(value='cie00') CIEDE2000
-      br
-      label(for='range-o') Range (outer):
-      input#range-o(type='number', min='0', max='1', value='0.02' step='0.01')
-      wbr
-      label(for='algorithm-o') Algorithm (outer):
-      select#algorithm-o
-        option(value='inner', selected) (Same as Inner)
-        option(value='red-mean') Red Mean
-        option(value='hybrid-ab') Hybrid AB
-        option(value='cie76') CIE76
-        option(value='cie2:1') CIE 2:1
-        option(value='cie1:1') CIE 1:1
-        option(value='cie94-graphics') CIE94 (Graphic Arts)
-        option(value='cie94-textiles') CIE94 (Textiles)
-        option(value='cie00') CIEDE2000
-      br
-      input#bound(type='checkbox', selected)
-      label(for='bound') Bounded
-      br
-      button#apply(type='button') Execute
-      br
-      textarea#palette-text
-      br
-      div#palette
+block canvas_container
+  +canvasContainer({ id: 'color-difference', canvasId: 'canvas', width: 1000, height: 1000, style: 'width: 500px; height: 500px;', hasConfig: true })
+    +numberInput({ id: 'lightness', label: 'Lightness:', value: 0.5, min: 0, max: 1, step: 0.01 })
+    +checkboxInput({ id: 'snap-lightness', label: 'Snap', checked: true })
+    br
+
+    +numberInput({ id: 'chroma', label: 'Chroma:', value: 0.5, min: 0, max: 1, step: 0.01 })
+    +checkboxInput({ id: 'snap-chroma', label: 'Snap', checked: true })
+    br
+
+    +numberInput({ id: 'range-i', label: 'Range (inner):', value: 0.01, min: 0, max: 1, step: 0.01 })
+    wbr
+    +selectInput({ id: 'algorithm-i', label: 'Algorithm (inner):' })
+      option(value='red-mean') Red Mean
+      option(value='hybrid-ab') Hybrid AB
+      option(value='cie76') CIE76
+      option(value='cie2:1', selected) CIE 2:1
+      option(value='cie1:1') CIE 1:1
+      option(value='cie94-graphics') CIE94 (Graphic Arts)
+      option(value='cie94-textiles') CIE94 (Textiles)
+      option(value='cie00') CIEDE2000
+    br
+
+    +numberInput({ id: 'range-o', label: 'Range (outer):', value: 0.02, min: 0, max: 1, step: 0.01 })
+    wbr
+    +selectInput({ id: 'algorithm-o', label: 'Algorithm (outer):' })
+      option(value='inner', selected) (Same as Inner)
+      option(value='red-mean') Red Mean
+      option(value='hybrid-ab') Hybrid AB
+      option(value='cie76') CIE76
+      option(value='cie2:1') CIE 2:1
+      option(value='cie1:1') CIE 1:1
+      option(value='cie94-graphics') CIE94 (Graphic Arts)
+      option(value='cie94-textiles') CIE94 (Textiles)
+      option(value='cie00') CIEDE2000
+    br
+
+    +checkboxInput({ id: 'bound', label: 'Bounded', checked: true })
+    br
+
+    +buttonInput({ id: 'apply', label: 'Execute' })
+    br
+
+    textarea#palette-text
+    br
+    div#palette
+
+block page_description
   p.
     In color science, color difference or color distance is the separation between two colors.
+  p.
+    This visualization compares different color difference algorithms in LAB color space.
+  p.
+    <strong>How to use:</strong>
+  ol
+    li Adjust Lightness and Chroma to select a base color
+    li Set range values for inner and outer boundaries
+    li Choose different algorithms to see how they measure color distance
+    li Enter hex colors in the palette text area (one per line)
+  p.
+    <strong>Algorithms compared:</strong>
+  ul
+    li <strong>Red Mean:</strong> Simple weighted Euclidean distance in RGB
+    li <strong>CIE76:</strong> Euclidean distance in LAB color space
+    li <strong>CIE94:</strong> Improved formula accounting for perceptual non-uniformity
+    li <strong>CIEDE2000:</strong> Most accurate perceptual color difference standard
+  p.
+    Different algorithms give different results because human color perception is non-uniform.
+    CIEDE2000 best matches how humans actually perceive color differences, important for color matching
+    in printing, textiles, and digital displays.

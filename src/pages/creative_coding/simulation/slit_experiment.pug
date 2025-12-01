@@ -1,20 +1,30 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Slit Experiment
+block variable
+  - var page_title = 'Slit Experiment'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/simulation/slit_experiment/index.js';
-
     const root = document.getElementById('slit-experiment');
-    execute().start(
-      root.querySelector('#canvas'),
-    );
+    execute().start(root.querySelector('#canvas'));
 
-block content
-  h1 Slit Experiment
+block canvas_container
   #slit-experiment.preview-container
     div#canvas
+
+block page_description
   p.
     The path integral formulation is a description in quantum mechanics that generalizes the action principle of classical mechanics. It replaces the classical notion of a single, unique classical trajectory for a system with a sum, or functional integral, over an infinity of quantum-mechanically possible trajectories to compute a quantum amplitude.
+  p.
+    <strong>What you're seeing:</strong> A visualization of the double-slit experiment using Feynman's path integral approach.
+    Instead of particles taking a single path, quantum mechanics considers all possible paths simultaneously.
+  p.
+    <strong>Key concepts:</strong>
+  ul
+    li Each possible path contributes to the final probability
+    li Paths interfere with each other, creating the interference pattern
+    li This explains wave-particle duality and quantum behavior
+  p.
+    The simulation shows how considering all paths - even seemingly absurd ones - leads to the correct quantum mechanical predictions.
+    This is the foundation of quantum field theory and modern physics.

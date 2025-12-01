@@ -1,0 +1,19 @@
+//-@meta
+//- Base template for creative coding pages with configurable options
+extends /components/layout.pug
+include /components/creative-coding.pug
+
+block append variable
+
+block title
+  title= page_title
+
+block append script
+  block page_script
+
+block content
+  h1= page_title
+
+  block canvas_container
+
+  block page_description

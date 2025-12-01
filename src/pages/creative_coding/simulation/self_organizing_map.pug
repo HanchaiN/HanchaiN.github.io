@@ -1,54 +1,61 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Self-organizing Map
+block variable
+  - var page_title = 'Self-organizing Map'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/simulation/self_organizing_map/index.js';
-
     const root = document.getElementById('som');
-    execute().start(
-      root.querySelector('#canvas'),
-      root.querySelector('#config'),
-    );
+    execute().start(root.querySelector('#canvas'), root.querySelector('#config'));
 
-block content
-  h1 Self-organizing Map
-  #som.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
-    form#config.data-container
-      label(for='image') Image:
-      input#image(type='file', accept='image/*')
-      br
-      label(for='range')
-        | Initial Range:
-        output#range-value
-      input#range(type='range', min='0', max='1', step='1e-5')
-      wbr
-      label(for='learning-rate')
-        | Initial Learning Rate:
-        output#learning-rate-value
-      input#learning-rate(type='range', min='0', max='1', step='1e-5')
-      br
-      label(for='range-decay-rate') Range Decay Rate:
-      input#range-decay-rate(type='number', min='0')
-      wbr
-      label(for='learning-decay-rate') Learning Rate Decay Rate:
-      input#learning-decay-rate(type='number', min='0')
-      br
-      label(for='weight-positions') Position Weighting:
-      input#weight-positions(type='number')
-      wbr
-      label(for='weight-colors') Color Weighting:
-      input#weight-colors(type='number')
-      br
-      label(for='color-choices')
-        | Color Choices:
-        output#color-choices-value
-      input#color-choices(type='number', min='1', max='10', step='1')
-      wbr
-      label(for='iteration-count') Iteration Count:
-      output#iteration-count(type='number')
+block canvas_container
+  +canvasContainer({ id: 'som', canvasId: 'canvas', width: 500, height: 500, hasConfig: true })
+    +fileInput({ id: 'image', label: 'Image:', accept: 'image/*' })
+    br
+    label(for='range')
+      | Initial Range:
+      output#range-value
+    input#range(type='range', min='0', max='1', step='1e-5')
+    wbr
+    label(for='learning-rate')
+      | Initial Learning Rate:
+      output#learning-rate-value
+    input#learning-rate(type='range', min='0', max='1', step='1e-5')
+    br
+    +numberInput({ id: 'range-decay-rate', label: 'Range Decay Rate:', min: 0 })
+    wbr
+    +numberInput({ id: 'learning-decay-rate', label: 'Learning Rate Decay Rate:', min: 0 })
+    br
+    +numberInput({ id: 'weight-positions', label: 'Position Weighting:' })
+    wbr
+    +numberInput({ id: 'weight-colors', label: 'Color Weighting:' })
+    br
+    label(for='color-choices')
+      | Color Choices:
+      output#color-choices-value
+    input#color-choices(type='number', min='1', max='10', step='1')
+    wbr
+    label(for='iteration-count') Iteration Count:
+    output#iteration-count(type='number')
+
+block page_description
   p.
     A self-organizing map (SOM) or self-organizing feature map (SOFM) is an unsupervised machine learning technique used to produce a low-dimensional (typically two-dimensional) representation of a higher dimensional data set while preserving the topological structure of the data.
+  p.
+    <strong>How to use:</strong>
+  ol
+    li Upload an image - it will be used as the training data
+    li Adjust learning parameters to control how the map adapts
+    li Watch as the neural network organizes itself to match the image
+  p.
+    <strong>Parameters explained:</strong>
+  ul
+    li <strong>Initial Range:</strong> How far neurons influence their neighbors initially
+    li <strong>Learning Rate:</strong> How quickly neurons adapt to the data
+    li <strong>Decay Rates:</strong> How these values decrease over time
+    li <strong>Weight factors:</strong> Balance between position and color matching
+  p.
+    The SOM is a type of artificial neural network that creates a 2D map of high-dimensional input.
+    It's used for dimensionality reduction, visualization, and clustering. Watch as the network self-organizes
+    to represent the color and spatial structure of your image.

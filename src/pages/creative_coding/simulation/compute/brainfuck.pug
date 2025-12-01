@@ -1,21 +1,34 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Brainf*ck
+block variable
+  - var page_title = 'Brainf*ck'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/simulation/compute/brainfuck/index.js';
-
     const root = document.getElementById('brainfuck');
-    execute().start(
-      root,
-      root.querySelector('#canvas'),
-    );
+    execute().start(root, root.querySelector('#canvas'));
 
-block content
-  h1 Brainf*ck
-  #brainfuck.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+block canvas_container
+  +canvasContainer({ id: 'brainfuck', canvasId: 'canvas', width: 500, height: 500 })
+
+block page_description
   p.
     Brainfuck is an esoteric programming language created in 1993 by Urban Müller.
+  p.
+    <strong>How it works:</strong> Despite having only 8 commands, Brainfuck is Turing complete and can compute anything.
+    The visualization shows the memory tape and execution pointer as the program runs.
+  p.
+    <strong>The 8 commands:</strong>
+  ul
+    li <code>&gt;</code> Move pointer right
+    li <code>&lt;</code> Move pointer left
+    li <code>+</code> Increment current cell
+    li <code>-</code> Decrement current cell
+    li <code>.</code> Output current cell as ASCII
+    li <code>,</code> Input to current cell
+    li <code>[</code> Jump forward if cell is zero
+    li <code>]</code> Jump backward if cell is non-zero
+  p.
+    Watch the memory cells change as the program executes. This demonstrates that complex computation
+    can emerge from extremely simple rules.

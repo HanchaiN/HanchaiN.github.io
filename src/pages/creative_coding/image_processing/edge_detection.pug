@@ -1,26 +1,32 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Edge Detection
+block variable
+  - var page_title = 'Edge Detection'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/image_processing/edge_detection/index.js';
-
     const root = document.getElementById('edge-detection');
-    execute().start(
-      root.querySelector('#canvas'),
-      root.querySelector('#config'),
-    );
+    execute().start(root.querySelector('#canvas'), root.querySelector('#config'));
 
-block content
-  h1 Edge Detection
-  #edge-detection.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
-    form.data-container#config
-      label(for='image') Image:
-      input#image(type='file', accept='image/*')
+block canvas_container
+  +canvasContainer({ id: 'edge-detection', canvasId: 'canvas', width: 500, height: 500, hasConfig: true })
+    +fileInput({ id: 'image', label: 'Image:', accept: 'image/*' })
+
+block page_description
   p.
     Edge detection includes a variety of mathematical methods that aim at identifying edges,
     defined as curves in a digital image at which the image brightness changes sharply
     or, more formally, has discontinuities.
+  p.
+    <strong>How to use:</strong> Upload an image to see edge detection applied in real-time.
+  p.
+    <strong>How it works:</strong> The algorithm detects sharp changes in brightness by computing gradients.
+    Common techniques include:
+  ul
+    li <strong>Sobel operator:</strong> Convolves the image with edge-detection kernels
+    li <strong>Canny edge detector:</strong> Multi-stage algorithm with noise reduction
+    li <strong>Gradient magnitude:</strong> Measures the strength of brightness changes
+  p.
+    Edge detection is fundamental to computer vision, used in object recognition, image segmentation,
+    medical imaging, and autonomous vehicles. Edges reveal the structure and boundaries of objects in a scene.

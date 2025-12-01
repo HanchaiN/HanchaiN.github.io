@@ -1,60 +1,51 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title CLUT Generation
+block variable
+  - var page_title = 'CLUT Generation'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/image_processing/clut_generation/index.js';
-
     const root = document.getElementById('clut-generation');
-    execute().start(
-      root.querySelector('#canvas'),
-      root.querySelector('#config'),
-    );
+    execute().start(root.querySelector('#canvas'), root.querySelector('#config'));
 
-block content
-  h1 CLUT Generation
-  #clut-generation.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
-    form.data-container#config
-      label(for='level') Level:
-      input#level(type='number', value='1', min='1', max='16', step='1')
-      label(for='algorithm') Algorithm:
-      select#algorithm
-        option(value='' selected) None
-        option(value='nearest') Nearest
-        option(value='gaussian') Gaussian radial basis
-        option(value='inverse') Inverse distance weighting
-        option(value='rbf') Custom RBF
-        option(value='map') Custom Mapping
-      #algorithm-options
-        div(data-select='gaussian')
-          label(for='temperature') Temperature:
-          input#temperature(type='number', value='0.05', min='0', step='1e-5')
-        div(data-select='gaussian inverse rbf')
-          label(for='count') Color Count:
-          input#count(type='number', value='3', min='0', step='1')
-        div(data-select='rbf')
-          label(for='rbf') RBF:
-          input#rbf(type='text', value='(d) => Math.exp(-Math.pow(d, 2) / 0.05)', placeholder='(distance) => weight')
-        div(data-select='nearest gaussian inverse rbf')
-          textarea#palette-text
-          div#palette
-        div(data-select='map')
-          label(for='color-space') Color Space:
-          select#color-space
-            option(value='srgb') sRGB
-            option(value='rgb') RGB
-            option(value='xyz') CIE XYZ
-            option(value='lms') CIE LMS
-            option(value='lab' selected) CIE Lab
-            option(value='hcl') CIE HCL
-            option(value='oklab') OKLab
-            option(value='okhcl') OKHCL
-        div(data-select='map')
-          label(for='mapper') Mapper:
-          input#mapper(type='text', value='([l, a, b]) => [l, a, b]', placeholder='([c1, c2, c3]) => [c1, c2, c3]')
-      button#apply(type='button') Execute
+block canvas_container
+  +canvasContainer({ id: 'clut-generation', canvasId: 'canvas', width: 500, height: 500, hasConfig: true })
+    +numberInput({ id: 'level', label: 'Level:', value: 1, min: 1, max: 16, step: 1 })
+
+    +selectInput({ id: 'algorithm', label: 'Algorithm:' })
+      option(value='' selected) None
+      option(value='nearest') Nearest
+      option(value='gaussian') Gaussian radial basis
+      option(value='inverse') Inverse distance weighting
+      option(value='rbf') Custom RBF
+      option(value='map') Custom Mapping
+
+    #algorithm-options
+      div(data-select='gaussian')
+        +numberInput({ id: 'temperature', label: 'Temperature:', value: 0.05, min: 0, step: 0.00001 })
+      div(data-select='gaussian inverse rbf')
+        +numberInput({ id: 'count', label: 'Color Count:', value: 3, min: 0, step: 1 })
+      div(data-select='rbf')
+        +textInput({ id: 'rbf', label: 'RBF:', value: '(d) => Math.exp(-Math.pow(d, 2) / 0.05)', placeholder: '(distance) => weight' })
+      div(data-select='nearest gaussian inverse rbf')
+        textarea#palette-text
+        div#palette
+      div(data-select='map')
+        +selectInput({ id: 'color-space', label: 'Color Space:' })
+          option(value='srgb') sRGB
+          option(value='rgb') RGB
+          option(value='xyz') CIE XYZ
+          option(value='lms') CIE LMS
+          option(value='lab' selected) CIE Lab
+          option(value='hcl') CIE HCL
+          option(value='oklab') OKLab
+          option(value='okhcl') OKHCL
+      div(data-select='map')
+        +textInput({ id: 'mapper', label: 'Mapper:', value: '([l, a, b]) => [l, a, b]', placeholder: '([c1, c2, c3]) => [c1, c2, c3]' })
+
+    +buttonInput({ id: 'apply', label: 'Execute' })
+
+block page_description
   p.
     A 3D LUT is a 3D lattice of output RGB color values that can be indexed by sets of input RGB colour values. Each axis of the lattice represents one of the three input color components and the input color thus defines a point inside the lattice.

@@ -1,22 +1,27 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Complex Function
+block variable
+  - var page_title = 'Complex Function'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/visualization/complex_function/index.js';
-
     const root = document.getElementById('complex-function');
-    execute().start(
-      root.querySelector('#canvas'),
-    );
+    execute().start(root.querySelector('#canvas'));
 
-block content
-  h1 Complex Function
-  #complex-function.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+block canvas_container
+  +canvasContainer({ id: 'complex-function', canvasId: 'canvas', width: 500, height: 500 })
+
+block page_description
   p.
     In complex analysis, domain coloring or a color wheel graph is a
     technique for visualizing complex functions by assigning a color to
     each point of the complex plane.
+  p.
+    <strong>How to read the visualization:</strong>
+  ul
+    li <strong>Hue (color):</strong> Represents the argument (angle) of the output
+    li <strong>Brightness:</strong> Represents the magnitude (size) of the output
+    li <strong>Contour lines:</strong> Show where magnitude or phase change rapidly
+  p.
+    The Riemann zeta function plays a pivotal role in analytic number theory and has applications in physics, probability theory, and applied statistics.

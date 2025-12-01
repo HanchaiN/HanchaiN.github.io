@@ -1,23 +1,18 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Spectrogram
+block variable
+  - var page_title = 'Spectrogram'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/audio_processing/spectrogram/index.js';
-
     const root = document.getElementById('spectrogram');
-    execute().start(
-      root.querySelector('#canvas'),
-      root.querySelector('#config'),
-    );
+    execute().start(root.querySelector('#canvas'), root.querySelector('#config'));
 
-block content
-  h1 Spectrogram
-  #spectrogram.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
-    form#config.data-container
-      button#start(type='button') Start
+block canvas_container
+  +canvasContainer({ id: 'spectrogram', canvasId: 'canvas', width: 500, height: 500, hasConfig: true })
+    +buttonInput({ id: 'start', label: 'Start' })
+
+block page_description
   p.
     A spectrogram is a visual representation of the spectrum of frequencies of a signal as it varies with time. When applied to an audio signal, spectrograms are sometimes called sonographs, voiceprints, or voicegrams.

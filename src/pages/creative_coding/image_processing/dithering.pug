@@ -1,53 +1,41 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Dithering
+block variable
+  - var page_title = 'Dithering'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/image_processing/dithering/index.js';
-
     const root = document.getElementById('dithering');
-    execute().start(
-      root.querySelector('#canvas'),
-      root.querySelector('#config'),
-    );
+    execute().start(root.querySelector('#canvas'), root.querySelector('#config'));
 
-block content
-  h1 Dithering
-  #dithering.preview-container
-    canvas#canvas.pixelated.border.border-primary.rounded.border-opacity-50(width='500', height='500')
-    form.data-container#config
-      label(for='image') Image:
-      input#image(type='file', accept='image/*')
-      label(for='algorithm') Algorithm:
-      select#algorithm
-        option(value='order' selected) Ordered Dithering
-        option(value='error') Error Diffusion
-      details#advanced
-        summary Parameters (for advanced users)
-        label(for='temperature', data-select='order error') Temperature:
-        input#temperature(type='number', value='1', min='0', step='1e-5', data-select='order error')
-        wbr
-        label(for='err_decay', data-select='error') Error Decay:
-        input#err_decay(type='number', value='0.5', min='0', max='1', step='1e-5', data-select='error')
-        wbr
-        label(for='mask_order', data-select='order') Mask Order:
-        input#mask_order(type='number', value='4', min='0', step='1', data-select='order')
-        wbr
-        label(for='candidate_count', data-select='order') Candidate count:
-        input#candidate_count(type='number', value='2', min='0', step='1', data-select='order')
-        wbr
-        label(for='order_mode', data-select='order') Order Mode:
-        select#order_mode(data-select='order')
-          option(value='cie' selected) CIE
-          option(value='rgb') RGB
-          option(value='lum') Luminance
-      button#apply(type='button') Execute
-      br
-      label(for='palette-text') Palette (hex, one per line):
-      textarea#palette-text
-      div#palette
+block canvas_container
+  +canvasContainer({ id: 'dithering', canvasId: 'canvas', width: 500, height: 500, pixelated: true, hasConfig: true })
+    +fileInput({ id: 'image', label: 'Image:', accept: 'image/*' })
+
+    +selectInput({ id: 'algorithm', label: 'Algorithm:' })
+      option(value='order' selected) Ordered Dithering
+      option(value='error') Error Diffusion
+
+    +advancedConfig()
+      +numberInput({ id: 'temperature', label: 'Temperature:', value: 1, min: 0, step: 0.00001, dataSelect: 'order error' })
+      wbr
+      +numberInput({ id: 'err_decay', label: 'Error Decay:', value: 0.5, min: 0, max: 1, step: 0.00001, dataSelect: 'error' })
+      wbr
+      +numberInput({ id: 'mask_order', label: 'Mask Order:', value: 4, min: 0, step: 1, dataSelect: 'order' })
+      wbr
+      +numberInput({ id: 'candidate_count', label: 'Candidate count:', value: 2, min: 0, step: 1, dataSelect: 'order' })
+      wbr
+      +selectInput({ id: 'order_mode', label: 'Order Mode:', dataSelect: 'order' })
+        option(value='cie' selected) CIE
+        option(value='rgb') RGB
+        option(value='lum') Luminance
+
+    +buttonInput({ id: 'apply', label: 'Execute' })
+    br
+    +paletteInput()
+
+block page_description
   p.
     Dither is an intentionally applied form of noise used to randomize quantization error,
     preventing large-scale patterns such as color banding in images.

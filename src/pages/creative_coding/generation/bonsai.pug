@@ -1,20 +1,23 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Bonsai
+block variable
+  - var page_title = 'Bonsai'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/generation/bonsai/index.js';
-
     const root = document.getElementById('bonsai');
-    execute().start(
-      root.querySelector('#canvas'),
-    );
+    execute().start(root.querySelector('#canvas'));
 
-block content
-  h1 Bonsai
-  #bonsai.preview-container
-    canvas#canvas.pixelated.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+block canvas_container
+  +canvasContainer({ id: 'bonsai', canvasId: 'canvas', width: 500, height: 500, pixelated: true })
+
+block page_description
   p.
     <code>cbonsai</code> is a bonsai tree generator, written in <code>C</code> using <code>ncurses</code>.
+  p.
+    <strong>How to interact:</strong> Click anywhere on the canvas to generate a new random bonsai tree.
+    Each tree is unique, with randomly generated branches, leaves, and trunk characteristics.
+  p.
+    The algorithm simulates natural tree growth patterns using L-systems and randomized branching rules,
+    creating organic-looking structures that mimic real bonsai trees.

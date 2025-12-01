@@ -1,27 +1,20 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title 2D Fourier Transform
+block variable
+  - var page_title = '2D Fourier Transform'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/visualization/2d_fourier/index.js';
-
     const root = document.getElementById('2d-fourier');
-    execute().start(
-      root.querySelector('#canvas'),
-      root.querySelector('#kspace'),
-      root.querySelector('#config'),
-    );
+    execute().start(root.querySelector('#canvas'), root.querySelector('#kspace'), root.querySelector('#config'));
 
-block content
-  h1 2D Fourier Transform
+block canvas_container
   #2d-fourier.preview-container
     canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
     canvas#kspace.pixelated.border.border-primary.rounded.border-opacity-50(width='500', height='500')
     form.data-container#config
-      label(for='image') Image:
-      input#image(type='file', accept='image/*')
+      +fileInput({ id: 'image', label: 'Image:', accept: 'image/*' })
       br
       label(for='fft-size')
         | FFT Size:
@@ -37,5 +30,24 @@ block content
         | Overlay:
         output#overlay-value
       input#overlay(type='number', min='0', max='1', step='0.01', value='0.25')
+
+block page_description
   p.
     In magnetic resonance imaging (MRI), the k-space or reciprocal space (a mathematical space of spatial frequencies) is obtained as the 2D or 3D Fourier transform of the image measured. It was introduced in 1979 by Likes and in 1983 by Ljunggren and Twieg.
+  p.
+    <strong>How to use:</strong>
+  ol
+    li Upload an image using the file input
+    li Adjust FFT and render sizes to control detail level
+    li The left canvas shows your original image
+    li The right canvas (k-space) shows frequency components
+  p.
+    <strong>Reading the k-space visualization:</strong>
+  ul
+    li <strong>Center:</strong> Low frequencies (overall shape and brightness)
+    li <strong>Edges:</strong> High frequencies (fine details and edges)
+    li <strong>Brightness:</strong> Magnitude of each frequency component
+    li <strong>Pattern:</strong> Reveals periodic structures in the image
+  p.
+    The overlay slider blends the two views. K-space is crucial in MRI imaging,
+    signal processing, and understanding how images can be compressed.

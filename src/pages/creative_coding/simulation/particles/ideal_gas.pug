@@ -1,56 +1,54 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Ideal Gas
+block variable
+  - var page_title = 'Ideal Gas'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/simulation/particles/ideal_gas/index.js';
-
     const root = document.getElementById('dynamic-system');
-    execute().start(
-      root.querySelector('#canvas'),
-      root.querySelector('#config'),
-    );
+    execute().start(root.querySelector('#canvas'), root.querySelector('#config'));
 
-block content
-  h1 Ideal Gas
-  #dynamic-system.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
-    form#config.data-container
-      label(for='volume')
-        | Volume:
-        output#volume-value(for='volume')
-      input#volume(type='range', step='1e-5')
-      br
-      label(for='wall-temperature')
-        | Wall Temperature:
-        output#wall-temperature-value(for='wall-temperature')
-      input#wall-temperature(type='range', step='1e-16')
-      br
-      label(for='gas-temperature')
-        | Gas Temperature:
-        output#gas-temperature-value(for='gas-temperature')
-      input#gas-temperature(type='range', step='1e-16', readonly)
-      br
-      label(for='wall-pressure')
-        | Wall Pressure:
-        output#wall-pressure-value(for='wall-pressure')
-      input#wall-pressure(type='range', step='1e-16', readonly)
-      br
-      label(for='calc-pressure')
-        | Calculated Pressure:
-        output#calc-pressure-value(for='calc-pressure')
-      input#calc-pressure(type='range', step='1e-16', readonly)
-      br
-      label(for="entropy")
-        | Entropy:
-        output#entropy-value(for='entropy')
-      input#entropy(type='range', step='1e-16', readonly)
+block canvas_container
+  +canvasContainer({ id: 'dynamic-system', canvasId: 'canvas', width: 500, height: 500, hasConfig: true })
+    label(for='volume')
+      | Volume:
+      output#volume-value(for='volume')
+    input#volume(type='range', step='1e-5')
+    br
+    label(for='wall-temperature')
+      | Wall Temperature:
+      output#wall-temperature-value(for='wall-temperature')
+    input#wall-temperature(type='range', step='1e-16')
+    br
+    label(for='gas-temperature')
+      | Gas Temperature:
+      output#gas-temperature-value(for='gas-temperature')
+    input#gas-temperature(type='range', step='1e-16', readonly)
+    br
+    label(for='wall-pressure')
+      | Wall Pressure:
+      output#wall-pressure-value(for='wall-pressure')
+    input#wall-pressure(type='range', step='1e-16', readonly)
+    br
+    label(for='calc-pressure')
+      | Calculated Pressure:
+      output#calc-pressure-value(for='calc-pressure')
+    input#calc-pressure(type='range', step='1e-16', readonly)
+    br
+    label(for="entropy")
+      | Entropy:
+      output#entropy-value(for='entropy')
+    input#entropy(type='range', step='1e-16', readonly)
+
+block page_description
   p.
     An ideal gas is a theoretical gas composed of many randomly moving point particles that are not subject to interparticle interactions.
     The ideal gas concept is useful because it obeys the ideal gas law, a simplified equation of state, and is amenable to analysis under statistical mechanics.
     The requirement of zero interaction can often be relaxed if, for example, the interaction is perfectly elastic or regarded as point-like collisions.
+  p.
+    <strong>How to interact:</strong> Use the sliders to adjust volume and wall temperature.
+    Watch how the gas particles respond and observe the relationships between pressure, volume, and temperature.
   p.
     The van der Waals equation is a mathematical formula that describes the behavior of real gases.
     It is an equation of state that relates the pressure, volume, number of molecules, and temperature in a fluid.
@@ -78,3 +76,6 @@ block content
     where \(k_{\mathrm {B}}\) is the Boltzmann constant,
     \(m\) is the mass of a gas particle and \(h\) is
     the Planck constant.
+  p.
+    <strong>Observe:</strong> The relationship between microscopic particle behavior and macroscopic thermodynamic properties.
+    As you change the volume or temperature, watch how pressure and entropy respond according to fundamental physics laws.

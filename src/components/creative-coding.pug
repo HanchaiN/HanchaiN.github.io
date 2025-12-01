@@ -1,0 +1,81 @@
+//-@meta
+//- Mixins for creative coding pages
+
+mixin canvasContainer(options)
+  - const { id, canvasId = 'canvas', width = 500, height = 500, pixelated = false, hasConfig = false } = options || {}
+  div(id=id).preview-container
+    canvas(
+      id=canvasId,
+      class=['border', 'border-primary', 'rounded', 'border-opacity-50', pixelated ? 'pixelated' : null].filter(Boolean),
+      width=width,
+      height=height,
+      style=options.style
+    )
+    if hasConfig
+      form.data-container(id='config')
+        block
+
+mixin numberInput(options)
+  - const { id, label, value, min, max, step = 0.01, dataSelect, type = 'number' } = options
+  label(for=id, data-select=dataSelect)= label
+  input(
+    id=id,
+    type=type,
+    value=value,
+    min=min,
+    max=max,
+    step=step,
+    data-select=dataSelect
+  )
+
+mixin selectInput(options)
+  - const { id, label, dataSelect } = options
+  label(for=id, data-select=dataSelect)= label
+  select(id=id, data-select=dataSelect)
+    block
+
+mixin checkboxInput(options)
+  - const { id, label, checked = false } = options
+  input(id=id, type='checkbox', checked=checked)
+  label(for=id)= label
+
+mixin fileInput(options)
+  - const { id, label, accept } = options
+  label(for=id)= label
+  input(id=id, type='file', accept=accept)
+
+mixin buttonInput(options)
+  - const { id, label, type = 'button' } = options
+  button(id=id, type=type)= label
+
+mixin paletteInput(options)
+  - const { id = 'palette', textId = 'palette-text', label = 'Palette (hex, one per line):' } = options || {}
+  label(for=textId)= label
+  textarea(id=textId)
+  div(id=id)
+
+mixin advancedConfig()
+  details#advanced
+    summary Parameters (for advanced users)
+    block
+
+mixin textInput(options)
+  - const { id, label, value, placeholder, dataSelect } = options
+  label(for=id, data-select=dataSelect)= label
+  input(
+    id=id,
+    type='text',
+    value=value,
+    placeholder=placeholder,
+    data-select=dataSelect
+  )
+
+mixin textareaInput(options)
+  - const { id, label, value, placeholder, dataSelect } = options
+  if label
+    label(for=id, data-select=dataSelect)= label
+  textarea(
+    id=id,
+    placeholder=placeholder,
+    data-select=dataSelect
+  )= value || ''

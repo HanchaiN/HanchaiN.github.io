@@ -8,8 +8,7 @@ block append script
     import execute from '@/scripts/creative_coding/audio_processing/dtmf/index.js';
 
     const root = document.getElementById('dtmf');
-    execute().start(
-    );
+    execute().start();
 
 block content
   h1 DTMF
@@ -19,3 +18,6 @@ block content
     signaling system using the voice-frequency band over telephone lines
     between telephone equipment and other communications devices and
     switching centers.
+  p.
+    This demo have no visual output, but you can
+    click your keyboard to generate DTMF tones.

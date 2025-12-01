@@ -1,20 +1,26 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Hilbert Curve
+block variable
+  - var page_title = 'Hilbert Curve'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/generation/fractal/hilbert/index.js';
-
     const root = document.getElementById('hilbert');
-    execute().start(
-      root.querySelector('#canvas'),
-    );
+    execute().start(root.querySelector('#canvas'));
 
-block content
-  h1 Hilbert Curve
-  #hilbert.preview-container
-    canvas#canvas.pixelated.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+block canvas_container
+  +canvasContainer({ id: 'hilbert', canvasId: 'canvas', width: 500, height: 500, pixelated: true })
+
+block page_description
   p.
     The Hilbert curve (also known as the Hilbert space-filling curve) is a continuous fractal space-filling curve first described by the German mathematician David Hilbert in 1891, as a variant of the space-filling Peano curves discovered by Giuseppe Peano in 1890.
+  p.
+    <strong>What you're seeing:</strong> Watch the curve recursively subdivide the square,
+    creating a pattern that visits every pixel exactly once without crossing itself.
+  p.
+    <strong>Applications:</strong> Data locality (mapping 2D to 1D for better cache performance),
+    database indexing (spatial data structures), image processing (dithering algorithms),
+    and TSP optimization (traveling salesman problem heuristics).
+  p.
+    The curve maintains locality - points close on the curve are close in 2D space.

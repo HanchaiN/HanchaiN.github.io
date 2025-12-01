@@ -1,20 +1,25 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Sandpile
+block variable
+  - var page_title = 'Sandpile'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/placeholder.js';
-
     const root = document.getElementById('sandpile');
-    execute().start(
-      root.querySelector('#canvas'),
-    );
+    execute().start(root.querySelector('#canvas'));
 
-block content
-  h1 Sandpile
-  #sandpile.preview-container
-    canvas#canvas.pixelated.border.border-primary.rounded.border-opacity-50(width='500', height='500')
+block canvas_container
+  +canvasContainer({ id: 'sandpile', canvasId: 'canvas', width: 500, height: 500, pixelated: true })
+
+block page_description
   p.
     The Abelian sandpile model (ASM) is the more popular name of the original Bak–Tang–Wiesenfeld model (BTW). The BTW model was the first discovered example of a dynamical system displaying self-organized criticality.
+  p.
+    <strong>How it works:</strong> Grains of sand are added one at a time to a grid.
+    When a pile becomes too high (≥4 grains), it topples, distributing grains to neighboring cells.
+    This can trigger avalanches that cascade across the grid.
+  p.
+    <strong>Self-organized criticality:</strong> Without external tuning, the system naturally evolves to a critical state
+    where avalanches of all sizes occur, following a power-law distribution. This behavior appears in many natural phenomena:
+    earthquakes, forest fires, stock market crashes, and neural activity.

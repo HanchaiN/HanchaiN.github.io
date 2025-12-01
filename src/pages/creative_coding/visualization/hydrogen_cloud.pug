@@ -1,23 +1,20 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Hydrogen Cloud
+block variable
+  - var page_title = 'Hydrogen Cloud'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/visualization/hydrogen_cloud/index.js';
-
     const root = document.getElementById('h-cloud');
-    execute().start(
-      root.querySelector('#canvas'),
-      root.querySelector('#foreground'),
-    );
+    execute().start(root.querySelector('#canvas'), root.querySelector('#foreground'));
 
-block content
-  h1 Hydrogen Cloud
+block canvas_container
   #h-cloud.preview-container(style='position: relative;')
     canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500', style='z-index: -1; position: absolute;')
     canvas#foreground.border.border-primary.rounded.border-opacity-50(width='500', height='500', style='z-index: 0;')
+
+block page_description
   p.
     In the solution to the Schrödinger equation, which is non-relativistic,
     hydrogen-like atomic orbitals are eigenfunctions of
@@ -27,3 +24,16 @@ block content
     the values of the principal quantum number \(n\),
     the angular momentum quantum number \(l\),
     and the magnetic quantum number \(m_l\).
+  p.
+    <strong>How to interact:</strong> The visualization renders a 3D probability cloud using ray marching.
+    The foreground canvas is interactive - you can rotate the view to see the orbital from different angles.
+  p.
+    <strong>What you're seeing:</strong>
+  ul
+    li Brighter regions show higher probability of finding the electron
+    li The shape is determined by quantum numbers n, l, and m
+    li Different orbitals (s, p, d, f) have distinct shapes
+    li The visualization solves the Schrödinger equation for the hydrogen atom
+  p.
+    These quantum mechanical wavefunctions are the foundation of chemistry -
+    they determine how atoms bond and interact with each other.

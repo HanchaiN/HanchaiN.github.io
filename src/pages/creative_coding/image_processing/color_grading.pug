@@ -1,28 +1,34 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Color Grading
+block variable
+  - var page_title = 'Color Grading'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/image_processing/color_grading/index.js';
-
     const root = document.getElementById('color-grading');
-    execute().start(
-      root.querySelector('#canvas'),
-      root.querySelector('#config'),
-    );
+    execute().start(root.querySelector('#canvas'), root.querySelector('#config'));
 
-block content
-  h1 Color Grading
-  #color-grading.preview-container
-    canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
-    form.data-container#config
-      label(for='image') Image:
-      input#image(type='file', accept='image/*')
-      br
-      label(for='clut') CLUT:
-      input#clut(type='file', accept='image/*')
+block canvas_container
+  +canvasContainer({ id: 'color-grading', canvasId: 'canvas', width: 500, height: 500, hasConfig: true })
+    +fileInput({ id: 'image', label: 'Image:', accept: 'image/*' })
+    br
+    +fileInput({ id: 'clut', label: 'CLUT:', accept: 'image/*' })
 
+block page_description
   p.
     Color grading and color correction are often used synonymously as terms for this process and can include the generation of artistic color effects through creative blending and compositing of different layer masks of the source image.
+  p.
+    <strong>How to use:</strong>
+  ol
+    li Upload an image to grade
+    li Upload a CLUT (Color Look-Up Table) image
+    li The system applies the CLUT's color transformation to your image
+  p.
+    <strong>What is a CLUT?</strong> A 3D lookup table that maps input colors to output colors.
+    CLUTs are used in film and photography to achieve specific looks - like cinema film stocks,
+    vintage photo styles, or creative color grading.
+  p.
+    The CLUT is typically a neutral gradient image that has been graded with the desired look.
+    This technique is widely used in video editing, game development, and professional photography
+    to maintain consistent color across scenes or create artistic styles.

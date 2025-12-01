@@ -1,43 +1,37 @@
-extends /components/layout.pug
+extends /components/creative-base.pug
 
-block title
-  title Probabilistic Serial
+block variable
+  - var page_title = 'Probabilistic Serial'
 
-block append script
+block page_script
   script(type='module').
     import execute from '@/scripts/creative_coding/visualization/probabilistic_serial/index.js';
-
     const root = document.getElementById('probabilistic-serial');
-    execute().start(
-      root.querySelector('#canvas'),
-      root.querySelector('#config'),
-    );
+    execute().start(root.querySelector('#canvas'), root.querySelector('#config'));
 
-block content
-  h1 Probabilistic Serial
+block canvas_container
   #probabilistic-serial.preview-container
     .sketch
       canvas#canvas.border.border-primary.rounded.border-opacity-50(width='500', height='500')
     form.data-container#config
-      label(for='count') Agent Count:
-      input#count(type='number', value='3', min='2', step='1')
+      +numberInput({ id: 'count', label: 'Agent Count:', value: 3, min: 2, step: 1 })
       div(hidden data-js-step='1')
-        button#shuffle(type='button') Shuffle
-        button#calculate(type='button') Calculate
+        +buttonInput({ id: 'shuffle', label: 'Shuffle' })
+        +buttonInput({ id: 'calculate', label: 'Calculate' })
       div(hidden data-js-step='2')
-        button#done(type='button') Done
+        +buttonInput({ id: 'done', label: 'Done' })
         label(for='time') Progress:
         input#time(type='range', value='0', min='0', max='1', step='1e-16')
       div(hidden data-js-step='3')
         select#item
         br
-        button#random(type='button') Randomize
+        +buttonInput({ id: 'random', label: 'Randomize' })
         label(for='seed') Seed:
         input#seed(type='range', value='0', min='0', max='1', step='1e-16')
         br
-        button#apply(type='button') Apply
-        button#apply-all(type='button') Apply All
-        button#reset(type='button') Reset
+        +buttonInput({ id: 'apply', label: 'Apply' })
+        +buttonInput({ id: 'apply-all', label: 'Apply All' })
+        +buttonInput({ id: 'reset', label: 'Reset' })
         details#advanced
           summary Advanced Options
           select#algo
@@ -45,11 +39,25 @@ block content
             option(value='count') Scale by count
             option(value='greedy' selected) Average Birkhoff
             option(value='sample') Sample by weight
-          label(for='sample-perm') Number of samples:
-          input#sample-perm(type='number', value='100', min='1', step='1')
-          button#clear-cache(type='button') Clear cache
+          +numberInput({ id: 'sample-perm', label: 'Number of samples:', value: 100, min: 1, step: 1 })
+          +buttonInput({ id: 'clear-cache', label: 'Clear cache' })
       label(for='lists') Preferences order:
       div#lists.row
+
+block page_description
   p.
     A simultaneous eating algorithm (SE) is an algorithm for allocating divisible objects among agents with ordinal preferences.
     If all agents are given the same eating speed, then the SE allocation satisfies SD-envy-freeness. This particular variant of SE is called the Probabilistic Serial rule (PS).
+  p.
+    <strong>How to use:</strong>
+  ol
+    li Set the number of agents
+    li Click "Shuffle" to randomize preferences
+    li Click "Calculate" to compute the fair allocation
+    li Use "Randomize" to explore different seed assignments
+  p.
+    <strong>What it does:</strong> This algorithm fairly divides resources among people with different preferences.
+    Each agent "eats" their preferred items simultaneously at the same rate. The result is a provably envy-free allocation
+    where no one would prefer anyone else's bundle.
+  p.
+    Used in school choice, course allocation, and other matching markets where fairness is critical.
