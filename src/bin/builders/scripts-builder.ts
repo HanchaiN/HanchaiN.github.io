@@ -103,6 +103,7 @@ export class ScriptsBuilder {
 
   build(files: string[] | null = null): void {
     this.logger.info("Building scripts...");
+    this.logger.startTimer("scripts-build");
     try {
       const parsedConfig = this.readConfigFile();
 
@@ -160,7 +161,7 @@ export class ScriptsBuilder {
         throw new Error("TypeScript compilation failed");
       }
 
-      this.logger.success("Scripts built");
+      this.logger.logTime("scripts-build", "Scripts built");
     } catch (e) {
       this.logger.error("Failed to build scripts", e as Error);
       throw e;

@@ -79,7 +79,6 @@ export default function execute() {
     ctx.moveTo(0, 0);
     draw(depth, s0, 5, isBox);
     ctx.restore();
-    console.log("depth", depth);
   }
 
   return {

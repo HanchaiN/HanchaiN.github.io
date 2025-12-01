@@ -28,6 +28,7 @@ export class PublicBuilder {
 
   build(files: string[] | null = null): void {
     this.logger.info("Building public files...");
+    this.logger.startTimer("public-build");
     try {
       if (files && files.length > 0) {
         for (const file of files) {
@@ -43,7 +44,7 @@ export class PublicBuilder {
         }
       }
 
-      this.logger.success("Public files built");
+      this.logger.logTime("public-build", "Public files built");
     } catch (e) {
       this.logger.error("Failed to build public files", e as Error);
       throw e;

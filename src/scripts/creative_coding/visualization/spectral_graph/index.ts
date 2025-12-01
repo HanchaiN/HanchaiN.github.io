@@ -167,7 +167,6 @@ export default function execute() {
             if (!cell) continue;
             if (cell.innerHTML !== "") continue;
             const old_value = cell.querySelector("input")?.valueAsNumber;
-            console.log(i, j, cell, old_value);
             cell.textContent = "";
             const input = document.createElement("input");
             input.type = "number";

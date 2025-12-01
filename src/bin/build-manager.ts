@@ -20,6 +20,9 @@ interface PugOptions {
   isDev: boolean;
 }
 
+/**
+ * Main build orchestrator that coordinates all builders, watchers, and dev server
+ */
 export class BuildManager {
   private srcPath: string;
   private outputPath: string;
@@ -31,12 +34,14 @@ export class BuildManager {
   private scriptsBuilder: ScriptsBuilder;
   private watcher: FileWatcher | null;
   private server: DevServer | null;
+  private lastBuildTime: number;
 
   constructor(options: BuildManagerOptions) {
     this.srcPath = options.srcPath;
     this.outputPath = options.outputPath;
     this.isDev = options.isDev ?? process.env.NODE_ENV !== "production";
     this.port = options.port || 3000;
+    this.lastBuildTime = 0;
 
     this.logger = new Logger(this.isDev);
 
@@ -86,11 +91,13 @@ export class BuildManager {
   }
 
   buildAll(): void {
+    this.logger.startTimer("build-all");
     this.initialize();
     this.publicBuilder.build();
     this.pagesBuilder.build();
     this.scriptsBuilder.build();
-    this.logger.success("Build complete");
+    this.lastBuildTime = Date.now();
+    this.logger.logTime("build-all", "Build complete");
   }
 
   watch(): void {
@@ -124,5 +131,25 @@ export class BuildManager {
       this.server.stop();
       this.server = null;
     }
+  }
+
+  getLogger(): Logger {
+    return this.logger;
+  }
+
+  /**
+   * Get timestamp of last successful build
+   * @returns Unix timestamp in milliseconds
+   */
+  getLastBuildTime(): number {
+    return this.lastBuildTime;
+  }
+
+  /**
+   * Check if output is up to date
+   * @returns True if build exists and is recent
+   */
+  isUpToDate(): boolean {
+    return this.lastBuildTime > 0;
   }
 }

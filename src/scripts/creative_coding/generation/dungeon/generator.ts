@@ -75,7 +75,6 @@ function* shortest_path<T>(
     yield;
     clearTemp();
   }
-  console.log("NFOUND");
   if (i_curr === null) return false;
   for (const i of tracePath(i_curr!)) addPath(nodes[i], true);
   return true;

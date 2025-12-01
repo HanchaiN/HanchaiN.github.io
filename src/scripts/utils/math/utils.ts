@@ -78,7 +78,6 @@ export function normalize<T extends numberArray>(
 ): T {
   const _sum = sum(array);
   if (_sum === 0) {
-    console.log(array);
     throw new Error("Cannot normalize an array with sum equal to zero");
   }
   if (!Number.isFinite(_sum))
@@ -142,6 +141,7 @@ export function softmax(x: numberArray, temperature = 1) {
   const argmax = softargmax(x, temperature);
   return average(x, argmax);
 }
+
 export function productRange(from: number, to: number) {
   let y = 1.0;
   for (let i = from; i <= to; i++) y *= i;

@@ -44,17 +44,29 @@ function main(): void {
     port: args.port,
   });
 
+  const logger = manager.getLogger();
+
+  // Graceful shutdown handler
+  const shutdown = (signal: string) => {
+    logger.info(`\nReceived ${signal}, shutting down gracefully...`);
+    manager.stop();
+    process.exit(0);
+  };
+
+  process.on("SIGINT", () => shutdown("SIGINT"));
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+
   if (args.isDev) {
-    console.log("Running in development mode");
+    logger.info("Running in development mode");
   }
 
   if (args.clean) {
-    console.log("Cleaning output directory...");
+    logger.info("Cleaning output directory...");
     manager.clean();
   }
 
   if (args.buildNone) {
-    console.log("Skipping build step");
+    logger.info("Skipping build step");
   } else {
     let buildAll = true;
     if (args.buildPublic) {

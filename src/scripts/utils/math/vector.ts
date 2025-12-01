@@ -58,10 +58,14 @@ export function vector_dist<T extends TVector<number>>(a: T, b: T) {
   return vector_mag(vector_sub(a, b));
 }
 export function vector_normalize<T extends TVector<number>>(v: T): T {
-  return vector_scale_div(v, vector_mag(v));
+  const mag = vector_mag(v);
+  if (mag === 0) return v;
+  return vector_scale_div(v, mag);
 }
 export function vector_setMag<T extends TVector<number>>(v: T, mag: number): T {
-  return vector_scale(vector_normalize(v), mag);
+  const currentMag = vector_mag(v);
+  if (currentMag === 0) return v;
+  return vector_scale(vector_scale_div(v, currentMag), mag);
 }
 export function vector_heading(v: TVector<number, 2>) {
   return Math.atan2(v[1], v[0]);
@@ -225,13 +229,17 @@ export class Vector {
     return this.copy(a).div(b);
   }
   normalize() {
-    return this.div(this.mag());
+    const mag = this.mag();
+    if (mag === 0) return this;
+    return this.div(mag);
   }
   static normalize(v: Vector) {
     return this.copy(v).normalize();
   }
   setMag(len: number) {
-    return this.normalize().mult(len);
+    const mag = this.mag();
+    if (mag === 0) return this;
+    return this.div(mag).mult(len);
   }
   heading() {
     if (this.dim !== 2) throw new TypeError();

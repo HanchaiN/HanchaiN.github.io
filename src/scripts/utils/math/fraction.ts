@@ -3,6 +3,9 @@ export class Fraction {
     private _numerator: number,
     private _denominator: number = 1,
   ) {
+    if (_denominator === 0) {
+      throw new Error("Denominator cannot be zero");
+    }
     this.normalize();
   }
 
@@ -77,6 +80,9 @@ export class Fraction {
   }
 
   div(other: Fraction): Fraction {
+    if (other.numerator === 0) {
+      throw new Error("Division by zero");
+    }
     this._numerator *= other.denominator;
     this._denominator *= other.numerator;
     this.normalize();

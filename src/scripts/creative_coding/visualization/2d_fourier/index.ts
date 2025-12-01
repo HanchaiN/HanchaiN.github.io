@@ -134,7 +134,6 @@ export default function execute() {
               j <= kspace[i].length / 2
                 ? j + Math.ceil(kspace[i].length / 2 - 1)
                 : j - Math.ceil((kspace[i].length + 1) / 2);
-          console.debug(i, j, "->", x, y);
           const value = symlog(Complex.abs(kspace[i][j]));
           const embed_color: EmbedColor = [
             constrainMap(value, minValue, maxValue, minColor[0], maxColor[0]),
@@ -294,7 +293,6 @@ export default function execute() {
       );
       return null;
     }
-    let total_time = 0;
     let delay = 0;
     const frames = draw();
     startAnimationLoop(async function draw() {
@@ -350,7 +348,6 @@ export default function execute() {
         }
       }
       if (delay > 20) {
-        total_time += delay;
         await new Promise((r) => setTimeout(r, delay));
         delay = 0;
       }
@@ -370,7 +367,6 @@ export default function execute() {
         elem.id = "kspace-canvas";
         kspace_canvas.replaceWith(elem);
       }
-      console.debug(total_time);
       return false;
     });
   }

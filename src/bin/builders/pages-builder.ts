@@ -168,6 +168,7 @@ export class PagesBuilder {
 
   build(files: string[] | null = null): void {
     this.logger.info("Building pages...");
+    this.logger.startTimer("pages-build");
     try {
       if (files && files.length > 0) {
         for (const file of files) {
@@ -196,7 +197,7 @@ export class PagesBuilder {
         );
       }
 
-      this.logger.success("Pages built");
+      this.logger.logTime("pages-build", "Pages built");
     } catch (e) {
       this.logger.error("Failed to build pages", e as Error);
       throw e;

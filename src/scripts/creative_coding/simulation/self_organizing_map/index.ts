@@ -146,6 +146,7 @@ export default function execute() {
     while (true) {
       let c: SRGBColor;
 
+      // Math.random() returns new value for each condition check
       if (Math.random() < 0.0025)
         c = [
           Math.round(Math.random()),

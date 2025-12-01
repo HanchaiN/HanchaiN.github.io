@@ -61,7 +61,6 @@ export default function execute() {
       this.thread.x + 1 != this.output.x &&
       this.thread.y + 1 != this.output.y
     ) {
-      constrain(0, 0, dt); //TODO
       const cl = grid[this.thread.y][this.thread.x - 1];
       const cr = grid[this.thread.y][this.thread.x + 1];
       const uc = grid[this.thread.y - 1][this.thread.x];
