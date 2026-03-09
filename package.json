@@ -3,7 +3,7 @@
   "packageManager": "yarn@4.9.4",
   "dependencies": {
     "pug": "^3.0.3",
-    "serve-handler": "^6.1.6",
+    "serve-handler": "^6.1.7",
     "ts-patch": "^3.3.0",
     "typescript": "^5.9.3",
     "typescript-transform-paths": "^3.5.6"
