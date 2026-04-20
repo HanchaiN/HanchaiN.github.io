@@ -64,7 +64,7 @@ jobs:
           NODE_ENV="production" ${{ steps.detect-package-manager.outputs.manager }} run build
       - name: Upload artifact
         id: deployment
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./dist/pages
 
