@@ -1364,7 +1364,7 @@ __metadata:
     rimraf: "npm:^6.1.3"
     serve-handler: "npm:^6.1.7"
     three: "npm:^0.184.0"
-    ts-patch: "npm:^3.3.0"
+    ts-patch: "npm:^4.0.1"
     typescript: "npm:^6.0.3"
     typescript-transform-paths: "npm:^3.5.6"
   languageName: unknown
@@ -1503,7 +1503,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-core-module@npm:^2.16.0":
+"is-core-module@npm:^2.16.0, is-core-module@npm:^2.16.1":
   version: 2.16.1
   resolution: "is-core-module@npm:2.16.1"
   dependencies:
@@ -2177,7 +2177,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resolve@npm:^1.15.1, resolve@npm:^1.22.2":
+"resolve@npm:^1.15.1":
   version: 1.22.10
   resolution: "resolve@npm:1.22.10"
   dependencies:
@@ -2190,7 +2190,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resolve@patch:resolve@npm%3A^1.15.1#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.22.2#optional!builtin<compat/resolve>":
+"resolve@npm:^1.22.12":
+  version: 1.22.12
+  resolution: "resolve@npm:1.22.12"
+  dependencies:
+    es-errors: "npm:^1.3.0"
+    is-core-module: "npm:^2.16.1"
+    path-parse: "npm:^1.0.7"
+    supports-preserve-symlinks-flag: "npm:^1.0.0"
+  bin:
+    resolve: bin/resolve
+  checksum: 10c0/b16dc9b537c02e8c3388f7d3dcff9741d3071625f9a97ac1c885f2b0ca51e78df22328fb6d6ef214dd9101fb7cfc19aa2836fe3410402a94f3f7b8639c7149bf
+  languageName: node
+  linkType: hard
+
+"resolve@patch:resolve@npm%3A^1.15.1#optional!builtin<compat/resolve>":
   version: 1.22.10
   resolution: "resolve@patch:resolve@npm%3A1.22.10#optional!builtin<compat/resolve>::version=1.22.10&hash=c3c19d"
   dependencies:
@@ -2200,6 +2214,20 @@ __metadata:
   bin:
     resolve: bin/resolve
   checksum: 10c0/52a4e505bbfc7925ac8f4cd91fd8c4e096b6a89728b9f46861d3b405ac9a1ccf4dcbf8befb4e89a2e11370dacd0160918163885cbc669369590f2f31f4c58939
+  languageName: node
+  linkType: hard
+
+"resolve@patch:resolve@npm%3A^1.22.12#optional!builtin<compat/resolve>":
+  version: 1.22.12
+  resolution: "resolve@patch:resolve@npm%3A1.22.12#optional!builtin<compat/resolve>::version=1.22.12&hash=c3c19d"
+  dependencies:
+    es-errors: "npm:^1.3.0"
+    is-core-module: "npm:^2.16.1"
+    path-parse: "npm:^1.0.7"
+    supports-preserve-symlinks-flag: "npm:^1.0.0"
+  bin:
+    resolve: bin/resolve
+  checksum: 10c0/fc6519984ae1f894d877c0060ba8b1f5ba3bc0e85a02f74e141929c118c23d74d9735619a9cc2965397387e514884245c65d72a40731dcb6cfc84c7bcdc8321e
   languageName: node
   linkType: hard
 
@@ -2222,21 +2250,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.6.3":
-  version: 7.7.1
-  resolution: "semver@npm:7.7.1"
-  bin:
-    semver: bin/semver.js
-  checksum: 10c0/fd603a6fb9c399c6054015433051bdbe7b99a940a8fb44b85c2b524c4004b023d7928d47cb22154f8d054ea7ee8597f586605e05b52047f048278e4ac56ae958
-  languageName: node
-  linkType: hard
-
 "semver@npm:^7.7.3":
   version: 7.7.3
   resolution: "semver@npm:7.7.3"
   bin:
     semver: bin/semver.js
   checksum: 10c0/4afe5c986567db82f44c8c6faef8fe9df2a9b1d98098fc1721f57c696c4c21cebd572f297fc21002f81889492345b8470473bc6f4aff5fb032a6ea59ea2bc45e
+  languageName: node
+  linkType: hard
+
+"semver@npm:^7.7.4":
+  version: 7.7.4
+  resolution: "semver@npm:7.7.4"
+  bin:
+    semver: bin/semver.js
+  checksum: 10c0/5215ad0234e2845d4ea5bb9d836d42b03499546ddafb12075566899fc617f68794bb6f146076b6881d755de17d6c6cc73372555879ec7dce2c2feee947866ad2
   languageName: node
   linkType: hard
 
@@ -2350,20 +2378,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-patch@npm:^3.3.0":
-  version: 3.3.0
-  resolution: "ts-patch@npm:3.3.0"
+"ts-patch@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "ts-patch@npm:4.0.1"
   dependencies:
     chalk: "npm:^4.1.2"
     global-prefix: "npm:^4.0.0"
     minimist: "npm:^1.2.8"
-    resolve: "npm:^1.22.2"
-    semver: "npm:^7.6.3"
+    resolve: "npm:^1.22.12"
+    semver: "npm:^7.7.4"
     strip-ansi: "npm:^6.0.1"
   bin:
     ts-patch: bin/ts-patch.js
     tspc: bin/tspc.js
-  checksum: 10c0/41abfa08ea70755f44f39c32b8906479cddf66f163ea37bdd8b543dcda548ec6cc3d7b6f53371161fbfaa9ff48e4fbb0d5839f46f425f7058f7710253e607c20
+  checksum: 10c0/61e76d4a8429d5686b6faa9d5e7a1933c956ab87949532145423e1387e8cb39eab251e7413d5adb3d40271fb4ba71934206a6aaee76dd4ebccde34e4a5c95e49
   languageName: node
   linkType: hard
 
