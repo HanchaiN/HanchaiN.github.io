@@ -20,7 +20,7 @@
     "@types/pug": "^2.0.10",
     "@types/serve-handler": "^6.1.4",
     "@types/three": "^0.184.0",
-    "@typescript-eslint/eslint-plugin": "^8.59.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.1",
     "@typescript-eslint/parser": "^8.59.1",
     "eslint": "^10.2.1",
     "katex": "^0.16.45",
