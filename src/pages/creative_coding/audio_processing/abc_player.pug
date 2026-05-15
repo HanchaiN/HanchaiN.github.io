@@ -1,0 +1,21 @@
+extends /components/creative-base.pug
+
+
+block variable
+  - var page_title = 'ABC Player'
+
+block page_script
+  script(type='module').
+    import execute from '@/scripts/creative_coding/audio_processing/abc_player/index.js';
+
+    const root = document.getElementById('abc');
+    execute().start(root.querySelector('#canvas'), root.querySelector('#config'));
+
+block canvas_container
+  +canvasContainer({ id: 'abc', canvasId: 'canvas', width: 500, height: 500, hasConfig: true })
+    +textareaInput({ id: 'score', label: 'Score' })
+    +buttonInput({ id: 'start', label: 'Start' })
+
+block page_description
+  p.
+    ABC notation is a shorthand form of musical notation for computers.

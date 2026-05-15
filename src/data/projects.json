@@ -21,6 +21,11 @@
           "title": "DTMF",
           "description": "Decode dual-tone multi-frequency signaling.",
           "href": "/creative_coding/audio_processing/dtmf"
+        },
+        {
+          "title": "ABC",
+          "description": "Shorthand form of musical notation.",
+          "href": "/creative_coding/audio_processing/abc_player"
         }
       ]
     },

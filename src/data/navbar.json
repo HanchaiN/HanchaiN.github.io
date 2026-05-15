@@ -29,6 +29,10 @@
             {
               "text": "DTMF",
               "href": "/creative_coding/audio_processing/dtmf"
+            },
+            {
+              "text": "ABC",
+              "href": "/creative_coding/audio_processing/abc_player"
             }
           ]
         },
