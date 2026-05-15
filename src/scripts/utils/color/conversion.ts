@@ -38,12 +38,34 @@ export type ColorSpace = keyof ColorSpaceMap;
 export type ColorSpaceExt = keyof ColorSpaceMapExt;
 
 function str2srgb(c: string): SRGBColor {
-  const canvas = new OffscreenCanvas(1, 1);
-  const ctx = canvas.getContext("2d", { colorSpace: "srgb" })!;
-  ctx.fillStyle = c;
-  ctx.fillRect(0, 0, 1, 1);
-  const data = ctx.getImageData(0, 0, 1, 1, { colorSpace: "srgb" }).data;
-  return [data[0] / 255, data[1] / 255, data[2] / 255];
+  {
+    const m = c.match(/^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})(?:([0-9a-f]{2}))?/i);
+    if (m) return [Number.parseInt(m[1], 16) / 255, Number.parseInt(m[2], 16) / 255, Number.parseInt(m[3], 16) / 255]
+  }
+  
+  {
+    const div = document.createElement('div');
+    div.style.setProperty('background-color', c);
+    const m = window.getComputedStyle(div).getPropertyValue('background-color').match(/^rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*(\d+)\s*)?\)$/i);
+    if(m) return [Number.parseInt(m[1])/255, Number.parseInt(m[2])/255, Number.parseInt(m[3])/255];
+  }
+
+  {
+    const canvas = new OffscreenCanvas(1, 1);
+    const ctx = canvas.getContext("2d", { colorSpace: "srgb" })!;
+    ctx.clearRect(0, 0, 1, 1);
+    ctx.fillStyle = '#000';
+    ctx.fillStyle = c;
+    const computed = ctx.fillStyle;
+    ctx.fillStyle = '#fff';
+    ctx.fillStyle = c;
+    if (computed === ctx.fillStyle) {
+      ctx.fillRect(0, 0, 1, 1);
+      const data = ctx.getImageData(0, 0, 1, 1, { colorSpace: "srgb", pixelFormat: "rgba-unorm8" }).data;
+      return [data[0] / 255, data[1] / 255, data[2] / 255];
+    }
+  }
+  return [0,0,0]; // invalid color
 }
 
 function hex2srgb(c: string): RGBColor {

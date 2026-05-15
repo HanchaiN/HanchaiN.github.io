@@ -8,10 +8,11 @@ import { startAnimationLoop } from "@/scripts/utils/dom/utils.js";
 import { lerp, map } from "@/scripts/utils/math/utils.js";
 
 import {
-  autocorrelation,
+  autocorrelation_yin,
+  detectPitchYIN,
   extractPeaks,
   extractPeriod,
-  filterPeaks,
+  normalize,
 } from "./pipeline.js";
 
 export default function execute() {
@@ -26,8 +27,8 @@ export default function execute() {
   let sampleRate: number;
   const HIST_SIZE = Math.pow(2, 12);
   const BIN_COUNT = Math.pow(2, 10);
-  const THRESHOLD_FRAC = 0.8;
-  const SMOOTHEN_COUNT = 3;
+  const THRESHOLD_FRAC = 0.0;
+  const SMOOTHEN_COUNT = 1;
 
   function clear() {
     ctx.fillStyle = "black";
@@ -47,6 +48,7 @@ export default function execute() {
     audioSource = audioCtx.createMediaStreamSource(stream);
     sampleRate =
       audioSource.mediaStream.getAudioTracks()[0].getSettings().sampleRate ??
+      audioCtx.sampleRate ??
       44100;
     gainNode = audioCtx.createGain();
     analyser = audioCtx.createAnalyser();
@@ -62,7 +64,7 @@ export default function execute() {
     analyser.getFloatTimeDomainData(bufferArray);
     ctx.fillStyle = getPaletteBaseColor(0);
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    let corr = bufferArray;
+    let corr = normalize(bufferArray);
     {
       let i = 0;
       while (true) {
@@ -75,14 +77,16 @@ export default function execute() {
           else ctx.lineTo(x, y);
         }
         ctx.stroke();
-        if (i < SMOOTHEN_COUNT)
-          corr = autocorrelation(corr, BIN_COUNT); // smoothen
-        else break;
+        if (i < SMOOTHEN_COUNT) {
+          corr = autocorrelation_yin((corr), BIN_COUNT); // smoothen
+          corr = corr.map(v => v / 3);
+        } else break;
         i++;
       }
     }
-    const corr2 = corr.map((v) => v * v);
-    let peaks = extractPeaks(corr2);
+    corr[0] = 1;
+    const peaker = corr.map((v) => -v);
+    let peaks = extractPeaks(peaker);
     for (let j = 1; j < peaks.length; j++) {
       const k = peaks[j];
       ctx.fillStyle = "blue";
@@ -96,29 +100,51 @@ export default function execute() {
       );
       ctx.fill();
     }
-    peaks = filterPeaks(peaks, corr2, THRESHOLD_FRAC);
-    for (let j = 1; j < peaks.length; j++) {
-      const k = peaks[j];
-      ctx.fillStyle = "red";
+    // peaks = filterPeaks(peaks, peaker, THRESHOLD_FRAC);
+    // for (let j = 1; j < peaks.length; j++) {
+    //   const k = peaks[j];
+    //   ctx.fillStyle = "red";
+    //   ctx.beginPath();
+    //   ctx.arc(
+    //     map(k, 0, BIN_COUNT, 0, ctx.canvas.width),
+    //     map(corr[k], -1, 1, ctx.canvas.height, 0),
+    //     5,
+    //     0,
+    //     2 * Math.PI,
+    //   );
+    //   ctx.fill();
+    // }
+    const period = extractPeriod(peaks);
+    if (period > 0) {
+      ctx.fillStyle = "green";
       ctx.beginPath();
       ctx.arc(
-        map(k, 0, BIN_COUNT, 0, ctx.canvas.width),
-        map(corr[k], -1, 1, ctx.canvas.height, 0),
+        map(period, 0, BIN_COUNT, 0, ctx.canvas.width),
+        map(corr[period], -1, 1, ctx.canvas.height, 0),
         5,
         0,
         2 * Math.PI,
       );
       ctx.fill();
-    }
-    const period = extractPeriod(peaks);
-    if (period > 0) {
-      const baseFreq = sampleRate / period;
-      const note = getNoteString(baseFreq, true);
+
+      const freq = sampleRate / period;
+      const note = getNoteString(freq, true);
       ctx.fillStyle = getNoteColor(note.slice(0, 2) as TNote);
       ctx.font = "15px monospace";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
-      ctx.fillText(`Note: ${note}`, 0, 0);
+      ctx.fillText(`Note: ${note}; Freq: ${freq.toFixed(2).padStart(7)}Hz`, 0, 0);
+    }
+    {
+      const {freq, confidence} = detectPitchYIN(bufferArray, sampleRate);
+      if (confidence > 0) {
+        const note = getNoteString(freq, true);
+        ctx.fillStyle = getNoteColor(note.slice(0, 2) as TNote);
+        ctx.font = "15px monospace";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(`Note: ${note}; Freq: ${freq.toFixed(2).padStart(7)}Hz`, 0, 20);
+      }
     }
     return true;
   }

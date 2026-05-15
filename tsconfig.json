@@ -4,10 +4,9 @@
     "lib": ["DOM", "ESNext"],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "three/addons/*": ["three/examples/jsm/*"]
+      "@/*": ["./src/*"],
+      "three/addons/*": ["./three/examples/jsm/*"]
     },
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
