@@ -1233,7 +1233,7 @@ __metadata:
     three: "npm:^0.184.0"
     ts-patch: "npm:^4.0.1"
     typescript: "npm:^6.0.3"
-    typescript-transform-paths: "npm:^3.5.6"
+    typescript-transform-paths: "npm:^4.0.0"
   languageName: unknown
   linkType: soft
 
@@ -1635,7 +1635,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^10.2.2, minimatch@npm:^10.2.4":
+"minimatch@npm:^10.1.1, minimatch@npm:^10.2.2, minimatch@npm:^10.2.4":
   version: 10.2.5
   resolution: "minimatch@npm:10.2.5"
   dependencies:
@@ -1644,7 +1644,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^9.0.0, minimatch@npm:^9.0.5":
+"minimatch@npm:^9.0.0":
   version: 9.0.9
   resolution: "minimatch@npm:9.0.9"
   dependencies:
@@ -2218,14 +2218,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript-transform-paths@npm:^3.5.6":
-  version: 3.5.6
-  resolution: "typescript-transform-paths@npm:3.5.6"
+"typescript-transform-paths@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "typescript-transform-paths@npm:4.0.0"
   dependencies:
-    minimatch: "npm:^9.0.5"
+    minimatch: "npm:^10.1.1"
   peerDependencies:
-    typescript: ">=3.6.5"
-  checksum: 10c0/0269fc2f931ad611d43e8f937db37d16ab05ce10ff32183766a7c044419105d26e1d5804e565f39bfcd2e9090405f30736755b136985a48c24e70e3646c92441
+    typescript: ">=5"
+  checksum: 10c0/a67357164dae0f5c1f4e5e076da2fd1e820bc0b771d34e0d9e5d77cc1adca4740a332c83215e405d1883fd7326fafe976eea85fad26301aea4d2c325fe348c67
   languageName: node
   linkType: hard
 
