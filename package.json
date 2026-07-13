@@ -19,7 +19,7 @@
     "@types/p5": "^1.7.7",
     "@types/pug": "^2.0.10",
     "@types/serve-handler": "^6.1.4",
-    "@types/three": "^0.185.0",
+    "@types/three": "^0.185.1",
     "@typescript-eslint/eslint-plugin": "^8.63.0",
     "@typescript-eslint/parser": "^8.62.1",
     "eslint": "^10.7.0",
