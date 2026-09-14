@@ -1296,7 +1296,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:^8.70.0"
     "@typescript-eslint/parser": "npm:^8.70.0"
     eslint: "npm:^10.10.0"
-    katex: "npm:^0.18.5"
+    katex: "npm:^0.18.7"
     mathjs: "npm:^15.2.0"
     p5: "npm:^2.3.3"
     prettier: "npm:^3.9.6"
@@ -1599,14 +1599,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"katex@npm:^0.18.5":
-  version: 0.18.5
-  resolution: "katex@npm:0.18.5"
+"katex@npm:^0.18.7":
+  version: 0.18.7
+  resolution: "katex@npm:0.18.7"
   dependencies:
     commander: "npm:^15.0.0"
   bin:
     katex: cli.js
-  checksum: 10c0/b0298f887ecf772dc849c176b3518afe22d40f37e5e4fccd9962c4799bee94f4e1cd7a831725123972b99242e02de8396a4a36be4bbf1fb5460775b3f5ef6218
+  checksum: 10c0/191b690af9099fb25b595270b9da191cd37c9b45d7773188112ad7831e74a4a3e07f10e1e1bdd656daa8794e744cefd03d079eb05be49983ac578bcb2ce857df
   languageName: node
   linkType: hard
 
