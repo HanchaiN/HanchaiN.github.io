@@ -7,6 +7,7 @@
 
 ## Migrations (crude)
 
+- [ ] 20d1708c 2026 May 16 abc
 - [/] e2e05409 2025 Sep 04 ps
 - [/] cf3850fb 2025 Apr 19 bonsai
 - [/] 004d17d7 2025 Mar 24 color_difference
