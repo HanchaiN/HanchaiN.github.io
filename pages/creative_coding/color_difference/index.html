@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Color Difference</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/color_difference/index.js";
+
+      const root = document.getElementById("color-difference");
+      execute().start(
+        root.querySelector("#canvas"),
+        root.querySelector("#config"),
+      );
+    </script>
+  </head>
+  <body>
+    <h1>Color Difference</h1>
+    <div class="preview-container" id="color-difference">
+      <canvas
+        class="border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="1000"
+        height="1000"
+        style="width: 500px; height: 500px"
+      ></canvas>
+      <form class="data-container" id="config">
+        <label for="lightness">Lightness:</label
+        ><input
+          id="lightness"
+          type="number"
+          min="0"
+          max="1"
+          value="0.5"
+          step="0.01"
+        /><input id="snap-lightness" type="checkbox" checked /><label
+          for="snap-lightness"
+          >Snap</label
+        ><br /><label for="chroma">Chroma:</label
+        ><input
+          id="chroma"
+          type="number"
+          min="0"
+          max="1"
+          value="0.5"
+          step="0.01"
+        /><input id="snap-chroma" type="checkbox" checked /><label
+          for="snap-chroma"
+          >Snap</label
+        ><br /><label for="range-i">Range (inner):</label
+        ><input
+          id="range-i"
+          type="number"
+          min="0"
+          max="1"
+          value="0.01"
+          step="0.01"
+        /><wbr /><label for="algorithm-i">Algorithm (inner):</label
+        ><select id="algorithm-i">
+          <option value="red-mean">Red Mean</option>
+          <option value="hybrid-ab">Hybrid AB</option>
+          <option value="cie76">CIE76</option>
+          <option value="cie2:1" selected>CIE 2:1</option>
+          <option value="cie1:1">CIE 1:1</option>
+          <option value="cie94-graphics">CIE94 (Graphic Arts)</option>
+          <option value="cie94-textiles">CIE94 (Textiles)</option>
+          <option value="cie00">CIEDE2000</option></select
+        ><br /><label for="range-o">Range (outer):</label
+        ><input
+          id="range-o"
+          type="number"
+          min="0"
+          max="1"
+          value="0.02"
+          step="0.01"
+        /><wbr /><label for="algorithm-o">Algorithm (outer):</label
+        ><select id="algorithm-o">
+          <option value="inner" selected>(Same as Inner)</option>
+          <option value="red-mean">Red Mean</option>
+          <option value="hybrid-ab">Hybrid AB</option>
+          <option value="cie76">CIE76</option>
+          <option value="cie2:1">CIE 2:1</option>
+          <option value="cie1:1">CIE 1:1</option>
+          <option value="cie94-graphics">CIE94 (Graphic Arts)</option>
+          <option value="cie94-textiles">CIE94 (Textiles)</option>
+          <option value="cie00">CIEDE2000</option></select
+        ><br /><input id="bound" type="checkbox" selected /><label for="bound"
+          >Bounded</label
+        ><br /><button id="apply" type="button">Execute</button><br /><textarea
+          id="palette-text"
+        ></textarea
+        ><br />
+        <div id="palette"></div>
+      </form>
+    </div>
+    <p>
+      In color science, color difference or color distance is the separation
+      between two colors.
+    </p>
+  </body>
+</html>

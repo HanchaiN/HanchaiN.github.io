@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Probabilistic Serial</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/probabilistic_serial/index.js";
+
+      const root = document.getElementById("probabilistic-serial");
+      execute().start(
+        root.querySelector("#canvas"),
+        root.querySelector("#config"),
+      );
+    </script>
+  </head>
+  <body>
+    <h1>Probabilistic Serial</h1>
+    <div class="preview-container" id="probabilistic-serial">
+      <div class="sketch">
+        <canvas
+          class="border border-primary rounded border-opacity-50"
+          id="canvas"
+          width="500"
+          height="500"
+        ></canvas>
+      </div>
+      <form class="data-container" id="config">
+        <label for="count">Agent Count:</label
+        ><input id="count" type="number" value="3" min="2" step="1" />
+        <div hidden data-js-step="1">
+          <button id="shuffle" type="button">Shuffle</button
+          ><button id="calculate" type="button">Calculate</button>
+        </div>
+        <div hidden data-js-step="2">
+          <button id="done" type="button">Done</button
+          ><label for="time">Progress:</label
+          ><input
+            id="time"
+            type="range"
+            value="0"
+            min="0"
+            max="1"
+            step="1e-16"
+          />
+        </div>
+        <div hidden data-js-step="3">
+          <select id="item"></select
+          ><br /><button id="random" type="button">Randomize</button
+          ><label for="seed">Seed:</label
+          ><input
+            id="seed"
+            type="range"
+            value="0"
+            min="0"
+            max="1"
+            step="1e-16"
+          /><br /><button id="apply" type="button">Apply</button
+          ><button id="apply-all" type="button">Apply All</button
+          ><button id="reset" type="button">Reset</button>
+          <details id="advanced">
+            <summary>Advanced Options</summary>
+            <select id="algo">
+              <option value="naive">Naive exclusion</option>
+              <option value="count">Scale by count</option>
+              <option value="greedy" selected>Average Birkhoff</option>
+              <option value="sample">Sample by weight</option></select
+            ><label for="sample-perm">Number of samples:</label
+            ><input
+              id="sample-perm"
+              type="number"
+              value="100"
+              min="1"
+              step="1"
+            /><button id="clear-cache" type="button">Clear cache</button>
+          </details>
+        </div>
+        <label for="lists">Preferences order:</label>
+        <div class="row" id="lists"></div>
+      </form>
+    </div>
+    <p>
+      A simultaneous eating algorithm (SE) is an algorithm for allocating
+      divisible objects among agents with ordinal preferences. If all agents are
+      given the same eating speed, then the SE allocation satisfies
+      SD-envy-freeness. This particular variant of SE is called the
+      Probabilistic Serial rule (PS).
+    </p>
+  </body>
+</html>

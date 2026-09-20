@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Perlin Noise</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/perlin_noise/index.js";
+
+      const root = document.getElementById("perlin");
+      execute().start(root.querySelector("#canvas"));
+    </script>
+  </head>
+  <body>
+    <h1>Perlin Noise</h1>
+    <div class="preview-container" id="perlin">
+      <canvas
+        class="border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="500"
+        height="500"
+      ></canvas>
+    </div>
+    <p>
+      Perlin noise is a type of gradient noise developed by Ken Perlin in 1983.
+      It has many uses, including but not limited to: procedurally generating
+      terrain, applying pseudo-random changes to a variable, and assisting in
+      the creation of image textures. It is most commonly implemented in two,
+      three, or four dimensions, but can be defined for any number of
+      dimensions.
+    </p>
+  </body>
+</html>

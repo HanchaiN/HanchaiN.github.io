@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+  <head>
+    <title>2D Fourier Transform</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/2d_fourier/index.js";
+
+      const root = document.getElementById("demo");
+      execute().start(
+        root.querySelector("#canvas"),
+        root.querySelector("#kspace"),
+        root.querySelector("#config"),
+      );
+    </script>
+  </head>
+  <body>
+    <h1>2D Fourier Transform</h1>
+    <div id="demo">
+      <canvas id="canvas" width="500" height="500">Canvas not supported.</canvas
+      ><canvas
+        style="image-rendering: pixelated"
+        id="kspace"
+        width="500"
+        height="500"
+        >Canvas not supported.</canvas
+      >
+      <form id="config">
+        <label for="image">Image:</label
+        ><input id="image" type="file" accept="image/*" /><br /><label
+          for="fft-size"
+          >FFT Size:<output id="fft-size-value"></output></label
+        ><input id="fft-size" type="number" step="1" /><wbr /><label
+          for="render-size"
+          >Render Size:<output id="render-size-value"></output></label
+        ><input id="render-size" type="number" step="1" /><br /><label
+          for="overlay"
+          >Overlay:<output id="overlay-value"></output></label
+        ><input
+          id="overlay"
+          type="number"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0.25"
+        />
+      </form>
+    </div>
+    <div class="description">LGTM</div>
+  </body>
+</html>

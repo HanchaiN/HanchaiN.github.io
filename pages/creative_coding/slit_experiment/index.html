@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Slit Experiment</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/slit_experiment/index.js";
+
+      const root = document.getElementById("slit-experiment");
+      execute().start(root.querySelector("#canvas"));
+    </script>
+  </head>
+  <body>
+    <h1>Slit Experiment</h1>
+    <div class="preview-container" id="slit-experiment">
+      <div id="canvas"></div>
+    </div>
+    <p>
+      The path integral formulation is a description in quantum mechanics that
+      generalizes the action principle of classical mechanics. It replaces the
+      classical notion of a single, unique classical trajectory for a system
+      with a sum, or functional integral, over an infinity of
+      quantum-mechanically possible trajectories to compute a quantum amplitude.
+    </p>
+  </body>
+</html>

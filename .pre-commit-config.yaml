@@ -12,21 +12,15 @@ repos:
     rev: v4.1.0
   - repo: local
     hooks:
-      - id: lint
-        name: lint
-        language: node
-        always_run: true
-        pass_filenames: false
-        entry: yarn run lint:fix
       - id: format
         name: format
         language: node
         always_run: true
         pass_filenames: false
-        entry: yarn run format
+        entry: npm run format:check
       - id: typecheck
         name: typecheck
         language: node
         always_run: true
         pass_filenames: false
-        entry: yarn run typecheck
+        entry: npm run typecheck

@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Elementary Cellular Automata</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/elementary_cellular_automata/index.js";
+
+      const root = document.getElementById("elementary-cellular-automata");
+      execute().start(root, root.querySelector("#canvas"));
+    </script>
+  </head>
+  <body>
+    <h1>Elementary Cellular Automata</h1>
+    <div class="preview-container" id="elementary-cellular-automata">
+      <canvas
+        class="pixelated border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="500"
+        height="500"
+      ></canvas>
+    </div>
+    <p>
+      In mathematics and computability theory, an elementary cellular automaton
+      is a one-dimensional cellular automaton where there are two possible
+      states (labeled 0 and 1) and the rule to determine the state of a cell in
+      the next generation depends only on the current state of the cell and its
+      two immediate neighbors.
+    </p>
+  </body>
+</html>

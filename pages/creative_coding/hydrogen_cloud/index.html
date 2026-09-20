@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Hydrogen Cloud</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/hydrogen_cloud/index.js";
+
+      const root = document.getElementById("h-cloud");
+      execute().start(
+        root.querySelector("#canvas"),
+        root.querySelector("#foreground"),
+      );
+    </script>
+  </head>
+  <body>
+    <h1>Hydrogen Cloud</h1>
+    <div class="preview-container" id="h-cloud" style="position: relative">
+      <canvas
+        class="border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="500"
+        height="500"
+        style="z-index: -1; position: absolute"
+      ></canvas
+      ><canvas
+        class="border border-primary rounded border-opacity-50"
+        id="foreground"
+        width="500"
+        height="500"
+        style="z-index: 0"
+      ></canvas>
+    </div>
+    <p>
+      In the solution to the Schrödinger equation, which is non-relativistic,
+      hydrogen-like atomic orbitals are eigenfunctions of the one-electron
+      angular momentum operator \(L\) and its \(z\) component \(L_z\)​. A
+      hydrogen-like atomic orbital is uniquely identified by the values of the
+      principal quantum number \(n\), the angular momentum quantum number \(l\),
+      and the magnetic quantum number \(m_l\).
+    </p>
+  </body>
+</html>

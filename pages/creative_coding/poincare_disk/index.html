@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Poincaré Disk</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/poincare_disk/index.js";
+
+      const root = document.getElementById("poincare");
+      execute().start(root, root.querySelector("#canvas"));
+    </script>
+  </head>
+  <body>
+    <h1>Poincaré Disk</h1>
+    <div class="preview-container" id="poincare">
+      <canvas
+        class="border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="500"
+        height="500"
+      ></canvas>
+    </div>
+    <p>
+      In geometry, the Poincaré disk model, also called the conformal disk
+      model, is a model of 2-dimensional hyperbolic geometry in which all points
+      are inside the unit disk, and straight lines are either circular arcs
+      contained within the disk that are orthogonal to the unit circle or
+      diameters of the unit circle.
+    </p>
+  </body>
+</html>

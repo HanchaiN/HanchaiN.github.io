@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Dithering</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/dithering/index.js";
+
+      const root = document.getElementById("dithering");
+      execute().start(
+        root.querySelector("#canvas"),
+        root.querySelector("#config"),
+      );
+    </script>
+  </head>
+  <body>
+    <h1>Dithering</h1>
+    <div class="preview-container" id="dithering">
+      <canvas
+        class="pixelated border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="500"
+        height="500"
+      ></canvas>
+      <form class="data-container" id="config">
+        <label for="image">Image:</label
+        ><input id="image" type="file" accept="image/*" /><label for="algorithm"
+          >Algorithm:</label
+        ><select id="algorithm">
+          <option value="order" selected>Ordered Dithering</option>
+          <option value="error">Error Diffusion</option>
+        </select>
+        <details id="advanced">
+          <summary>Parameters (for advanced users)</summary>
+          <label for="temperature" data-select="order error">Temperature:</label
+          ><input
+            id="temperature"
+            type="number"
+            value="1"
+            min="0"
+            step="1e-5"
+            data-select="order error"
+          /><wbr /><label for="err_decay" data-select="error"
+            >Error Decay:</label
+          ><input
+            id="err_decay"
+            type="number"
+            value="0.5"
+            min="0"
+            max="1"
+            step="1e-5"
+            data-select="error"
+          /><wbr /><label for="mask_order" data-select="order"
+            >Mask Order:</label
+          ><input
+            id="mask_order"
+            type="number"
+            value="4"
+            min="0"
+            step="1"
+            data-select="order"
+          /><wbr /><label for="candidate_count" data-select="order"
+            >Candidate count:</label
+          ><input
+            id="candidate_count"
+            type="number"
+            value="2"
+            min="0"
+            step="1"
+            data-select="order"
+          /><wbr /><label for="order_mode" data-select="order"
+            >Order Mode:</label
+          ><select id="order_mode" data-select="order">
+            <option value="cie" selected>CIE</option>
+            <option value="rgb">RGB</option>
+            <option value="lum">Luminance</option>
+          </select>
+        </details>
+        <button id="apply" type="button">Execute</button><br /><label
+          for="palette-text"
+          >Palette (hex, one per line):</label
+        ><textarea id="palette-text"></textarea>
+        <div id="palette"></div>
+      </form>
+    </div>
+    <p>
+      Dither is an intentionally applied form of noise used to randomize
+      quantization error, preventing large-scale patterns such as color banding
+      in images.
+    </p>
+  </body>
+</html>

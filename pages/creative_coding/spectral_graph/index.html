@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Spectral Graph</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/spectral_graph/index.js";
+
+      const root = document.getElementById("spectral-graph");
+      execute().start(
+        root.querySelector("#canvas"),
+        root.querySelector("#config"),
+      );
+    </script>
+  </head>
+  <body>
+    <h1>Spectral Graph</h1>
+    <div class="preview-container" id="spectral-graph">
+      <canvas
+        class="border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="500"
+        height="500"
+      ></canvas>
+      <form class="data-container" id="config">
+        <label for="count">Node Count:</label
+        ><input
+          id="count"
+          type="number"
+          value="3"
+          min="1"
+          step="1"
+        /><br /><label for="edge-weight">Edge weight:</label>
+        <table id="edge-weight"></table>
+        <br /><button id="read-table" type="button">Read Table</button
+        ><button id="simplify" type="button">Simplify</button>
+      </form>
+    </div>
+    <p>
+      Spectral layout is a class of algorithm for drawing graphs. The layout
+      uses the eigenvectors of a matrix, such as the Laplace matrix of the
+      graph, as Cartesian coordinates of the graph's vertices.
+    </p>
+  </body>
+</html>

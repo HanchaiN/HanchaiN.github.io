@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Reaction-Diffusion System</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/reaction_diffusion/index.js";
+
+      const root = document.getElementById("reaction-diffusion");
+      execute().start(root.querySelector("#canvas"));
+    </script>
+  </head>
+  <body>
+    <h1>Reaction-Diffusion System</h1>
+    <div class="preview-container" id="reaction-diffusion">
+      <canvas
+        class="border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="500"
+        height="500"
+      ></canvas>
+    </div>
+    <p>
+      Reaction–diffusion systems are mathematical models which correspond to
+      several physical phenomena. The most common is the change in space and
+      time of the concentration of one or more chemical substances: local
+      chemical reactions in which the substances are transformed into each
+      other, and diffusion which causes the substances to spread out over a
+      surface in space.
+    </p>
+  </body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Fractal Trees</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/fractal_tree_curve/index.js";
+
+      const root = document.getElementById("fractral-tree-curve");
+      execute().start(
+        root.querySelector("#canvas"),
+        root.querySelector("#config"),
+      );
+    </script>
+  </head>
+  <body>
+    <h1>Fractal Trees</h1>
+    <div class="preview-container" id="fractral-tree-curve">
+      <canvas
+        class="border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="500"
+        height="500"
+      ></canvas>
+      <form class="data-container" id="config">
+        <button id="set" type="button">Regenerate</button
+        ><button id="box" type="button">Toggle Box</button
+        ><button id="reset" type="button">Restart</button>
+      </form>
+    </div>
+    <p>
+      The
+      <a href="https://en.wikipedia.org/wiki/Fibonacci_sequence"
+        >Fibonacci spiral</a
+      >: an approximation of the golden spiral created by drawing circular arcs
+      connecting the opposite corners of squares in the Fibonacci tiling.
+    </p>
+  </body>
+</html>

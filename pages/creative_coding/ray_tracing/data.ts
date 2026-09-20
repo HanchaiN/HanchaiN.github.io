@@ -1,0 +1,43 @@
+import { binarySearchBound } from "@/utils/algo/datastructure.js";
+import { map } from "@/utils/math/utils.js";
+
+import { wavelengths } from "./spectrum.js";
+import type { TSpectrum } from "./spectrum.ts";
+
+type SpectrumData = {
+  header: string[];
+  data: number[][];
+};
+export async function readSpectrum(
+  source: string | SpectrumData,
+  column: string,
+): Promise<TSpectrum> {
+  let data: SpectrumData;
+  if (typeof source === "string") {
+    const res = await fetch(source);
+    data = await res.json();
+  } else {
+    data = source;
+  }
+  const w_idx = data.header.indexOf("wavelength");
+  if (w_idx < 0) throw new Error("No wavelength column found");
+  const c_idx = data.header.indexOf(column);
+  if (c_idx < 0) throw new Error(`No ${column} column found`);
+  const data_: [number, number][] = data.data
+    .sort((a, b) => a[w_idx]! - b[w_idx]!)
+    .map((row) => [row[w_idx]!, row[c_idx]!]);
+  const spec = wavelengths.map((w) => {
+    const [il, ih] = binarySearchBound(
+      data_.map((d) => d[0]),
+      w,
+    );
+    if (il < 0 || ih > data_.length - 1) {
+      console.warn(`Wavelength ${w}nm is out of range`);
+      return il < 0 ? data_.at(0)![1] : data_.at(-1)![1];
+    }
+    const [wl, dl] = data_[il]!;
+    const [wh, dh] = data_[ih]!;
+    return map(w, wl, wh, dl, dh);
+  }) as TSpectrum;
+  return spec;
+}

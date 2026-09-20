@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Color Grading</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/color_grading/index.js";
+
+      const root = document.getElementById("color-grading");
+      execute().start(
+        root.querySelector("#canvas"),
+        root.querySelector("#config"),
+      );
+    </script>
+  </head>
+  <body>
+    <h1>Color Grading</h1>
+    <div class="preview-container" id="color-grading">
+      <canvas
+        class="border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="500"
+        height="500"
+      ></canvas>
+      <form class="data-container" id="config">
+        <label for="image">Image:</label
+        ><input id="image" type="file" accept="image/*" /><br /><label
+          for="clut"
+          >CLUT:</label
+        ><input id="clut" type="file" accept="image/*" />
+      </form>
+    </div>
+    <p>
+      Color grading and color correction are often used synonymously as terms
+      for this process and can include the generation of artistic color effects
+      through creative blending and compositing of different layer masks of the
+      source image.
+    </p>
+  </body>
+</html>

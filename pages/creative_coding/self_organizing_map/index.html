@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Self-organizing Map</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/self_organizing_map/index.js";
+
+      const root = document.getElementById("som");
+      execute().start(
+        root.querySelector("#canvas"),
+        root.querySelector("#config"),
+      );
+    </script>
+  </head>
+  <body>
+    <h1>Self-organizing Map</h1>
+    <div class="preview-container" id="som">
+      <canvas
+        class="border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="500"
+        height="500"
+      ></canvas>
+      <form class="data-container" id="config">
+        <label for="image">Image:</label
+        ><input id="image" type="file" accept="image/*" /><br /><label
+          for="range"
+          >Initial Range:<output id="range-value"></output></label
+        ><input
+          id="range"
+          type="range"
+          min="0"
+          max="1"
+          step="1e-5"
+        /><wbr /><label for="learning-rate"
+          >Initial Learning Rate:<output
+            id="learning-rate-value"
+          ></output></label
+        ><input
+          id="learning-rate"
+          type="range"
+          min="0"
+          max="1"
+          step="1e-5"
+        /><br /><label for="range-decay-rate">Range Decay Rate:</label
+        ><input id="range-decay-rate" type="number" min="0" /><wbr /><label
+          for="learning-decay-rate"
+          >Learning Rate Decay Rate:</label
+        ><input id="learning-decay-rate" type="number" min="0" /><br /><label
+          for="weight-positions"
+          >Position Weighting:</label
+        ><input id="weight-positions" type="number" /><wbr /><label
+          for="weight-colors"
+          >Color Weighting:</label
+        ><input id="weight-colors" type="number" /><br /><label
+          for="color-choices"
+          >Color Choices:<output id="color-choices-value"></output></label
+        ><input
+          id="color-choices"
+          type="number"
+          min="1"
+          max="10"
+          step="1"
+        /><wbr /><label for="iteration-count">Iteration Count:</label
+        ><output id="iteration-count" type="number"></output>
+      </form>
+    </div>
+    <p>
+      A self-organizing map (SOM) or self-organizing feature map (SOFM) is an
+      unsupervised machine learning technique used to produce a low-dimensional
+      (typically two-dimensional) representation of a higher dimensional data
+      set while preserving the topological structure of the data.
+    </p>
+  </body>
+</html>

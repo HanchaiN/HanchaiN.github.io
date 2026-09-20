@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Hydrogen Pilot Wave</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/hydrogen_pilot/index.js";
+
+      const root = document.getElementById("h-pilot");
+      execute().start(root.querySelector("#canvas"));
+    </script>
+  </head>
+  <body>
+    <h1>Hydrogen Pilot Wave</h1>
+    <div class="preview-container" id="h-pilot">
+      <canvas
+        class="border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="500"
+        height="500"
+      ></canvas>
+    </div>
+    <p>
+      The de Broglie–Bohm theory, also known as the pilot wave theory, Bohmian
+      mechanics, Bohm's interpretation, and the causal interpretation, is an
+      interpretation of quantum mechanics. In addition to the wavefunction, it
+      also postulates an actual configuration of particles exists even when
+      unobserved. The evolution over time of the configuration of all particles
+      is defined by a guiding equation. The evolution of the wave function over
+      time is given by the Schrödinger equation.
+    </p>
+  </body>
+</html>

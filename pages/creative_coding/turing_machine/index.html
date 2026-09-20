@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Elementary Cellular Automata</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/turing_machine/index.js";
+
+      const root = document.getElementById("turing-machine");
+      execute().start(root, root.querySelector("#canvas"));
+    </script>
+  </head>
+  <body>
+    <h1>Elementary Cellular Automata</h1>
+    <div class="preview-container" id="turing-machine">
+      <canvas
+        class="pixelated border border-primary rounded border-opacity-50"
+        id="canvas"
+        width="500"
+        height="500"
+      ></canvas>
+    </div>
+    <p>
+      A Turing machine is a mathematical model of computation describing an
+      abstract machine that manipulates symbols on a strip of tape according to
+      a table of rules.
+    </p>
+  </body>
+</html>

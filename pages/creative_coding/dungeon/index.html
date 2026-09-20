@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Procedural dungeon generation</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/dungeon/index.js";
+
+      const root = document.getElementById("dungeon");
+      execute().start(root.querySelector("#canvas"));
+    </script>
+  </head>
+  <body>
+    <h1>Procedural dungeon generation</h1>
+    <div id="dungeon">
+      <canvas id="canvas" width="500" height="500">
+        Canvas not supported.
+      </canvas>
+    </div>
+    <div class="description">
+      <h2>Controls</h2>
+      <ul>
+        <li>
+          <span class="input">Left-click</span>
+          <span class="result">Restart</span>
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>
