@@ -8,6 +8,11 @@ import {
 } from "./scene.js";
 import type { TSpectrum } from "./spectrum.ts";
 
+export type MessageRequest = { active: boolean };
+export type MessageResponse = {
+  [key in LandmarkKey]: TSpectrum;
+}
+
 type LandmarkKey = "light" | "wall";
 
 const landmarks: {
@@ -25,10 +30,6 @@ const landmarks: {
 let isActive = true,
   lock = false;
 
-export type MessageRequest = { active: boolean };
-export type MessageResponse = {
-  [key in LandmarkKey]: TSpectrum;
-};
 function main(): MessageResponse {
   for (let i = 0; i < 1024; i++) {
     for (const key in landmarks) {

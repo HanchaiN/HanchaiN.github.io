@@ -46,5 +46,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["pages/**/*.ts"]
+  "include": ["pages/**/*.js", "pages/**/*.ts"]
 }

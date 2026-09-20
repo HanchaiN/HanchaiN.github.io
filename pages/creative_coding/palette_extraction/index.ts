@@ -12,7 +12,9 @@ import { argmax, average } from "@/utils/math/utils.js";
 
 import { _applyClosest } from "../clut_generation/pipeline.js";
 import { applyColorMapping } from "../color_grading/pipeline.js";
-import { evaluatePalette, extendPalette, extractPalette } from "./pipeline.js";
+import { evaluatePalette, extendPalette } from "./pipeline.js";
+import { WorkerWrapper } from "@/utils/dom/worker/index.js";
+import type { MessageRequest, MessageResponse } from "./worker.js";
 
 const embed: ColorSpace = "lab";
 type EmbedColor = ColorSpaceMap[typeof embed];
@@ -28,6 +30,7 @@ export default function execute() {
   let palette: PaletteInput;
   const getBackground = () => getPaletteBaseColor(0);
   let isActive = false;
+  let isLocked = false;
   let isAuto = false;
   let image: HTMLImageElement;
   let form: HTMLFormElement;
@@ -78,7 +81,7 @@ export default function execute() {
       });
     return samples;
   }
-  function cluster() {
+  async function cluster() {
     if (!isActive || !image) return;
     const n_colors = palette.value.length;
     if (n_colors <= 0) {
@@ -93,16 +96,20 @@ export default function execute() {
         return dA === dB ? Math.min(a, b) : dA < dB ? a : b;
       }, 0);
     const seed = cache[closestKey] ?? [];
-    setPalette(
-      extractPalette(getSample(), n_colors, seed.map(embed2hex)).map(
-        (c) => str2embed(c),
-        {
+    const worker = new WorkerWrapper<MessageRequest, MessageResponse>(new URL("worker.js", import.meta.url));
+    await worker.initialize(true);
+    const {centroids} = await worker.execute({
+        samples: getSample(),
+        n_colors,
+        reference: seed.map(embed2hex),
+        options: {
           n_sample: form.querySelector<HTMLInputElement>(
             "#sample-size-cluster",
           )!.valueAsNumber,
         },
-      ),
-    );
+      });
+    setPalette(centroids.map(c => str2embed(c)));
+    worker.terminate();
   }
   function snap() {
     if (!isActive || !image) return;
@@ -169,6 +176,8 @@ export default function execute() {
   }
 
   function lock() {
+    if (isLocked) throw new Error('Locked');
+    isLocked = true;
     form.querySelector<HTMLInputElement>("#palette-text")!.disabled = true;
     form.querySelector<HTMLInputElement>("#palette-count")!.disabled = true;
   }
@@ -176,12 +185,13 @@ export default function execute() {
   function unlock() {
     form.querySelector<HTMLInputElement>("#palette-text")!.disabled = false;
     form.querySelector<HTMLInputElement>("#palette-count")!.disabled = false;
+    isLocked = false;
   }
 
-  function withLock(f: () => void) {
+  async function withLock(f: (() => Promise<void>) | (() => void)) {
     lock();
     try {
-      f();
+      await f();
     } finally {
       unlock();
     }
@@ -201,9 +211,9 @@ export default function execute() {
       ) {
         await new Promise((resolve) =>
           requestIdleCallback(
-            () => {
+            async () => {
               extend(n_colors);
-              cluster();
+              await cluster();
               redraw();
               updateScore();
               console.info(

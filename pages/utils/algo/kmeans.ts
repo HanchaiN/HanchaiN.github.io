@@ -168,7 +168,7 @@ export function kMeans<T>(
 ) {
   const getSample = (n = N_SAMPLE) =>
     samples
-      .filter(() => Math.random() < n / samples.length)
+      .filter(() => n <= 0 || Math.random() < n / samples.length)
       .sort(() => Math.random() - 0.5);
   const centroids = extendCentroids(samples, n, seeds, dist, copy);
   // K-means clustering

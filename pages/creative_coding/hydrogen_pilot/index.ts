@@ -7,10 +7,13 @@ import {
   getLightness,
   getPaletteBaseColor,
 } from "@/utils/color/palette.js";
-import { maxWorkers, startAnimationLoop } from "@/utils/dom/utils.js";
+import { startAnimationLoop } from "@/utils/dom/utils.js";
+import { maxWorkers } from "@/utils/dom/worker/index.js";
+import { WorkerWrapper } from "@/utils/dom/worker/index.js";
 import { constrain, maxA } from "@/utils/math/utils.js";
 
-import type { MessageResponse } from "./worker.ts";
+import type { MessageRequest, MessageResponse } from "./worker.js";
+import type { TComplex } from "@/utils/math/complex";
 
 const hcl2hex = convert_color("hcl", "hex")!;
 
@@ -25,15 +28,15 @@ export default function execute() {
     >,
     clock: THREE.Clock;
   let ended = true;
-  let workers: Worker[];
+  let workers: WorkerWrapper<MessageRequest, MessageResponse>[];
 
   const counts = 8192;
-  const superposition = [{ c: [1, 0], n: 3, l: 1, m: +1 }];
+  const superposition = [{ c: [1, 0] as TComplex, n: 3, l: 1, m: +1 }];
   const n_max = maxA(superposition.map(({ n }) => n));
   const unit = Math.pow(n_max, 2);
   const time_scale = 1e4;
 
-  function init(canvas: HTMLCanvasElement) {
+  async function init(canvas: HTMLCanvasElement) {
     ended = false;
     clock = new THREE.Clock();
     scene = new THREE.Scene();
@@ -86,50 +89,53 @@ export default function execute() {
     const axesHelper = new THREE.AxesHelper(5);
     scene.add(axesHelper);
 
-    workers = new Array(maxWorkers).fill(null).map((_, i) => {
-      const worker = new Worker(new URL("worker.js", import.meta.url), {
-        type: "module",
-      });
-      worker.addEventListener("message", function listener() {
-        worker.removeEventListener("message", listener);
-
-        worker.addEventListener(
-          "message",
-          function listener({ data }: MessageEvent<MessageResponse>) {
-            const saturation = getChroma(),
-              lightness = getLightness();
-            const index =
-                i * Math.floor(counts / maxWorkers) +
-                Math.min(i, counts % maxWorkers),
-              target_counts =
-                Math.floor(counts / maxWorkers) +
-                (i < counts % maxWorkers ? 1 : 0);
-            worker.postMessage({
-              time: clock.getElapsedTime(),
-              addStates: constrain(target_counts - data.states!.length, 0, 50),
-            });
-            data.states!.forEach(({ x, y, z, h }, i) => {
-              const matrix = new THREE.Matrix4();
-              matrix.setPosition(x, y, z);
-              electron_mesh.setMatrixAt(index + i, matrix);
-              electron_mesh.setColorAt(
-                index + i,
-                new THREE.Color(hcl2hex([h / 360, saturation, lightness])),
-              );
-            });
-            electron_mesh.instanceMatrix.needsUpdate = true;
-            if (electron_mesh.instanceColor)
-              electron_mesh.instanceColor.needsUpdate = true;
-          },
-        );
-        worker.postMessage({
-          superposition,
-          resetState: true,
-          time_scale,
-        });
-      });
+    workers = await Promise.all(new Array(maxWorkers).fill(null).map(async () => {
+      const worker = new WorkerWrapper<MessageRequest, MessageResponse>(new URL("worker.js", import.meta.url));
+      await worker.initialize(true);
       return worker;
-    });
+    }));
+    return await Promise.all(workers.map(async (worker, i, a) => {
+      const saturation = getChroma(),
+        lightness = getLightness();
+      const index =
+          i * Math.floor(counts / a.length) +
+          Math.min(i, counts % a.length),
+        target_counts =
+          Math.floor(counts / a.length) +
+          (i < counts % a.length ? 1 : 0);
+      worker.push({
+        superposition,
+        resetState: true,
+        time_scale,
+        time: clock.getElapsedTime(),
+      });
+      while (true) {
+        let data;
+        try {
+          data = await worker.wait();
+        } catch (e) {
+          console.error(e);
+          break;
+        }
+        worker.push({
+          time: clock.getElapsedTime(),
+          addStates: constrain(target_counts - data.states!.length, 0, 50),
+        })
+        data.states!.forEach(({ x, y, z, h }, i) => {
+          const matrix = new THREE.Matrix4();
+          matrix.setPosition(x, y, z);
+          electron_mesh.setMatrixAt(index + i, matrix);
+          electron_mesh.setColorAt(
+            index + i,
+            new THREE.Color(hcl2hex([h / 360, saturation, lightness])),
+          );
+        });
+        electron_mesh.instanceMatrix.needsUpdate = true;
+        if (electron_mesh.instanceColor)
+          electron_mesh.instanceColor.needsUpdate = true;
+      }
+      worker.terminate();
+    }))
   }
   function animate() {
     if (ended) return false;

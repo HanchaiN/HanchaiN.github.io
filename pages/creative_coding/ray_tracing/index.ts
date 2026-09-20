@@ -5,7 +5,8 @@ import {
   CheckDisplay,
   SelectDisplay,
 } from "@/utils/dom/element/SelectDisplay.js";
-import { maxWorkers, startAnimationLoop } from "@/utils/dom/utils.js";
+import { startAnimationLoop } from "@/utils/dom/utils.js";
+import { maxWorkers, workerLoader, WorkerWrapper } from "@/utils/dom/worker/index.js";
 import { throttle } from "@/utils/utils.js";
 
 import { LightAccumulator } from "./colors.js";
@@ -16,16 +17,17 @@ import { postProcessorGen, tone_mappers } from "./postprocessor.js";
 import { REF_ILLUM, default_mode, toRGB } from "./spectrum.js";
 import type { CMapMode, CMaxMode, CRefIllum, TSpectrum } from "./spectrum.ts";
 import type { MessageRequest, MessageResponse } from "./worker.ts";
-import type { MessageResponse as WhiteMessageResponse } from "./worker_white.ts";
+import type { MessageRequest as WhiteMessageRequest, MessageResponse as WhiteMessageResponse } from "./worker_white.ts";
 
 export default function execute() {
-  let workers: Worker[] = [];
+  let workers: WorkerWrapper<MessageRequest, MessageResponse>[] = [];
+  let white_worker: Worker | null = null;
   let isActive = false;
   const scale = 1;
   const chunkSize = 8;
 
   return {
-    start: (canvas: HTMLCanvasElement, config: HTMLFormElement) => {
+    start: async (canvas: HTMLCanvasElement, config: HTMLFormElement) => {
       isActive = true;
       const render_size = {
         w: Math.round(canvas.width / scale),
@@ -75,98 +77,6 @@ export default function execute() {
         .map(() =>
           new Array(render_size.h).fill(null).map(() => new LightAccumulator()),
         );
-
-      const render_queue: MessageRequest[] = [];
-      for (let y0 = 0; y0 < render_size.h; y0 += chunkSize) {
-        for (let x0 = 0; x0 < render_size.w; x0 += chunkSize) {
-          render_queue.push({
-            x0,
-            x1: Math.min(x0 + chunkSize, render_size.w),
-            y0,
-            y1: Math.min(y0 + chunkSize, render_size.h),
-            ...render_size,
-          });
-        }
-      }
-      workers = new Array(Math.ceil(Math.max(1, maxWorkers / 2 - 1)))
-        .fill(null)
-        .map(() => {
-          const worker = new Worker(new URL("./worker.js", import.meta.url), {
-            type: "module",
-          });
-          worker.addEventListener(
-            "message",
-            async function ({ data }: MessageEvent<MessageResponse>) {
-              let task = render_queue.shift(),
-                pushed = false;
-              if (isActive && typeof task !== "undefined") {
-                worker.postMessage(task!);
-                pushed = true;
-              }
-              if (data !== null) {
-                const { x0, y0, x1, y1, field } = data;
-                if (typeof task === "undefined")
-                  task = { x0, y0, x1, y1, ...render_size };
-                else render_queue.push({ x0, x1, y0, y1, ...render_size });
-                requestIdleCallback(
-                  async () => {
-                    await Promise.all(
-                      field
-                        .map((col, x) =>
-                          col.map(async (pix, y) => {
-                            acc[x0 + x]![y0 + y]!.accumulate(pix);
-                            buffer.data.set(
-                              [
-                                ...renderConfig
-                                  .postProcessor(
-                                    await acc[x0 + x]![y0 + y]!.rgb(
-                                      renderConfig.c_mode,
-                                    ),
-                                  )
-                                  .map((v) => v * 255),
-                                255,
-                              ],
-                              4 *
-                                ((buffer.height - y0 - y - 1) * render_size.w +
-                                  (x0 + x)),
-                            );
-                          }),
-                        )
-                        .flat(),
-                    );
-                  },
-                  { timeout: 1000 },
-                );
-              }
-              if (pushed) return;
-              if (!isActive) {
-                if (typeof task !== "undefined") render_queue.push(task);
-                return;
-              }
-              while (typeof task === "undefined") {
-                await new Promise((resolve) => setTimeout(resolve, 0));
-                if (!isActive) return;
-                task = render_queue.shift();
-              }
-              worker.postMessage(task!);
-            },
-          );
-          return worker;
-        });
-
-      const white_calc = new Worker(
-        new URL("./worker_white.js", import.meta.url),
-        { type: "module" },
-      );
-      white_calc.addEventListener(
-        "message",
-        function ({ data }: MessageEvent<WhiteMessageResponse>) {
-          renderConfig.ref.light = data.light;
-          renderConfig.ref.wall = data.wall;
-          refreshPostProcessor();
-        },
-      );
-      workers.push(white_calc);
 
       {
         renderConfig.c_mode.mode = config.querySelector<HTMLSelectElement>(
@@ -278,12 +188,99 @@ export default function execute() {
         ctx.putImageData(buffer, 0, 0);
         return true;
       });
+
+      {
+        const render_queue: MessageRequest[] = [];
+        for (let y0 = 0; y0 < render_size.h; y0 += chunkSize) {
+          for (let x0 = 0; x0 < render_size.w; x0 += chunkSize) {
+            render_queue.push({
+              x0,
+              x1: Math.min(x0 + chunkSize, render_size.w),
+              y0,
+              y1: Math.min(y0 + chunkSize, render_size.h),
+              ...render_size,
+            });
+          }
+        }
+        workers = await Promise.all(new Array(Math.ceil(Math.max(1, maxWorkers - 1)))
+        .fill(null)
+        .map(async () => {
+          const worker = new WorkerWrapper<MessageRequest, MessageResponse>(new URL("./worker.js", import.meta.url));
+          await worker.initialize(true);
+          return worker;
+        }));
+        workers.map(async function eventLoop(worker) {
+          let task;
+          do {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            if (!isActive) return;
+            task = render_queue.shift();
+          } while (typeof task === "undefined");
+          worker.push(task);
+          let data;
+          try {
+            data = await worker.wait();
+          } catch (e) {
+            console.error(e);
+            render_queue.push(task);
+            return;
+          }
+          setTimeout(() => eventLoop(worker), 0);
+          const { param, field } = data;
+          render_queue.push(param);
+          const { x0, y0 } = param;
+          requestIdleCallback(
+            async () => {
+              await Promise.all(
+                field
+                  .map((col, x) =>
+                    col.map(async (pix, y) => {
+                      acc[x0 + x]![y0 + y]!.accumulate(pix);
+                      buffer.data.set(
+                        [
+                          ...renderConfig
+                            .postProcessor(
+                              await acc[x0 + x]![y0 + y]!.rgb(
+                                renderConfig.c_mode,
+                              ),
+                            )
+                            .map((v) => v * 255),
+                          255,
+                        ],
+                        4 *
+                          ((buffer.height - y0 - y - 1) * render_size.w +
+                            (x0 + x)),
+                      );
+                    }),
+                  )
+                  .flat(),
+              );
+            },
+            { timeout: 1000 },
+          );
+        })
+      }
+
+      {
+        white_worker = await workerLoader(new URL("./worker_white.js", import.meta.url).toString());
+        white_worker.addEventListener('error', () => console.error('Error initializing worker'));
+        white_worker.addEventListener(
+          "message",
+          function ({ data }: MessageEvent<WhiteMessageResponse>) {
+            renderConfig.ref.light = data.light;
+            renderConfig.ref.wall = data.wall;
+            refreshPostProcessor();
+          },
+        );
+      }
     },
     stop: () => {
       isActive = false;
       workers?.forEach((worker) => {
         worker.terminate();
       });
+      white_worker?.postMessage({active: isActive} as WhiteMessageRequest);
+      white_worker?.terminate();
       workers = [];
     },
   };

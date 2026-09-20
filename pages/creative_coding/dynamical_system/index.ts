@@ -1,21 +1,22 @@
 import convert_color from "@/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/utils/color/palette.js";
 import {
-  maxWorkers,
   startAnimationLoop,
   startLoop,
 } from "@/utils/dom/utils.js";
+import { maxWorkers } from "@/utils/dom/worker/index.js";
+import { WorkerWrapper } from "@/utils/dom/worker/index.js";
 import { constrainMap } from "@/utils/math/utils.js";
 import { Vector } from "@/utils/math/vector.js";
 
-import type { MessageResponse } from "./worker.ts";
+import type { MessageRequest, MessageResponse } from "./worker.js";
 
 const hcl2hex = convert_color("hcl", "hex")!;
 
 export default function execute() {
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
-  let workers: Worker[];
+  let workers: WorkerWrapper<MessageRequest, MessageResponse>[];
   let isActive = false;
   const getBackground = () => getPaletteBaseColor(0);
   const param = {
@@ -38,15 +39,7 @@ export default function execute() {
   async function update(time: number) {
     if (!isActive) return false;
     result = await Promise.all(
-      workers.map((worker) => {
-        return new Promise<MessageResponse>((resolve) => {
-          worker.postMessage({ time });
-          worker.addEventListener("message", function listener({ data }) {
-            resolve(data);
-            worker.removeEventListener("message", listener);
-          });
-        });
-      }),
+      workers.map((worker) => worker.execute({ time })),
     );
     return true;
   }
@@ -97,31 +90,30 @@ export default function execute() {
   }
 
   return {
-    start: (sketch: HTMLCanvasElement) => {
+    start: async (sketch: HTMLCanvasElement) => {
       canvas = sketch;
       ctx = canvas.getContext("2d", { alpha: false })!;
       setup();
-      workers = new Array(maxWorkers).fill(null).map(
-        () =>
-          new Worker(new URL("./worker.js", import.meta.url), {
-            type: "module",
-          }),
-      );
-      workers.forEach((worker, i) => {
+      workers = await Promise.all(new Array(maxWorkers).fill(null).map(
+        async () => {
+          const worker = new WorkerWrapper<MessageRequest, MessageResponse>(new URL("./worker.js", import.meta.url))
+          await worker.initialize(true);
+          return worker;
+        }
+      ));
+      await Promise.all(workers.map(async (worker, i, a) => {
         const index =
-            i * Math.floor(count / maxWorkers) +
-            Math.min(i, count % maxWorkers),
+            i * Math.floor(count / a.length) +
+            Math.min(i, count % a.length),
           counts =
-            Math.floor(count / maxWorkers) + (i < count % maxWorkers ? 1 : 0);
+            Math.floor(count / a.length) + (i < count % a.length ? 1 : 0);
         const states = new Array(counts).fill(null).map((_, i) => ({
           state: [[constrainMap(index + i, 0, count, -err, +err), 2, 20]],
           hue: constrainMap(index + i, 0, count, 0, 360),
         }));
-        worker.addEventListener("message", function listener() {
-          worker.postMessage({ time_scale, param, states });
-          worker.removeEventListener("message", listener);
-        });
-      });
+        await worker.initialize(true);
+        return await worker.execute({time_scale, param, states});
+      }));
       isActive = true;
       startAnimationLoop(draw);
       startLoop(update);

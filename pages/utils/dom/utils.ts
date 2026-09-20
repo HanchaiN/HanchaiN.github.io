@@ -35,10 +35,6 @@ export function getMousePos(canvas: HTMLCanvasElement, evt: MouseEvent) {
   };
 }
 
-export const maxWorkers = window?.navigator?.hardwareConcurrency
-  ? Math.floor(window.navigator.hardwareConcurrency)
-  : 1;
-
 export function startLoop(
   callback: (t: DOMHighResTimeStamp) => Promise<boolean> | boolean,
 ) {
