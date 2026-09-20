@@ -10,7 +10,7 @@ export type MessageRequest = {
   h: number;
 };
 export type MessageResponse = {
-  param: MessageRequest
+  param: MessageRequest;
   field: TSpectrum[][];
 };
 
@@ -28,5 +28,7 @@ export function main(param: MessageRequest): MessageResponse {
   };
 }
 
-self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) => data !== null ? self.postMessage(main(data)) : null);
+self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) =>
+  data !== null ? self.postMessage(main(data)) : null,
+);
 self?.postMessage(null); // indicate ready

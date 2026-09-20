@@ -1,9 +1,6 @@
 import convert_color from "@/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/utils/color/palette.js";
-import {
-  startAnimationLoop,
-  startLoop,
-} from "@/utils/dom/utils.js";
+import { startAnimationLoop, startLoop } from "@/utils/dom/utils.js";
 import { maxWorkers } from "@/utils/dom/worker/index.js";
 import { WorkerWrapper } from "@/utils/dom/worker/index.js";
 import { constrainMap } from "@/utils/math/utils.js";
@@ -94,26 +91,29 @@ export default function execute() {
       canvas = sketch;
       ctx = canvas.getContext("2d", { alpha: false })!;
       setup();
-      workers = await Promise.all(new Array(maxWorkers).fill(null).map(
-        async () => {
-          const worker = new WorkerWrapper<MessageRequest, MessageResponse>(new URL("./worker.js", import.meta.url))
+      workers = await Promise.all(
+        new Array(maxWorkers).fill(null).map(async () => {
+          const worker = new WorkerWrapper<MessageRequest, MessageResponse>(
+            new URL("./worker.js", import.meta.url),
+          );
           await worker.initialize(true);
           return worker;
-        }
-      ));
-      await Promise.all(workers.map(async (worker, i, a) => {
-        const index =
-            i * Math.floor(count / a.length) +
-            Math.min(i, count % a.length),
-          counts =
-            Math.floor(count / a.length) + (i < count % a.length ? 1 : 0);
-        const states = new Array(counts).fill(null).map((_, i) => ({
-          state: [[constrainMap(index + i, 0, count, -err, +err), 2, 20]],
-          hue: constrainMap(index + i, 0, count, 0, 360),
-        }));
-        await worker.initialize(true);
-        return await worker.execute({time_scale, param, states});
-      }));
+        }),
+      );
+      await Promise.all(
+        workers.map(async (worker, i, a) => {
+          const index =
+              i * Math.floor(count / a.length) + Math.min(i, count % a.length),
+            counts =
+              Math.floor(count / a.length) + (i < count % a.length ? 1 : 0);
+          const states = new Array(counts).fill(null).map((_, i) => ({
+            state: [[constrainMap(index + i, 0, count, -err, +err), 2, 20]],
+            hue: constrainMap(index + i, 0, count, 0, 360),
+          }));
+          await worker.initialize(true);
+          return await worker.execute({ time_scale, param, states });
+        }),
+      );
       isActive = true;
       startAnimationLoop(draw);
       startLoop(update);

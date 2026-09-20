@@ -6,7 +6,11 @@ import {
   SelectDisplay,
 } from "@/utils/dom/element/SelectDisplay.js";
 import { startAnimationLoop } from "@/utils/dom/utils.js";
-import { maxWorkers, workerLoader, WorkerWrapper } from "@/utils/dom/worker/index.js";
+import {
+  maxWorkers,
+  workerLoader,
+  WorkerWrapper,
+} from "@/utils/dom/worker/index.js";
 import { throttle } from "@/utils/utils.js";
 
 import { LightAccumulator } from "./colors.js";
@@ -17,7 +21,10 @@ import { postProcessorGen, tone_mappers } from "./postprocessor.js";
 import { REF_ILLUM, default_mode, toRGB } from "./spectrum.js";
 import type { CMapMode, CMaxMode, CRefIllum, TSpectrum } from "./spectrum.ts";
 import type { MessageRequest, MessageResponse } from "./worker.ts";
-import type { MessageRequest as WhiteMessageRequest, MessageResponse as WhiteMessageResponse } from "./worker_white.ts";
+import type {
+  MessageRequest as WhiteMessageRequest,
+  MessageResponse as WhiteMessageResponse,
+} from "./worker_white.ts";
 
 export default function execute() {
   let workers: WorkerWrapper<MessageRequest, MessageResponse>[] = [];
@@ -202,13 +209,17 @@ export default function execute() {
             });
           }
         }
-        workers = await Promise.all(new Array(Math.ceil(Math.max(1, maxWorkers - 1)))
-        .fill(null)
-        .map(async () => {
-          const worker = new WorkerWrapper<MessageRequest, MessageResponse>(new URL("./worker.js", import.meta.url));
-          await worker.initialize(true);
-          return worker;
-        }));
+        workers = await Promise.all(
+          new Array(Math.ceil(Math.max(1, maxWorkers - 1)))
+            .fill(null)
+            .map(async () => {
+              const worker = new WorkerWrapper<MessageRequest, MessageResponse>(
+                new URL("./worker.js", import.meta.url),
+              );
+              await worker.initialize(true);
+              return worker;
+            }),
+        );
         workers.map(async function eventLoop(worker) {
           let task;
           do {
@@ -258,12 +269,16 @@ export default function execute() {
             },
             { timeout: 1000 },
           );
-        })
+        });
       }
 
       {
-        white_worker = await workerLoader(new URL("./worker_white.js", import.meta.url).toString());
-        white_worker.addEventListener('error', () => console.error('Error initializing worker'));
+        white_worker = await workerLoader(
+          new URL("./worker_white.js", import.meta.url).toString(),
+        );
+        white_worker.addEventListener("error", () =>
+          console.error("Error initializing worker"),
+        );
         white_worker.addEventListener(
           "message",
           function ({ data }: MessageEvent<WhiteMessageResponse>) {
@@ -279,7 +294,7 @@ export default function execute() {
       workers?.forEach((worker) => {
         worker.terminate();
       });
-      white_worker?.postMessage({active: isActive} as WhiteMessageRequest);
+      white_worker?.postMessage({ active: isActive } as WhiteMessageRequest);
       white_worker?.terminate();
       workers = [];
     },

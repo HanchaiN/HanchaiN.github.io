@@ -3,22 +3,24 @@ class ABC {
   static gainNode: GainNode;
   static osc: OscillatorNode;
 
-  static osc_lookup = new Map(Object.entries({
-    'C': 440 * 3 / 5,
-    'D': 440 * 2 / 3,
-    'E': 440 * 3 / 4,
-    'F': 440 * 4 / 5,
-    'G': 440 * 9 / 10,
-    'A': 440 * 1 / 1,
-    'B': 440 * 9 / 8,
-    'c': 440 * 6 / 5,
-    'd': 440 * 4 / 3,
-    'e': 440 * 3 / 2,
-    'f': 440 * 8 / 5,
-    'g': 440 * 9 / 5,
-    'a': 440 * 2 / 1,
-    'b': 440 * 9 / 4,
-    }));
+  static osc_lookup = new Map(
+    Object.entries({
+      C: (440 * 3) / 5,
+      D: (440 * 2) / 3,
+      E: (440 * 3) / 4,
+      F: (440 * 4) / 5,
+      G: (440 * 9) / 10,
+      A: (440 * 1) / 1,
+      B: (440 * 9) / 8,
+      c: (440 * 6) / 5,
+      d: (440 * 4) / 3,
+      e: (440 * 3) / 2,
+      f: (440 * 8) / 5,
+      g: (440 * 9) / 5,
+      a: (440 * 2) / 1,
+      b: (440 * 9) / 4,
+    }),
+  );
 
   private _score: string;
   private _index: number;
@@ -44,10 +46,10 @@ class ABC {
 
     if (!this.osc_lookup.has(ch)) return;
     const frequency = this.osc_lookup.get(ch)!;
-    const duration = 60 * 1 / 120;
+    const duration = (60 * 1) / 120;
     return new Promise<void>((resolve) => {
       const currentTime = this.audioContext.currentTime;
-      setTimeout(() => resolve(), 1000*duration);
+      setTimeout(() => resolve(), 1000 * duration);
       this.osc.frequency.setValueAtTime(frequency, currentTime);
       this.gainNode.gain.cancelScheduledValues(currentTime);
       this.gainNode.gain.setValueAtTime(0.5, currentTime);
@@ -61,25 +63,26 @@ class ABC {
     this._index++;
     return this._index < this._score.length;
   }
-  
+
   async play() {
     while (true) {
-      if (!await this.playNext()) return;
+      if (!(await this.playNext())) return;
     }
   }
 }
 
 export default function execute() {
-  let manager: ABC
+  let manager: ABC;
   return {
     start: (_: HTMLCanvasElement, config: HTMLFormElement) => {
       config.querySelector("#start")?.addEventListener("click", () => {
         ABC.setup();
-        
-        const score = config.querySelector<HTMLTextAreaElement>("#score")?.value || "";
+
+        const score =
+          config.querySelector<HTMLTextAreaElement>("#score")?.value || "";
         manager = new ABC(score);
         manager.play();
-      })
+      });
     },
     stop: () => {
       ABC.gainNode?.disconnect();

@@ -96,19 +96,20 @@ export default function execute() {
         return dA === dB ? Math.min(a, b) : dA < dB ? a : b;
       }, 0);
     const seed = cache[closestKey] ?? [];
-    const worker = new WorkerWrapper<MessageRequest, MessageResponse>(new URL("worker.js", import.meta.url));
+    const worker = new WorkerWrapper<MessageRequest, MessageResponse>(
+      new URL("worker.js", import.meta.url),
+    );
     await worker.initialize(true);
-    const {centroids} = await worker.execute({
-        samples: getSample(),
-        n_colors,
-        reference: seed.map(embed2hex),
-        options: {
-          n_sample: form.querySelector<HTMLInputElement>(
-            "#sample-size-cluster",
-          )!.valueAsNumber,
-        },
-      });
-    setPalette(centroids.map(c => str2embed(c)));
+    const { centroids } = await worker.execute({
+      samples: getSample(),
+      n_colors,
+      reference: seed.map(embed2hex),
+      options: {
+        n_sample: form.querySelector<HTMLInputElement>("#sample-size-cluster")!
+          .valueAsNumber,
+      },
+    });
+    setPalette(centroids.map((c) => str2embed(c)));
     worker.terminate();
   }
   function snap() {
@@ -176,7 +177,7 @@ export default function execute() {
   }
 
   function lock() {
-    if (isLocked) throw new Error('Locked');
+    if (isLocked) throw new Error("Locked");
     isLocked = true;
     form.querySelector<HTMLInputElement>("#palette-text")!.disabled = true;
     form.querySelector<HTMLInputElement>("#palette-count")!.disabled = true;

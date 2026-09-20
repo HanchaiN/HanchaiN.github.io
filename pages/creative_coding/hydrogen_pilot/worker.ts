@@ -11,7 +11,6 @@ import {
   psi_orbital_superposition_sample,
 } from "../hydrogen_cloud/psi.js";
 
-
 export type MessageRequest = {
   superposition?: { c: TComplex; n: number; l: number; m: number }[];
   addStates?: number;
@@ -28,7 +27,7 @@ export function createMain() {
   let states: HigherOrderState[] = [];
   let pretime: number = 0,
     time_scale = 1;
-  
+
   function getHue(pos: Vector, t: number) {
     const val = psi_orbital_superposition(
       superposition,
@@ -90,9 +89,11 @@ export function createMain() {
         h: getHue(state.state[0]!, pretime * time_scale),
       }));
     return response;
-  }
+  };
 }
 const main = createMain();
 
-self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) => data !== null ? self.postMessage(main(data)) : null);
+self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) =>
+  data !== null ? self.postMessage(main(data)) : null,
+);
 self?.postMessage(null); // indicate ready

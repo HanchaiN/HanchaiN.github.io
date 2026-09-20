@@ -4,13 +4,20 @@
 
 import "https://ga.jspm.io/npm:es-module-shims@1.6.2/dist/es-module-shims.wasm.js";
 
-self?.addEventListener('message', function listener({data: {importMap, workerUrl}}) {
-    this.removeEventListener('message', listener);
+self?.addEventListener(
+  "message",
+  function listener({ data: { importMap, workerUrl } }) {
+    this.removeEventListener("message", listener);
 
     importShim.addImportMap(JSON.parse(importMap));
     importShim(workerUrl)
-    .then(_ => {
-            self?.postMessage("module has been loaded");
-        })
-        .catch(e => setTimeout(() => { throw e; }));
-})
+      .then((_) => {
+        self?.postMessage("module has been loaded");
+      })
+      .catch((e) =>
+        setTimeout(() => {
+          throw e;
+        }),
+      );
+  },
+);

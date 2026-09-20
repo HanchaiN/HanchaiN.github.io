@@ -3,7 +3,7 @@ import { HigherOrderState } from "./dynamic.js";
 
 export type MessageRequest = {
   states?: { state: number[][]; hue: number }[];
-  param?: { rho: number, sigma: number, beta: number };
+  param?: { rho: number; sigma: number; beta: number };
   time?: number;
   time_scale?: number;
 };
@@ -29,7 +29,7 @@ export function createMain() {
       s.x * s.y - param.beta * s.z,
     );
   }
-  
+
   return function main(data: MessageRequest) {
     const response: MessageResponse = {};
     if (data.states)
@@ -57,9 +57,11 @@ export function createMain() {
       hue,
     }));
     return response;
-  }
+  };
 }
 const main = createMain();
 
-self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) => data !== null ? self.postMessage(main(data)) : null);
+self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) =>
+  data !== null ? self.postMessage(main(data)) : null,
+);
 self?.postMessage(null); // indicate ready
