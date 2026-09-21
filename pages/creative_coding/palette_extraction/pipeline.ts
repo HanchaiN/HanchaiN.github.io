@@ -1,3 +1,4 @@
+import { gaussianMixture } from "@/utils/algo/gmm.js";
 import {
   extendCentroids,
   getSilhouetteScore,
@@ -23,9 +24,42 @@ export function extractPalette(
   samples: SRGBColor[],
   n_colors: number,
   reference: string[] = [],
-  { n_sample = Infinity, max_iter = 1000 } = {},
+  {
+    n_sample = Infinity,
+    max_iter = 1000,
+    mode = "kmean" as "kmean" | "gmm" | "kmean-gmm",
+  } = {},
 ) {
-  return kMeans(samples.map(srgb2embed), {
+  let clusterer: <T = EmbedColor>(
+    samples: T[],
+    options: {
+      n_sample?: number;
+      n_cluster?: number;
+      max_iter?: number;
+      seeds?: T[] | null;
+      copy?: (v: T) => T;
+      dist?: (a: T, b: T) => number;
+      average?: (a: T[], w: number[]) => T;
+    },
+  ) => T[];
+  switch (mode) {
+    case "kmean":
+      clusterer = kMeans;
+      break;
+    case "gmm":
+      clusterer = gaussianMixture;
+      break;
+    case "kmean-gmm":
+      clusterer = (samples, options) =>
+        gaussianMixture(samples, {
+          ...options,
+          seeds: kMeans(samples, { ...options }),
+        });
+      break;
+    default:
+      throw new Error(`Invalid mode ${mode}`);
+  }
+  return clusterer(samples.map(srgb2embed), {
     n_sample: n_sample,
     n_cluster: n_colors,
     max_iter,

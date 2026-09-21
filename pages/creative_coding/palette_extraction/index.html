@@ -47,7 +47,21 @@
           value="1000"
           min="1"
           step="1"
-        /><br /><label for="auto-target">Target Color Count:</label
+        /><label for="cluster-iter">Iterations (clustering):</label
+        ><input
+          id="cluster-iter"
+          type="number"
+          value="1000"
+          min="1"
+          step="1"
+        /><label for="cluster-mode">Clustering algorithm</label
+        ><select id="cluster-mode">
+          <option value="kmean" selected>k-Mean clustering</option>
+          <option value="gmm">Gaussian mixture model (EM method)</option>
+          <option value="kmean-gmm">
+            Gaussian mixture model (EM method with kMean initialization)
+          </option></select
+        ><br /><label for="auto-target">Target Color Count:</label
         ><input
           id="auto-target"
           type="number"

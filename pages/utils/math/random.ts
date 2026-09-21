@@ -43,6 +43,9 @@ export function randomChi(alpha = 1) {
     acc += Math.pow(randomGaussian(0, 1), 2);
   return Math.sqrt(acc);
 }
+export function randomRange(from: number, to: number) {
+  return Math.floor(lerp(Math.random(), from, to + 1));
+}
 export function sample<T>(array: T[], prob: number[] = []): T {
   if (prob.length === array.length) {
     const r = Math.random() * sum(prob);

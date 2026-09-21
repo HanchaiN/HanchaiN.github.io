@@ -12,29 +12,19 @@ import {
 import { onImageChange } from "@/utils/dom/image.js";
 import { kernelGenerator } from "@/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/utils/dom/kernelGenerator.ts";
-import { randomGaussian, randomUniform } from "@/utils/math/random.js";
-import {
-  argmax,
-  average,
-  constrainLerp,
-  gaus,
-  softargmax,
-} from "@/utils/math/utils.js";
+import { randomRange, sample } from "@/utils/math/random.js";
+import { argmax, constrainLerp, gaus, softargmax } from "@/utils/math/utils.js";
 import { vector_dist } from "@/utils/math/vector.js";
 import type { TVector } from "@/utils/math/vector.ts";
 import { iterate_all } from "@/utils/utils.js";
 
-// import { generate } from "../../perlin_noise/pipeline.js";
-import { applyDithering_Ordered } from "../dithering/pipeline.js";
-import { extractPalette } from "../palette_extraction/pipeline.js";
+import { PaletteInput } from "@/utils/dom/element/PaletteInput.js";
 
 const embed: ColorSpace = "lab";
 type EmbedColor = ColorSpaceMap[typeof embed];
 
 const str2srgb = convert_color("str", "srgb")!,
   srgb2embed = convert_color("srgb", embed)!,
-  srgb2hcl = convert_color("srgb", "hcl")!,
-  hcl2srgb = convert_color("hcl", "srgb")!,
   embed2lab = convert_color(embed, "lab")!,
   embed2srgb = convert_color(embed, "srgb")!;
 const embed_distance = (c1: EmbedColor, c2: EmbedColor) =>
@@ -46,7 +36,8 @@ export default function execute() {
   let ctx: CanvasRenderingContext2D;
   let handlerId: ReturnType<typeof setTimeout> | null = null;
   let buffer: ImageData;
-  let generator: Generator<SRGBColor, never, void>;
+  let palette: PaletteInput;
+  let target_generator: Generator<SRGBColor, never, void>;
   let renderer: ReturnType<
     typeof kernelGenerator<
       Record<string, never>,
@@ -71,125 +62,29 @@ export default function execute() {
   };
 
   function* targetGenerator(
-    image: CanvasImageSource,
+    initBuffer: ImageData | null = null,
   ): Generator<SRGBColor, never, void> {
-    const offscreen = new OffscreenCanvas(100, 100);
-    const offscreenCtx = offscreen.getContext("2d", { alpha: false })!;
-    offscreenCtx.drawImage(image, 0, 0, offscreen.width, offscreen.height);
-    const buffer = offscreenCtx.getImageData(
-      0,
-      0,
-      offscreen.width,
-      offscreen.height,
-    );
-    const samples = new Array(buffer.width * buffer.height)
-      .fill(0)
-      .map((_, i) => {
-        return [
+    while (true) {
+      let c: SRGBColor = [Math.random(), Math.random(), Math.random()];
+
+      if (palette.value.length > 0) {
+        c = str2srgb(sample(palette.value));
+      }
+      if (buffer) {
+        const i = randomRange(0, buffer.width * buffer.height);
+        c = [
           buffer.data[i * 4 + 0]! / 255,
           buffer.data[i * 4 + 1]! / 255,
           buffer.data[i * 4 + 2]! / 255,
         ] as SRGBColor;
-      });
-    const auto_palette = extractPalette(samples, 16).map((c) => str2srgb(c));
-    const auto_palette_weight = auto_palette.map(() => 1 / auto_palette.length);
-    {
-      applyDithering_Ordered(buffer, auto_palette);
-      const ind = new Array(buffer.width * buffer.height)
-        .fill(0)
-        .map((_, i) => {
-          return srgb2embed([
-            buffer.data[i * 4 + 0]! / 255,
-            buffer.data[i * 4 + 1]! / 255,
-            buffer.data[i * 4 + 2]! / 255,
-          ]);
-        })
-        .map((v) => {
-          let min_dist = Infinity,
-            min_ind = -1;
-          for (let j = 0; j < auto_palette.length; j++) {
-            const dist = embed_distance(v, srgb2embed(auto_palette[j]!));
-            if (dist < min_dist) {
-              min_dist = dist;
-              min_ind = j;
-            }
-          }
-          return min_ind;
-        });
-      const freq = auto_palette.map(
-        (_, i) =>
-          ind.filter((j) => j === i).length / (buffer.width * buffer.height),
-      );
-      softargmax(freq).forEach((v, i) => (auto_palette_weight[i] = v));
-    }
-    console.info(auto_palette.map((v, i) => [v, auto_palette_weight[i]]));
-    const palette = getPaletteAccentColors().map((v) => {
-      return str2srgb(v);
-    });
-    const palette_hcl = new Array(buffer.width * buffer.height)
-        .fill(0)
-        .map((_, i) => {
-          return srgb2hcl([
-            buffer.data[i * 4 + 0]! / 255,
-            buffer.data[i * 4 + 1]! / 255,
-            buffer.data[i * 4 + 2]! / 255,
-          ]);
-        }),
-      avg_l = average(palette_hcl.map((v) => v[2])),
-      avg_c = average(palette_hcl.map((v) => v[1])),
-      cov_ll = average(palette_hcl.map((v) => (v[2] - avg_l) * (v[2] - avg_l))),
-      cov_cc = average(palette_hcl.map((v) => (v[1] - avg_c) * (v[1] - avg_c))),
-      cov_lc = average(palette_hcl.map((v) => (v[2] - avg_l) * (v[1] - avg_c))),
-      fac_xl = Math.sqrt(cov_ll),
-      fac_xc = cov_lc / fac_xl,
-      fac_yc = Math.sqrt(cov_cc - fac_xc * fac_xc);
-    while (true) {
-      let c: SRGBColor;
-
-      // Math.random() returns new value for each condition check
-      if (Math.random() < 0.0025)
+      }
+      if (initBuffer) {
+        const i = randomRange(0, initBuffer.width * initBuffer.height);
         c = [
-          Math.round(Math.random()),
-          Math.round(Math.random()),
-          Math.round(Math.random()),
-        ];
-      else if (Math.random() < 0.95) {
-        c = auto_palette[Math.floor(Math.random() * auto_palette.length)]!;
-        const seed = Math.random();
-        let s = 0;
-        for (let j = 0; j < auto_palette.length; j++) {
-          s += auto_palette_weight[j]!;
-          if (s >= seed) {
-            c = auto_palette[j]!;
-            break;
-          }
-        }
-      } else if (Math.random() < 0.0125) {
-        c = palette[Math.floor(Math.random() * palette.length)]!;
-        // eslint-disable-next-line no-dupe-else-if
-      } else if (Math.random() < 0.0125) {
-        c = hcl2srgb([
-          randomUniform(0, 1),
-          randomUniform(0.05, 0.1),
-          randomGaussian(0.8, 0.125),
-        ]);
-      } else if (Math.random() < 0.5) {
-        c = hcl2srgb([
-          randomUniform(0, 1),
-          randomUniform(
-            avg_c - 1.5 * Math.sqrt(cov_cc),
-            avg_c + 1.5 * Math.sqrt(cov_cc),
-          ),
-          randomGaussian(avg_l, Math.sqrt(cov_ll)),
-        ]);
-      } else {
-        const x = randomGaussian(),
-          y = randomGaussian();
-        c = hcl2srgb([
-          randomUniform(0, 1),
-          avg_c + fac_xc * x + fac_yc * y,
-          avg_l + fac_xl * x,
-        ]);
+          initBuffer.data[i * 4 + 0]! / 255,
+          initBuffer.data[i * 4 + 1]! / 255,
+          initBuffer.data[i * 4 + 2]! / 255,
+        ] as SRGBColor;
       }
       if (
         c[0] >= 0 &&
@@ -226,9 +121,18 @@ export default function execute() {
     this.color(r, g, b, 1);
   }
 
-  function setup(config: HTMLFormElement, image: CanvasImageSource) {
+  function setup(config: HTMLFormElement, initImage: CanvasImageSource) {
     if (handlerId != null) clearTimeout(handlerId);
-    generator = targetGenerator(image);
+    {
+      const canvas = new OffscreenCanvas(buffer.width, buffer.height);
+      const ctx = canvas.getContext("2d", { alpha: false })!;
+      ctx.drawImage(initImage, 0, 0, buffer.width, buffer.height);
+      const initBuffer = ctx.getImageData(0, 0, buffer.width, buffer.height, {
+        colorSpace: "srgb",
+      });
+      target_generator = targetGenerator(initBuffer);
+      buffer.data.set(initBuffer.data);
+    }
     constants.range =
       +config.querySelector<HTMLInputElement>("input#range")!.value;
     constants.learning_rate = +config.querySelector<HTMLInputElement>(
@@ -256,7 +160,7 @@ export default function execute() {
         "output#iteration-count",
       )!;
       iteration_count_elem.value = "0";
-      handlerId = setTimeout(async function update() {
+      handlerId = setTimeout(async function redraw() {
         if (!isActive) return;
         await createImageBitmap(buffer).then((bmp) =>
           ctx.drawImage(bmp, 0, 0, ctx.canvas.width, ctx.canvas.height),
@@ -265,14 +169,14 @@ export default function execute() {
         iteration_count_elem.value = (
           1 + Number(iteration_count_elem.value)
         ).toString();
-        handlerId = setTimeout(update, 0);
+        handlerId = setTimeout(redraw, 0);
       }, 0);
     }
   }
   function step() {
     const values = new Array(constants.color_choices)
       .fill(0)
-      .map(() => generator.next().value);
+      .map(() => target_generator.next().value);
     let x = -1,
       y = -1,
       c = 0;
@@ -339,6 +243,11 @@ export default function execute() {
   return {
     start: (canvas: HTMLCanvasElement, config: HTMLFormElement) => {
       isActive = true;
+      palette = new PaletteInput(
+        config.querySelector("#palette")!,
+        config.querySelector("#palette-text")!,
+      );
+      palette.value = getPaletteAccentColors();
       ctx = canvas.getContext("2d", { alpha: false, desynchronized: true })!;
       ctx.fillStyle = getPaletteBaseColor(0.5);
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -387,25 +296,10 @@ export default function execute() {
             "output#color-choices-value",
           )!.value = (+this.value).toFixed(3);
         });
-      // canvas.addEventListener("click", function () {
-      //   generate(buffer);
-      //   const ofs_canvas = new OffscreenCanvas(buffer.width, buffer.height);
-      //   const ofs_ctx = ofs_canvas.getContext("2d")!;
-      //   ofs_ctx.putImageData(buffer, 0, 0);
-      //   ctx.drawImage(ofs_canvas, 0, 0, canvas.width, canvas.height);
-      //   setup(config, canvas);
-      // });
       onImageChange(
         config.querySelector<HTMLInputElement>("#image")!,
         (img) => {
-          const canvas = new OffscreenCanvas(buffer.width, buffer.height);
-          const ctx = canvas.getContext("2d", { alpha: false })!;
-          ctx.drawImage(img, 0, 0, buffer.width, buffer.height);
-          const _buffer = ctx.getImageData(0, 0, buffer.width, buffer.height, {
-            colorSpace: "srgb",
-          });
-          buffer.data.set(_buffer.data);
-          setup(config, canvas);
+          setup(config, img);
         },
       );
     },

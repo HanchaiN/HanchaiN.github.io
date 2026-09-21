@@ -8,6 +8,7 @@ export type MessageRequest = {
   options: {
     n_sample?: number;
     max_iter?: number;
+    mode?: "kmean" | "gmm";
   };
 };
 export type MessageResponse = {

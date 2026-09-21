@@ -176,7 +176,8 @@ export function* kMeansStep<T>(
       .sort(() => Math.random() - 0.5);
   const centroids = extendCentroids(samples, n_cluster, seeds, dist, copy);
   // K-means clustering
-  for (let _ = 0; _ < max_iter; _++) {
+  let convergence: number = Infinity;
+  for (let it = 0; it < max_iter; it++) {
     const acc: T[][] = new Array(centroids.length).fill(0).map(() => []);
     const sample = getSample();
     for (let k = 0; k < sample.length; k++) {
@@ -210,8 +211,12 @@ export function* kMeansStep<T>(
       }
     }
     yield { centroids };
-    if (converged) break;
+    if (converged) {
+      convergence = it;
+      break;
+    }
   }
+  console.debug(convergence);
   return centroids;
 }
 

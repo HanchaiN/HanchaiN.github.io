@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Clustering</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@/": "/",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.mjs",
+          "katex/": "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/",
+          "p5": "https://cdn.jsdelivr.net/npm/p5@1.11.10/+esm",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "mathjs": "https://cdn.jsdelivr.net/npm/mathjs@14.7.0/+esm"
+        }
+      }
+    </script>
+    <script type="module">
+      import execute from "@/creative_coding/clustering/index.js";
+
+      const root = document.getElementById("demo");
+      execute().start(
+        root.querySelector("#canvas"),
+        root.querySelector("#config"),
+      );
+    </script>
+  </head>
+  <body>
+    <h1>Clustering</h1>
+    <div id="demo">
+      <canvas id="canvas" width="500" height="500">
+        Canvas not supported.
+      </canvas>
+      <form id="config">
+        <button id="restart" type="button">Clear</button>
+        <button id="continue" type="button">Continue</button>
+        <br />
+        <label for="sample-size">Sample size:</label>
+        <input id="sample-size" type="number" value="1000" min="1" step="1" />
+        <br />
+        <label for="cluster-count">Cluster count:</label>
+        <input
+          id="cluster-count"
+          type="number"
+          value="1"
+          min="1"
+          max="16"
+          step="1"
+        />
+        <br />
+        <label for="algorithm">Algorithm:</label>
+        <select id="algorithm">
+          <option value="kmean" selected>k-Means</option>
+          <option value="gmm">Gaussian mixture model</option>
+        </select>
+      </form>
+    </div>
+    <div class="description">LGTM</div>
+  </body>
+</html>

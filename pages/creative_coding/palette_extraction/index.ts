@@ -107,6 +107,10 @@ export default function execute() {
       options: {
         n_sample: form.querySelector<HTMLInputElement>("#sample-size-cluster")!
           .valueAsNumber,
+        max_iter:
+          form.querySelector<HTMLInputElement>("#cluster-iter")!.valueAsNumber,
+        mode: form.querySelector<HTMLSelectElement>("#cluster-mode")!.value as
+          "kmean" | "gmm",
       },
     });
     setPalette(centroids.map((c) => str2embed(c)));
