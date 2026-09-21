@@ -2,7 +2,7 @@ import convert_color from "@/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/utils/color/palette.js";
 import { kernelGenerator } from "@/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/utils/dom/kernelGenerator.ts";
-import { startAnimationLoop, startLoop } from "@/utils/dom/utils.js";
+import { startAnimationLoop, startIdleLoop } from "@/utils/dom/utils.js";
 import { complex_absSq, complex_zeta } from "@/utils/math/complex.js";
 import type { TComplex } from "@/utils/math/complex.ts";
 import { fpart, map } from "@/utils/math/utils.js";
@@ -85,7 +85,7 @@ export default function execute() {
         ctx.putImageData(buffer, 0, 0);
         return !done;
       });
-      startLoop(function update() {
+      startIdleLoop(function update() {
         if (!isActive) return true;
         for (let _ = 0; _ < iter; _++) {
           const res = step.next();

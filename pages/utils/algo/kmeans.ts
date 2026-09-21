@@ -1,5 +1,6 @@
 import { sample } from "../math/random.js";
-import { argmax, average, minA, softargmax } from "../math/utils.js";
+import { argmax, average, min, softargmax } from "../math/utils.js";
+import { iterate_all } from "../utils.js";
 
 function getSilhouetteScoreArray<T>(
   samples: T[],
@@ -114,7 +115,7 @@ function addCentroid<T>(
 ) {
   // K-means++ initialization
   const weight = softargmax(
-    samples.map((v) => minA(seeds.map((c) => dist(v, c)))),
+    samples.map((v) => min(seeds.map((c) => dist(v, c)))),
     0.1,
   );
   return sample(samples, weight);
@@ -128,7 +129,7 @@ function removeCentroid<T>(
   if (seeds.length === 0) return null;
   const weight = softargmax(
     seeds.map((v, i) =>
-      minA(seeds.filter((_, j) => i !== j).map((c) => dist(v, c))),
+      min(seeds.filter((_, j) => i !== j).map((c) => dist(v, c))),
     ),
     -0.1,
   );
@@ -156,21 +157,24 @@ export function extendCentroids<T>(
   return centroids;
 }
 
-export function kMeans<T>(
+export function* kMeansStep<T>(
   samples: T[],
-  N_SAMPLE: number = 1000,
-  n = 16,
-  max_iter = 1000,
-  seeds: T[] = [],
-  copy: (v: T) => T = (v) => v,
-  dist: (a: T, b: T) => number = () => 0,
-  average: (a: T[], w: number[]) => T = (a, w) => a[argmax(w)]!,
+  {
+    n_sample = 1000,
+    n_cluster = 16,
+    max_iter = 1000,
+    seeds = null as T[] | null,
+    copy = (v: T) => v,
+    dist = (_a: T, _b: T) => 0 as number,
+    average = (array: T[], w: number[]) => array[argmax(w)] as T,
+  } = {},
 ) {
-  const getSample = (n = N_SAMPLE) =>
+  if (seeds === null) seeds = [];
+  const getSample = (n = n_sample) =>
     samples
       .filter(() => n <= 0 || Math.random() < n / samples.length)
       .sort(() => Math.random() - 0.5);
-  const centroids = extendCentroids(samples, n, seeds, dist, copy);
+  const centroids = extendCentroids(samples, n_cluster, seeds, dist, copy);
   // K-means clustering
   for (let _ = 0; _ < max_iter; _++) {
     const acc: T[][] = new Array(centroids.length).fill(0).map(() => []);
@@ -205,7 +209,12 @@ export function kMeans<T>(
         centroids[j] = c_;
       }
     }
+    yield { centroids };
     if (converged) break;
   }
   return centroids;
+}
+
+export function kMeans<T>(...args: Parameters<typeof kMeansStep<T>>) {
+  return iterate_all(kMeansStep(...args));
 }

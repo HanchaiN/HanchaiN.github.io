@@ -1,6 +1,6 @@
 import { Fraction } from "@/utils/math/fraction.js";
 import { shuffleArray } from "@/utils/math/random.js";
-import { factorial, maxA, minA, sum } from "@/utils/math/utils.js";
+import { factorial, max, min, sum } from "@/utils/math/utils.js";
 
 export function toAdjMatrix(
   adjList: Map<number, { id: number; value: Fraction }[]>,
@@ -282,8 +282,8 @@ export function preTransverse(
   const n = activity.length;
   const _sample_size =
     sample_size >= 0 ? sample_size : Math.round(-sample_size * n * n);
-  const a_max = maxA(activity.flat());
-  const a_min = minA(activity.flat().filter((b) => b > 0));
+  const a_max = max(activity.flat());
+  const a_min = min(activity.flat().filter((b) => b > 0));
   const v_min = Math.pow(a_min, n) / factorial(n);
   const a0 = activity.map((row) => row.map((v) => (v > 0 ? v : v_min)));
   const a_ = new Array(n).fill(0).map(() => new Array(n).fill(a_max));

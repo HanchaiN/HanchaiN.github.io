@@ -1,6 +1,6 @@
 import { matrix_inverse, matrix_mult_vector } from "@/utils/math/matrix.js";
 import type { TMatrix } from "@/utils/math/matrix.ts";
-import { constrain, maxA, minA } from "@/utils/math/utils.js";
+import { constrain, max, min } from "@/utils/math/utils.js";
 import { Vector } from "@/utils/math/vector.js";
 
 import { MAX_DIST, MIN_DIST } from "./const.js";
@@ -73,7 +73,7 @@ export class UnionObject<
     super(objects);
   }
   distance(pos: Vector, dir?: Vector): number {
-    return minA(this.objectsArray.map((o) => o.distance(pos, dir)));
+    return min(this.objectsArray.map((o) => o.distance(pos, dir)));
   }
   protected objectAt(pos: Vector): SceneObject {
     return this.objectsArray.reduce<[SceneObject | null, number]>(
@@ -93,7 +93,7 @@ export class IntersectObject<
     super(objects);
   }
   distance(pos: Vector, dir?: Vector): number {
-    return maxA(this.objectsArray.map((o) => o.distance(pos, dir)));
+    return max(this.objectsArray.map((o) => o.distance(pos, dir)));
   }
   protected objectAt(pos: Vector): SceneObject {
     return this.objectsArray.reduce<[SceneObject | null, number]>(

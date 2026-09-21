@@ -10,7 +10,7 @@ import {
 import { startAnimationLoop } from "@/utils/dom/utils.js";
 import { maxWorkers } from "@/utils/dom/worker/index.js";
 import { WorkerWrapper } from "@/utils/dom/worker/index.js";
-import { constrain, maxA } from "@/utils/math/utils.js";
+import { constrain, max } from "@/utils/math/utils.js";
 
 import type { MessageRequest, MessageResponse } from "./worker.js";
 import type { TComplex } from "@/utils/math/complex";
@@ -32,7 +32,7 @@ export default function execute() {
 
   const counts = 8192;
   const superposition = [{ c: [1, 0] as TComplex, n: 3, l: 1, m: +1 }];
-  const n_max = maxA(superposition.map(({ n }) => n));
+  const n_max = max(superposition.map(({ n }) => n));
   const unit = Math.pow(n_max, 2);
   const time_scale = 1e4;
 

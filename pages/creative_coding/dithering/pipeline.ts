@@ -13,7 +13,12 @@ import { kernelRunner } from "@/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/utils/dom/kernelGenerator.ts";
 import { matrix_inverse, matrix_mult } from "@/utils/math/matrix.js";
 import { sample } from "@/utils/math/random.js";
-import { constrain, normalize, softargmax, sum } from "@/utils/math/utils.js";
+import {
+  constrain,
+  normalizeSum,
+  softargmax,
+  sum,
+} from "@/utils/math/utils.js";
 import {
   vector_add,
   vector_dot,
@@ -142,7 +147,7 @@ function _applyDithering_Ordered<Embed extends number[]>(
     let w = matrix_mult([k0], k_inv)[0]! as number[];
     w.push(1 - sum(w));
     w = w.map((v) => constrain(v, 0, 1));
-    w = normalize(w);
+    w = normalizeSum(w);
     let acc = 0;
     for (let i = 0; i < w.length; i++) {
       acc += constrain(w[i]!, 0, 1);

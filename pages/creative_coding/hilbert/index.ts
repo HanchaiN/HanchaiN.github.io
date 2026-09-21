@@ -9,7 +9,7 @@ import type { IKernelFunctionThis } from "@/utils/dom/kernelGenerator.ts";
 import {
   getMousePos,
   startAnimationLoop,
-  startLoop,
+  startIdleLoop,
 } from "@/utils/dom/utils.js";
 import { lerp } from "@/utils/math/utils.js";
 
@@ -66,7 +66,7 @@ export default function execute() {
       );
       const step = renderer(n);
       let done = false;
-      startLoop(function update() {
+      startIdleLoop(function update() {
         if (!isActive) return false;
         for (let _ = 0; _ < iter; _++) {
           const res = step.next();

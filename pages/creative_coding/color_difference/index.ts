@@ -12,7 +12,7 @@ import { getPaletteBaseColor } from "@/utils/color/palette.js";
 import { PaletteInput } from "@/utils/dom/element/PaletteInput.js";
 import { kernelGenerator } from "@/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/utils/dom/kernelGenerator.ts";
-import { startAnimationLoop, startLoop } from "@/utils/dom/utils.js";
+import { startAnimationLoop, startIdleLoop } from "@/utils/dom/utils.js";
 import { map } from "@/utils/math/utils.js";
 
 const lab2srgb = convert_color("lab", "srgb")!,
@@ -186,7 +186,7 @@ export default function execute() {
         }
         return true;
       });
-      startLoop(function update() {
+      startIdleLoop(function update() {
         if (!isActive) return false;
         if (step !== null) {
           for (let _ = 0; _ < iter; _++) {

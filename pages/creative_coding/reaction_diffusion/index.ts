@@ -3,7 +3,7 @@ import type { ColorSpace, ColorSpaceMap } from "@/utils/color/conversion.ts";
 import { getPaletteBaseColor } from "@/utils/color/palette.js";
 import { kernelGenerator } from "@/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/utils/dom/kernelGenerator.ts";
-import { startAnimationLoop, startLoop } from "@/utils/dom/utils.js";
+import { startAnimationLoop, startIdleLoop } from "@/utils/dom/utils.js";
 import { constrain, constrainLerp } from "@/utils/math/utils.js";
 
 const embed: ColorSpace = "lab";
@@ -172,7 +172,7 @@ export default function execute() {
         ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
         return true;
       });
-      startLoop(async function update(t: number) {
+      startIdleLoop(async function update(t: number) {
         if (!isActive) return false;
         if (!preTime) preTime = t;
         deltaTime += t - preTime;

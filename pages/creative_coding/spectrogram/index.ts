@@ -7,8 +7,8 @@ import {
   constrainMap,
   lerp,
   map,
-  maxA,
-  minA,
+  max,
+  min,
 } from "@/utils/math/utils.js";
 
 export default function execute() {
@@ -64,8 +64,8 @@ export default function execute() {
     analyser.getFloatFrequencyData(bufferArray);
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    const maxDb_ = constrain(maxA(bufferArray), MIN_DB, MAX_DB);
-    const minDb_ = constrain(minA(bufferArray), MIN_DB, MAX_DB);
+    const maxDb_ = constrain(max(bufferArray), MIN_DB, MAX_DB);
+    const minDb_ = constrain(min(bufferArray), MIN_DB, MAX_DB);
     maxDb = lerp(maxDb_ > maxDb ? 0.5 : 0.01, maxDb, maxDb_);
     minDb = lerp(minDb_ < minDb ? 0.5 : 0.01, minDb, minDb_);
     const mapDb = (db: number) => constrainMap(db, minDb, maxDb, 0, 1);

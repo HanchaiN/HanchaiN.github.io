@@ -25,15 +25,14 @@ export function extractPalette(
   reference: string[] = [],
   { n_sample = Infinity, max_iter = 1000 } = {},
 ) {
-  return kMeans(
-    samples.map(srgb2embed),
-    n_sample,
-    n_colors,
+  return kMeans(samples.map(srgb2embed), {
+    n_sample: n_sample,
+    n_cluster: n_colors,
     max_iter,
-    reference.map(str2embed),
+    seeds: reference.map(str2embed),
     copy,
-    color_distance,
-    (a, w) => {
+    dist: color_distance,
+    average: (a, w) => {
       const v: [number, number, number, number] = [0, 0, 0, 0];
       a.forEach((_, i) => {
         v[0] += a[i]![0] * w[i]!;
@@ -47,7 +46,7 @@ export function extractPalette(
         number,
       ];
     },
-  ).map((c) => embed2hex(c));
+  }).map((c) => embed2hex(c));
 }
 
 export function extendPalette(

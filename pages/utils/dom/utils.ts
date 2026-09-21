@@ -35,13 +35,22 @@ export function getMousePos(canvas: HTMLCanvasElement, evt: MouseEvent) {
   };
 }
 
-export function startLoop(
+export function startIdleLoop(
   callback: (t: DOMHighResTimeStamp) => Promise<boolean> | boolean,
+  delay: number = 0,
 ) {
   const t: DOMHighResTimeStamp = performance.now();
   requestIdleCallback(
     async () => {
-      if (await callback(t)) startLoop(callback);
+      let isDone = false;
+      setTimeout(() => {
+        if (isDone) startIdleLoop(callback);
+        isDone = true;
+      }, delay);
+      if (await callback(t)) {
+        if (isDone) startIdleLoop(callback);
+        isDone = true;
+      }
     },
     { timeout: 1 },
   );
@@ -49,8 +58,17 @@ export function startLoop(
 
 export function startAnimationLoop(
   callback: (t: DOMHighResTimeStamp) => Promise<boolean> | boolean,
+  delay: number = 0,
 ) {
   requestAnimationFrame(async function loop(t: DOMHighResTimeStamp) {
-    if (await callback(t)) requestAnimationFrame(loop);
+    let isDone = false;
+    setTimeout(() => {
+      if (isDone) requestAnimationFrame(loop);
+      isDone = true;
+    }, delay);
+    if (await callback(t)) {
+      if (isDone) requestAnimationFrame(loop);
+      isDone = true;
+    }
   });
 }

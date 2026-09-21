@@ -9,7 +9,7 @@ import { DistanceE94 } from "@/utils/color/distance.js";
 import { kernelRunner } from "@/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/utils/dom/kernelGenerator.ts";
 import { sample } from "@/utils/math/random.js";
-import { normalize, softargmax } from "@/utils/math/utils.js";
+import { normalizeSum, softargmax } from "@/utils/math/utils.js";
 import { vector_add, vector_scale } from "@/utils/math/vector.js";
 
 import type { IKernelFunctionThis_CMap } from "../color_grading/pipeline.js";
@@ -101,7 +101,7 @@ export function _applyRBF(
 
   const target_color = srgb2embed([r, g, b]);
 
-  const acc = normalize(
+  const acc = normalizeSum(
     embed_palette.map((c) => rbf(color_distance(target_color, c))),
   )
     .map((w, i) => [embed_palette[i], w] as [EmbedColor, number])

@@ -50,13 +50,13 @@ export function symlog(x: number) {
 export function symlog_inv(x: number) {
   return x > 0 ? Math.exp(x) - 1 : 1 - Math.exp(-x);
 }
-export function sum(x: numberArray, order: number = 2): number {
+export function sum(array: numberArray, order: number = 2): number {
   // iterative Kahan–Babuška algorithm
   const cs: number[] = new Array(order + 1).fill(0.0);
-  for (let i = 0; i < x.length; i++) {
+  for (let i = 0; i < array.length; i++) {
     let t,
       e,
-      cj = x[i]!;
+      cj = array[i]!;
     for (let j = 0; j < order; j++) {
       t = cs[j]! + cj;
       if (Math.abs(cs[j]!) >= Math.abs(cj)) {
@@ -72,7 +72,7 @@ export function sum(x: numberArray, order: number = 2): number {
   }
   return cs.reduce((a, b) => a + b, 0);
 }
-export function normalize<T extends numberArray>(
+export function normalizeSum<T extends numberArray>(
   array: T,
   total: number = 1,
 ): T {
@@ -81,21 +81,43 @@ export function normalize<T extends numberArray>(
     throw new Error("Cannot normalize an array with sum equal to zero");
   }
   if (!Number.isFinite(_sum))
-    return normalize(
+    return normalizeSum(
       array.map((v) => (Number.isFinite(v) ? 0 : v > 0 ? +1 : -1)) as T,
       total,
     );
   return array.map((v) => (v * total) / _sum) as T;
 }
-export function average(x: numberArray, w: numberArray | null = null) {
-  if (w === null) w = new Array(x.length).fill(1);
-  w = normalize(w);
+export function average(array: numberArray, w: numberArray | null = null) {
+  if (w === null) w = new Array(array.length).fill(1);
+  w = normalizeSum(w);
   return sum(
-    x.map((v, i) => v * w[i]!),
+    array.map((x, i) => x * w[i]!),
     2,
   );
 }
-export function maxA(x: numberArray) {
+export function variance(array: numberArray, w: numberArray | null = null) {
+  const mean = average(array, w);
+  return average(
+    array.map((x) => Math.pow(x - mean, 2)),
+    w,
+  );
+}
+export function normalizeMean<T extends numberArray>(
+  array: T,
+  w: numberArray | null = null,
+): T {
+  const m = average(array, w);
+  return array.map((x) => x - m) as T;
+}
+export function normalizeDist<T extends numberArray>(
+  array: T,
+  w: numberArray | null = null,
+): T {
+  const m = average(array, w);
+  const v = variance(array, w);
+  return array.map((x) => (x - m) / v) as T;
+}
+export function max(x: numberArray) {
   try {
     return Math.max(...x);
   } catch {
@@ -109,37 +131,41 @@ export function maxA(x: numberArray) {
     return acc;
   }
 }
-export function minA(x: numberArray) {
-  return -maxA(x.map((v) => -v));
+export function min(x: numberArray) {
+  return -max(x.map((v) => -v));
 }
 export function argmax(x: numberArray) {
-  const x_max = maxA(x);
+  const x_max = max(x);
   return x.indexOf(x_max);
 }
-export function softargmax<T extends numberArray>(x: T, temperature = 1): T {
-  const x_max = maxA(x);
-  if (Number.isFinite(x_max) && !Number.isNaN(x_max)) {
-    const x_ = x.map((v) => v - x_max);
-    if (temperature != 0) {
-      const exps = x_.map((v) => Math.exp(v / temperature)) as T;
-      const ret = normalize(exps);
-      if (ret.every((v) => Number.isFinite(v) && !Number.isNaN(v))) return ret;
-    }
-    {
-      const argmax = x_.map((v) => (v === 0 ? 1 : 0)) as T;
-      const ret = normalize(argmax);
-      if (ret.every((v) => Number.isFinite(v) && !Number.isNaN(v))) return ret;
-    }
+export function softargmax<T extends numberArray>(
+  array: T,
+  temperature = 1,
+): T {
+  if (!Number.isFinite(temperature))
+    return array.map((_) => 1 / array.length) as T;
+  if (Math.abs(temperature) !== 0) {
+    const norm = normalizeMean(array);
+    const exps = norm.map((x) => Math.exp(x / temperature)) as T;
+    const ret = normalizeSum(exps);
+    if (ret.every((v) => Number.isFinite(v) && !Number.isNaN(v))) return ret;
   }
   {
-    const ret = x.map(() => 0) as T;
-    ret[argmax(x)] = 1;
+    const x_max = temperature >= 0 ? max(array) : min(array);
+    const argmax = array.map((x) => (x === x_max ? 1 : 0)) as T;
+    const ret = normalizeSum(argmax);
+    if (ret.every((v) => Number.isFinite(v) && !Number.isNaN(v))) return ret;
+  }
+  {
+    const x_max = temperature >= 0 ? max(array) : min(array);
+    const ret = array.map(() => 0) as T;
+    ret[array.indexOf(x_max)] = 1;
     return ret;
   }
 }
-export function softmax(x: numberArray, temperature = 1) {
-  const argmax = softargmax(x, temperature);
-  return average(x, argmax);
+export function softmax(array: numberArray, temperature = 1) {
+  const argmax = softargmax(array, temperature);
+  return average(array, argmax);
 }
 
 export function productRange(from: number, to: number) {

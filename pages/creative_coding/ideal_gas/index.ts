@@ -4,7 +4,7 @@ import {
   getPaletteAccentColor,
   getPaletteBaseColor,
 } from "@/utils/color/palette.js";
-import { startAnimationLoop, startLoop } from "@/utils/dom/utils.js";
+import { startAnimationLoop, startIdleLoop } from "@/utils/dom/utils.js";
 import { constrainMap, gamma, symlog, symlog_inv } from "@/utils/math/utils.js";
 
 import { ParticleSystem, SETTING } from "./particles.js";
@@ -191,7 +191,7 @@ export default function execute() {
       temperature_handler();
       isActive = true;
       startAnimationLoop(draw);
-      startLoop(update);
+      startIdleLoop(update);
     },
     stop: () => {
       isActive = false;

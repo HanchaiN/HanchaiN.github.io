@@ -2,7 +2,7 @@ import convert_color from "@/utils/color/conversion.js";
 import { getPaletteAccentColor } from "@/utils/color/palette.js";
 import { kernelGenerator } from "@/utils/dom/kernelGenerator.js";
 import type { IKernelFunctionThis } from "@/utils/dom/kernelGenerator.ts";
-import { startAnimationLoop, startLoop } from "@/utils/dom/utils.js";
+import { startAnimationLoop, startIdleLoop } from "@/utils/dom/utils.js";
 import type { TComplex } from "@/utils/math/complex.ts";
 import { constrain, fpart, map } from "@/utils/math/utils.js";
 import type { TVector } from "@/utils/math/vector.ts";
@@ -84,7 +84,7 @@ export default function execute() {
           );
           return true;
         });
-        startLoop(function update(t) {
+        startIdleLoop(function update(t) {
           if (!isActive) return false;
           const z = map(fpart(t / T), 0, 1, -R, +R);
           iterate_all(renderer(z, t));

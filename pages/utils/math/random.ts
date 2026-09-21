@@ -4,6 +4,13 @@ import { vector_fromPolar, vector_fromSphere } from "./vector.js";
 export function randomUniform(l = 0, h = 1) {
   return lerp(Math.random(), l, h);
 }
+export function randomGaussian2(): [number, number] {
+  const U1 = Math.random(),
+    U2 = Math.random();
+  const Z0 = Math.sqrt(-2 * Math.log(U1)) * Math.cos(2 * Math.PI * U2),
+    Z1 = Math.sqrt(-2 * Math.log(U1)) * Math.sin(2 * Math.PI * U2);
+  return [Z0, Z1];
+}
 export function randomGaussian(mu = 0, sigma = 1) {
   const U1 = Math.random(),
     U2 = Math.random();

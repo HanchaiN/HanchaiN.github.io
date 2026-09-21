@@ -4,7 +4,7 @@ import {
   getLightness,
   getPaletteBaseColor,
 } from "@/utils/color/palette.js";
-import { startAnimationLoop, startLoop } from "@/utils/dom/utils.js";
+import { startAnimationLoop, startIdleLoop } from "@/utils/dom/utils.js";
 
 import { BoidSystem, SETTING } from "./boid.js";
 
@@ -98,7 +98,7 @@ export default function execute() {
       system = new BoidSystem(canvas.width / scale, canvas.height / scale, 256);
       setup();
       isActive = true;
-      startLoop(update);
+      startIdleLoop(update);
       startAnimationLoop(draw);
     },
     stop: () => {

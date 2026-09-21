@@ -1,6 +1,6 @@
 import convert_color from "@/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/utils/color/palette.js";
-import { startAnimationLoop, startLoop } from "@/utils/dom/utils.js";
+import { startAnimationLoop, startIdleLoop } from "@/utils/dom/utils.js";
 import { maxWorkers } from "@/utils/dom/worker/index.js";
 import { WorkerWrapper } from "@/utils/dom/worker/index.js";
 import { constrainMap } from "@/utils/math/utils.js";
@@ -116,7 +116,7 @@ export default function execute() {
       );
       isActive = true;
       startAnimationLoop(draw);
-      startLoop(update);
+      startIdleLoop(update);
     },
     stop: () => {
       isActive = false;
