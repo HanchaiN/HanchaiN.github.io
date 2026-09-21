@@ -9,7 +9,7 @@ import { startAnimationLoop } from "@/utils/dom/utils.js";
 import {
   maxWorkers,
   workerLoader,
-  WorkerWrapper,
+  TaskWorkerWrapper,
 } from "@/utils/dom/worker/index.js";
 import { throttle } from "@/utils/utils.js";
 
@@ -27,7 +27,7 @@ import type {
 } from "./worker_white.ts";
 
 export default function execute() {
-  let workers: WorkerWrapper<MessageRequest, MessageResponse>[] = [];
+  let workers: TaskWorkerWrapper<MessageRequest, MessageResponse>[] = [];
   let white_worker: Worker | null = null;
   let isActive = false;
   const scale = 1;
@@ -213,9 +213,10 @@ export default function execute() {
           new Array(Math.ceil(Math.max(1, maxWorkers - 1)))
             .fill(null)
             .map(async () => {
-              const worker = new WorkerWrapper<MessageRequest, MessageResponse>(
-                new URL("./worker.js", import.meta.url),
-              );
+              const worker = new TaskWorkerWrapper<
+                MessageRequest,
+                MessageResponse
+              >(new URL("./worker.js", import.meta.url));
               await worker.initialize(true);
               return worker;
             }),

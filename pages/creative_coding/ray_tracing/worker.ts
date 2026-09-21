@@ -1,3 +1,4 @@
+import { initTaskWorker } from "@/utils/dom/worker/init_worker.js";
 import type { TSpectrum } from "./spectrum.ts";
 import { trace_screen } from "./utils.js";
 
@@ -28,7 +29,4 @@ export function main(param: MessageRequest): MessageResponse {
   };
 }
 
-self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) =>
-  data !== null ? self.postMessage(main(data)) : null,
-);
-self?.postMessage(null); // indicate ready
+initTaskWorker(main, true);

@@ -9,7 +9,7 @@ import {
 } from "@/utils/color/palette.js";
 import { startAnimationLoop } from "@/utils/dom/utils.js";
 import { maxWorkers } from "@/utils/dom/worker/index.js";
-import { WorkerWrapper } from "@/utils/dom/worker/index.js";
+import { TaskWorkerWrapper } from "@/utils/dom/worker/index.js";
 import { constrain, max } from "@/utils/math/utils.js";
 
 import type { MessageRequest, MessageResponse } from "./worker.js";
@@ -28,7 +28,7 @@ export default function execute() {
     >,
     clock: THREE.Clock;
   let ended = true;
-  let workers: WorkerWrapper<MessageRequest, MessageResponse>[];
+  let workers: TaskWorkerWrapper<MessageRequest, MessageResponse>[];
 
   const counts = 8192;
   const superposition = [{ c: [1, 0] as TComplex, n: 3, l: 1, m: +1 }];
@@ -91,7 +91,7 @@ export default function execute() {
 
     workers = await Promise.all(
       new Array(maxWorkers).fill(null).map(async () => {
-        const worker = new WorkerWrapper<MessageRequest, MessageResponse>(
+        const worker = new TaskWorkerWrapper<MessageRequest, MessageResponse>(
           new URL("worker.js", import.meta.url),
         );
         await worker.initialize(true);

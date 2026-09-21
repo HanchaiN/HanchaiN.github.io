@@ -1,5 +1,6 @@
 import type { SRGBColor } from "@/utils/color/conversion.js";
 import { extractPalette } from "./pipeline.js";
+import { initTaskWorker } from "@/utils/dom/worker/init_worker.js";
 
 export type MessageRequest = {
   samples: SRGBColor[];
@@ -27,7 +28,4 @@ export function main({
   return response;
 }
 
-self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) =>
-  data !== null ? self.postMessage(main(data)) : null,
-);
-self?.postMessage(null); // indicate ready
+initTaskWorker(main, true);

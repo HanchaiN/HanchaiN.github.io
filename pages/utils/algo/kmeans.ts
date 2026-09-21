@@ -1,5 +1,5 @@
 import { sample } from "../math/random.js";
-import { argmax, average, min, softargmax } from "../math/utils.js";
+import { argmax, average, min, softargmax, sum } from "../math/utils.js";
 import { iterate_all } from "../utils.js";
 
 function getSilhouetteScoreArray<T>(
@@ -108,16 +108,9 @@ export function getSilhouetteScore<T>(
   );
 }
 
-function addCentroid<T>(
-  samples: T[],
-  seeds: T[] = [],
-  dist: (a: T, b: T) => number = () => 0,
-) {
+function addCentroid<T>(samples: T[], distance: number[]) {
   // K-means++ initialization
-  const weight = softargmax(
-    samples.map((v) => min(seeds.map((c) => dist(v, c)))),
-    0.1,
-  );
+  const weight = softargmax(distance, 0.1);
   return sample(samples, weight);
 }
 
@@ -151,7 +144,11 @@ export function extendCentroids<T>(
     if (c !== null) centroids.splice(centroids.indexOf(c), 1);
   }
   while (centroids.length < n) {
-    const c = addCentroid(getSample(), centroids, dist);
+    const subsamples = getSample();
+    const c = addCentroid(
+      subsamples,
+      subsamples.map((v) => min(seeds.map((c) => dist(v, c)))),
+    );
     if (c !== null) centroids.push(copy(c));
   }
   return centroids;
@@ -161,12 +158,14 @@ export function* kMeansStep<T>(
   samples: T[],
   {
     n_sample = 1000,
+    decay_rate = 0.05,
     n_cluster = 16,
+    min_dist = 1e-5,
     max_iter = 1000,
     seeds = null as T[] | null,
     copy = (v: T) => v,
     dist = (_a: T, _b: T) => 0 as number,
-    average = (array: T[], w: number[]) => array[argmax(w)] as T,
+    average: avg = (array: T[], w: number[]) => array[argmax(w)] as T,
   } = {},
 ) {
   if (seeds === null) seeds = [];
@@ -174,50 +173,85 @@ export function* kMeansStep<T>(
     samples
       .filter(() => n <= 0 || Math.random() < n / samples.length)
       .sort(() => Math.random() - 0.5);
-  const centroids = extendCentroids(samples, n_cluster, seeds, dist, copy);
+  const clusters = extendCentroids(samples, n_cluster, seeds, dist, copy).map(
+    (c) => ({
+      centroid: c,
+
+      acc_weight: 0,
+    }),
+  );
+  const total = {
+    acc_weight: 0,
+    acc_scale: 0,
+  };
+  const updateParams = (member_list: T[][]) => {
+    let converged = true;
+    const total_weight = sum(member_list.map((list) => list.length)); // samples.length;
+    total.acc_weight += total_weight;
+    total.acc_scale += 1;
+    clusters.forEach((cluster, j) => {
+      const c = cluster.centroid;
+      const members = member_list[j]!;
+      if (members.length === 0) {
+        converged = false;
+        return;
+      }
+
+      const local_weight = members.length;
+      const local_centroid = avg(
+        members,
+        members.map(() => 1),
+      );
+      cluster.centroid = avg(
+        [cluster.centroid, local_centroid],
+        [cluster.acc_weight, local_weight],
+      );
+
+      cluster.acc_weight + local_weight;
+      if (dist(c, cluster.centroid) > min_dist) converged = false;
+      cluster.acc_weight *= Math.max(0, 1 - decay_rate);
+    });
+    total.acc_weight *= Math.max(0, 1 - decay_rate);
+    total.acc_scale *= Math.max(0, 1 - decay_rate);
+    return converged;
+  };
   // K-means clustering
   let convergence: number = Infinity;
   for (let it = 0; it < max_iter; it++) {
-    const acc: T[][] = new Array(centroids.length).fill(0).map(() => []);
-    const sample = getSample();
-    for (let k = 0; k < sample.length; k++) {
-      let min_dist = Infinity;
-      let min_index: number[] = [];
-      for (let j = 0; j < centroids.length; j++) {
-        const d = dist(sample[k]!, centroids[j]!);
-        if (d < min_dist) {
-          min_dist = d;
-          min_index = [j];
-        } else if (d === min_dist) {
-          min_index.push(j);
-        }
-      }
-      acc[min_index[Math.floor(Math.random() * min_index.length)]!]!.push(
-        sample[k]!,
-      );
-    }
-    let converged = true;
-    for (let j = 0; j < centroids.length; j++) {
-      if (acc[j]!.length === 0) {
-        centroids[j] = addCentroid(getSample(), centroids, dist);
-        converged = false;
-      } else {
-        const c_ = average(
-          acc[j]!,
-          acc[j]!.map(() => 1 / acc[j]!.length),
+    const member_list: T[][] = new Array(clusters.length).fill(0).map(() => []);
+    const subsamples = getSample();
+    // Expectation
+    subsamples.forEach((s) => {
+      sample(
+        member_list,
+        softargmax(
+          clusters.map((cluster) => -dist(s, cluster.centroid)),
+          0,
+        ),
+      ).push(s);
+    });
+    // Maximization
+    let converged = updateParams(member_list);
+    // Constraint
+    clusters.forEach((cluster, j) => {
+      if (member_list[j]!.length === 0) {
+        cluster.centroid = addCentroid(
+          getSample(),
+          subsamples.map((s) =>
+            min(clusters.map(({ centroid }) => dist(centroid, s))),
+          ),
         );
-        if (dist(c_, centroids[j]!) > 1e-6) converged = false;
-        centroids[j] = c_;
+        converged = false;
       }
-    }
-    yield { centroids };
-    if (converged) {
+    });
+    yield { centroids: clusters.map(({ centroid }) => centroid) };
+    if (converged && it > 1) {
       convergence = it;
       break;
     }
   }
   console.debug(convergence);
-  return centroids;
+  return clusters.map(({ centroid }) => centroid);
 }
 
 export function kMeans<T>(...args: Parameters<typeof kMeansStep<T>>) {

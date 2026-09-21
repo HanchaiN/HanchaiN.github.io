@@ -1,3 +1,4 @@
+import { addMessageListener } from "@/utils/dom/worker/init_worker.js";
 import { LightAccumulator } from "./colors.js";
 import { Ray, trace } from "./ray.js";
 import {
@@ -52,9 +53,8 @@ function start() {
   lock = false;
 }
 
-self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) => {
+addMessageListener<MessageRequest>(({ data }) => {
   isActive = data.active;
   start();
 });
-
 start();

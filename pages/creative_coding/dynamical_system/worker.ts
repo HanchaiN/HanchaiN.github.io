@@ -1,5 +1,6 @@
 import { Vector } from "@/utils/math/vector.js";
 import { HigherOrderState } from "./dynamic.js";
+import { initTaskWorker } from "@/utils/dom/worker/init_worker.js";
 
 export type MessageRequest = {
   states?: { state: number[][]; hue: number }[];
@@ -59,9 +60,5 @@ export function createMain() {
     return response;
   };
 }
-const main = createMain();
 
-self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) =>
-  data !== null ? self.postMessage(main(data)) : null,
-);
-self?.postMessage(null); // indicate ready
+initTaskWorker(createMain(), true);

@@ -28,8 +28,8 @@ export default function execute() {
   let active = false;
   const baseline: [[mean: DataPoint, variance: number], weight: number][] = [
     [[[1, 2], 2 / 3], 0.25],
-    [[[3, 3], 1 / 3], 0.25],
-    [[[8, 0], 1 / 3], 0.75],
+    [[[3, 3], 1 / 3], 0.5],
+    [[[8, 0], 1 / 3], 0.25],
   ];
   const x0 = -5,
     x1 = 10,
@@ -50,6 +50,7 @@ export default function execute() {
   }
   function startGen({
     n_cluster = baseline.length,
+    iter_size = 0,
     mode = "kmean" as ClusterMode,
   }) {
     if (!samples) return;
@@ -57,7 +58,7 @@ export default function execute() {
     gen = { kmean: kMeansStep, gmm: gaussianMixtureStep }[mode](samples, {
       n_cluster,
       seeds,
-      n_sample: 0,
+      n_sample: iter_size,
       copy: (v) => v.map((x) => x) as DataPoint,
       dist: vector_dist,
       average: (array, w) =>
@@ -166,6 +167,9 @@ export default function execute() {
           startGen({
             n_cluster:
               form.querySelector<HTMLInputElement>("#cluster-count")
+                ?.valueAsNumber ?? baseline.length,
+            iter_size:
+              form.querySelector<HTMLInputElement>("#iterate-size")
                 ?.valueAsNumber ?? baseline.length,
             mode:
               (form.querySelector<HTMLSelectElement>("#algorithm")

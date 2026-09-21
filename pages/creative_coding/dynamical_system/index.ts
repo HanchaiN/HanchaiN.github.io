@@ -2,7 +2,7 @@ import convert_color from "@/utils/color/conversion.js";
 import { getPaletteBaseColor } from "@/utils/color/palette.js";
 import { startAnimationLoop, startIdleLoop } from "@/utils/dom/utils.js";
 import { maxWorkers } from "@/utils/dom/worker/index.js";
-import { WorkerWrapper } from "@/utils/dom/worker/index.js";
+import { TaskWorkerWrapper } from "@/utils/dom/worker/index.js";
 import { constrainMap } from "@/utils/math/utils.js";
 import { Vector } from "@/utils/math/vector.js";
 
@@ -13,7 +13,7 @@ const hcl2hex = convert_color("hcl", "hex")!;
 export default function execute() {
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
-  let workers: WorkerWrapper<MessageRequest, MessageResponse>[];
+  let workers: TaskWorkerWrapper<MessageRequest, MessageResponse>[];
   let isActive = false;
   const getBackground = () => getPaletteBaseColor(0);
   const param = {
@@ -93,7 +93,7 @@ export default function execute() {
       setup();
       workers = await Promise.all(
         new Array(maxWorkers).fill(null).map(async () => {
-          const worker = new WorkerWrapper<MessageRequest, MessageResponse>(
+          const worker = new TaskWorkerWrapper<MessageRequest, MessageResponse>(
             new URL("./worker.js", import.meta.url),
           );
           await worker.initialize(true);

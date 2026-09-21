@@ -10,6 +10,7 @@ import {
   psi_orbital_superposition_der,
   psi_orbital_superposition_sample,
 } from "../hydrogen_cloud/psi.js";
+import { initTaskWorker } from "@/utils/dom/worker/init_worker.js";
 
 export type MessageRequest = {
   superposition?: { c: TComplex; n: number; l: number; m: number }[];
@@ -91,9 +92,5 @@ export function createMain() {
     return response;
   };
 }
-const main = createMain();
 
-self?.addEventListener("message", ({ data }: MessageEvent<MessageRequest>) =>
-  data !== null ? self.postMessage(main(data)) : null,
-);
-self?.postMessage(null); // indicate ready
+initTaskWorker(createMain(), true);

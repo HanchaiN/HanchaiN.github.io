@@ -36,11 +36,12 @@ export function* gaussianMixtureStep<T>(
     n_sample = 1000,
     prior_conc = 5,
     reg_var = 1e-2,
+    decay_rate = 0.05,
     min_dist = 1e-2,
-    min_dist_norm = 0.25,
+    min_dist_norm = 0.05,
     min_weight = 1e-2,
     n_cluster = 16,
-    max_iter = 1000,
+    max_iter = 100,
     seeds = null as T[] | null,
     copy = (v: T) => v,
     dist = (_a: T, _b: T) => 0 as number,
@@ -54,49 +55,93 @@ export function* gaussianMixtureStep<T>(
       .sort(() => Math.random() - 0.5);
   const gaussian = (x: T, m: T, v: number) =>
     Math.exp(-Math.pow(dist(m, x), 2) / (2 * v));
-  const centroids = extendCentroids(samples, n_cluster, seeds, dist, copy);
-  const weights = centroids.map((_) => 1 / centroids.length);
-  const variances = centroids.map((_) => 1);
+  const clusters = extendCentroids(samples, n_cluster, seeds, dist, copy).map(
+    (c, _, centroids) => ({
+      centroid: c,
+      weight: 1 / centroids.length,
+      _variance: 1,
+      variance: 1,
+
+      acc_likelihood: 0,
+    }),
+  );
+  const total = {
+    acc_likelihood: 0,
+    acc_scale: 0,
+  };
   const updateParams = (samples: T[], likelihood: number[][]) => {
     let converged = true;
-    centroids.forEach((c, j) => {
-      weights[j] =
-        (sum(likelihood.map((l) => l[j]!)) + (prior_conc - 1)) /
-        (likelihood.length + weights.length * (prior_conc - 1));
-      centroids[j] = avg(
+    const total_likelihood = sum(likelihood.flat()); // samples.length;
+    total.acc_likelihood += total_likelihood;
+    total.acc_scale += 1;
+    clusters.forEach((cluster, j, clusters) => {
+      const c = cluster.centroid,
+        v = cluster.variance,
+        w = cluster.weight;
+
+      const local_likelihood = sum(likelihood.map((l) => l[j]!));
+      const local_centroid = avg(
         samples,
         likelihood.map((l) => l[j]!),
       );
-      variances[j] =
+      cluster.centroid = avg(
+        [cluster.centroid, local_centroid],
+        [cluster.acc_likelihood, local_likelihood],
+      );
+      const local_variance = average(
+        samples.map((s) => Math.pow(dist(s, cluster.centroid), 2)),
+        likelihood.map((l) => l[j]!),
+      );
+      cluster._variance = average(
+        [cluster._variance, local_variance],
+        [cluster.acc_likelihood, local_likelihood],
+      );
+
+      cluster.acc_likelihood += local_likelihood;
+      cluster.weight =
+        (cluster.acc_likelihood / total.acc_scale + (prior_conc - 1)) /
+        (total.acc_likelihood / total.acc_scale +
+          clusters.length * (prior_conc - 1));
+      cluster.variance =
         reg_var +
-        (samples.length > 1
-          ? average(
-              samples.map((s) => Math.pow(dist(s, centroids[j]!), 2)),
-              likelihood.map((l) => l[j]!),
-            ) *
-            (samples.length / (samples.length - 1))
-          : 0);
-      if (dist(c, centroids[j]) / Math.sqrt(variances[j]) > min_dist_norm)
+        cluster._variance *
+          (total.acc_likelihood > 1
+            ? total.acc_likelihood / (total.acc_likelihood - 1)
+            : 1);
+
+      if (
+        dist(c, cluster.centroid) > min_dist ||
+        dist(c, cluster.centroid) / Math.sqrt(cluster.variance) >
+          min_dist_norm ||
+        Math.abs(v - cluster.variance) > Math.pow(min_dist, 2) ||
+        Math.abs(w - cluster.weight) / w > min_weight
+      )
         converged = false;
+      cluster.acc_likelihood *= Math.max(0, 1 - decay_rate);
     });
+    total.acc_likelihood *= Math.max(0, 1 - decay_rate);
+    total.acc_scale *= Math.max(0, 1 - decay_rate);
     return converged;
   };
   {
     const likelihood: number[][] = samples.map((s) =>
       softargmax(
-        centroids.map((m) => -dist(m, s)),
+        clusters.map(({ centroid }) => -dist(centroid, s)),
         0,
       ),
     );
     updateParams(samples, likelihood);
+    total.acc_likelihood = 0;
+    clusters.forEach((cluster) => (cluster.acc_likelihood = 0));
   }
   let convergence: number = Infinity;
   for (let it = 0; it < max_iter; it++) {
     const subsamples = getSamples();
     // Expectation
     const likelihood: number[][] = subsamples.map((s) =>
-      centroids.map(
-        (_, j) => weights[j]! * gaussian(s, centroids[j]!, variances[j]!),
+      clusters.map(
+        (cluster) =>
+          cluster.weight! * gaussian(s, cluster.centroid, cluster.variance),
       ),
     );
     likelihood.forEach((_, i) => {
@@ -104,42 +149,50 @@ export function* gaussianMixtureStep<T>(
     });
     // Maximization
     let converged = updateParams(subsamples, likelihood);
-    centroids.forEach((c, j) => {
+    // Constraint
+    clusters.forEach((cluster, j) => {
       if (
-        weights[j]! < min_weight ||
-        variances[j]! < Math.pow(min_dist, 2) ||
-        centroids
+        cluster.weight < min_weight ||
+        cluster.variance < Math.pow(min_dist, 2) ||
+        clusters
           .slice(0, j)
           .some(
-            (c_, j_) =>
-              dist(c, c_) / Math.sqrt(variances[j]! + variances[j_]!) <
+            (cluster_) =>
+              dist(cluster.centroid, cluster_.centroid) /
+                Math.sqrt(cluster.variance + cluster_.variance) <
               min_dist_norm,
           )
       ) {
-        centroids[j] = addCentroid(
+        cluster.centroid = addCentroid(
           subsamples,
           likelihood.map((l) => max(l)),
           subsamples.map((s) =>
             min(
-              zip<[T, number]>(centroids, variances).map(
-                ([c, v]) => dist(c, s) / Math.sqrt(v),
+              clusters.map(
+                ({ centroid, variance }) =>
+                  dist(centroid, s) / Math.sqrt(variance),
               ),
             ),
           ),
         );
-        weights[j] = 1;
-        variances[j] = 1;
+        cluster.weight = 1;
+        cluster._variance = 1;
+        cluster.variance = 1;
         converged = false;
       }
     });
-    yield { centroids, weights, variances };
-    if (converged) {
+    yield {
+      centroids: clusters.map(({ centroid }) => centroid),
+      weights: clusters.map(({ weight }) => weight),
+      variances: clusters.map(({ variance }) => variance),
+    };
+    if (converged && it > 1) {
       convergence = it;
       break;
     }
   }
   console.debug(convergence);
-  return centroids;
+  return clusters.map(({ centroid }) => centroid);
 }
 
 export function gaussianMixture<T>(

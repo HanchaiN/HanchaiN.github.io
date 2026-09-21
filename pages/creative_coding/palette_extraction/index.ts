@@ -13,7 +13,7 @@ import { argmax, average } from "@/utils/math/utils.js";
 import { _applyClosest } from "../clut_generation/pipeline.js";
 import { applyColorMapping } from "../color_grading/pipeline.js";
 import { evaluatePalette, extendPalette } from "./pipeline.js";
-import { WorkerWrapper } from "@/utils/dom/worker/index.js";
+import { TaskWorkerWrapper } from "@/utils/dom/worker/index.js";
 import type { MessageRequest, MessageResponse } from "./worker.js";
 
 const embed: ColorSpace = "lab";
@@ -56,8 +56,27 @@ export default function execute() {
     setPalette([]);
     redraw(true);
   }
-  function getSample(sample_size: number = -1) {
-    const offscreen = new OffscreenCanvas(image.width, image.height),
+  function getSample(sample_size: number = 0, scale: number | null = null) {
+    if (scale === null) {
+      scale =
+        sample_size > 0
+          ? Math.min(
+              1,
+              Math.pow(
+                2,
+                -Math.floor(
+                  -Math.log2(
+                    Math.sqrt(sample_size / (image.width * image.height)),
+                  ),
+                ),
+              ),
+            )
+          : 1;
+    }
+    const offscreen = new OffscreenCanvas(
+        Math.ceil(image.width * scale),
+        Math.ceil(image.height * scale),
+      ),
       offscreenCtx = offscreen.getContext("2d")!;
     offscreenCtx.drawImage(image, 0, 0, offscreen.width, offscreen.height);
     const buffer = offscreenCtx.getImageData(
@@ -71,7 +90,12 @@ export default function execute() {
       .fill(0)
       .map((_, i) => i)
       .sort(() => Math.random() - 0.5)
-      .slice(0, sample_size)
+      .slice(
+        0,
+        sample_size > 0
+          ? Math.min(sample_size, buffer.width * buffer.height)
+          : -1,
+      )
       .map<SRGBColor>((i) => {
         return [
           buffer.data[i * 4 + 0]! / 255,
@@ -96,19 +120,24 @@ export default function execute() {
         return dA === dB ? Math.min(a, b) : dA < dB ? a : b;
       }, 0);
     const seed = cache[closestKey] ?? [];
-    const worker = new WorkerWrapper<MessageRequest, MessageResponse>(
+    const worker = new TaskWorkerWrapper<MessageRequest, MessageResponse>(
       new URL("worker.js", import.meta.url),
     );
     await worker.initialize(true);
+
+    const n_sample = form.querySelector<HTMLInputElement>(
+      "#sample-size-cluster",
+    )!.valueAsNumber;
+    const max_iter =
+      form.querySelector<HTMLInputElement>("#cluster-iter")!.valueAsNumber;
+    const target_sample = n_sample / (1 - Math.pow(0.99, 1 / max_iter));
     const { centroids } = await worker.execute({
-      samples: getSample(),
+      samples: getSample(target_sample),
       n_colors,
       reference: seed.map(embed2hex),
       options: {
-        n_sample: form.querySelector<HTMLInputElement>("#sample-size-cluster")!
-          .valueAsNumber,
-        max_iter:
-          form.querySelector<HTMLInputElement>("#cluster-iter")!.valueAsNumber,
+        n_sample,
+        max_iter,
         mode: form.querySelector<HTMLSelectElement>("#cluster-mode")!.value as
           "kmean" | "gmm",
       },
@@ -137,18 +166,12 @@ export default function execute() {
       iter > 0
         ? average(
             new Array(iter).fill(0).map(() =>
-              evaluatePalette(
-                getSample(sample_size > 0 ? sample_size : -1),
-                palette.map(embed2hex),
-                {
-                  simplify_a:
-                    form.querySelector<HTMLInputElement>("#simplify-a")!
-                      .checked,
-                  simplify_b:
-                    form.querySelector<HTMLInputElement>("#simplify-b")!
-                      .checked,
-                },
-              ),
+              evaluatePalette(getSample(sample_size), palette.map(embed2hex), {
+                simplify_a:
+                  form.querySelector<HTMLInputElement>("#simplify-a")!.checked,
+                simplify_b:
+                  form.querySelector<HTMLInputElement>("#simplify-b")!.checked,
+              }),
             ),
           )
         : 0;

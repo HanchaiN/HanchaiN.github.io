@@ -46,16 +46,20 @@ export function randomChi(alpha = 1) {
 export function randomRange(from: number, to: number) {
   return Math.floor(lerp(Math.random(), from, to + 1));
 }
+export function sampleIndex(prob: number[]): number {
+  const r = Math.random() * sum(prob);
+  let acc = 0;
+  for (let i = 0; i < prob.length; i++) {
+    acc += prob[i]!;
+    if (r < acc) return i;
+  }
+  return randomRange(0, prob.length - 1);
+}
 export function sample<T>(array: T[], prob: number[] = []): T {
   if (prob.length === array.length) {
-    const r = Math.random() * sum(prob);
-    let acc = 0;
-    for (let i = 0; i < array.length; i++) {
-      acc += prob[i]!;
-      if (r < acc) return array[i]!;
-    }
+    return array[sampleIndex(prob)]!;
   }
-  return array[Math.floor(Math.random() * array.length)]!;
+  return array[randomRange(0, array.length - 1)]!;
 }
 
 export function vector_random2D() {
