@@ -44,7 +44,7 @@ jobs:
           path: |
             ${{ github.workspace }}/external/smu/smu
             ${{ github.workspace }}/external/smu/*.o
-          key: ${{ runner.os }}-smu-${{ steps.detect-submodule-hash.output.smu }}
+          key: ${{ runner.os }}-smu-${{ steps.detect-submodule-hash.outputs.smu }}
           restore-keys: |
             ${{ runner.os }}-smu-
       - name: Build smu
@@ -57,7 +57,7 @@ jobs:
           path: |
             ${{ github.workspace }}/external/saait/saait
             ${{ github.workspace }}/external/saait/*.o
-          key: ${{ runner.os }}-saait-${{ steps.detect-submodule-hash.output.saait }}
+          key: ${{ runner.os }}-saait-${{ steps.detect-submodule-hash.outputs.saait }}
           restore-keys: |
             ${{ runner.os }}-saait-
       - name: Build saait
@@ -86,12 +86,12 @@ jobs:
           node-version: 24
       - name: Detect package manager cache
         id: detect-npm-cache
-        if: steps.detect-package-manager.output.manager == 'npm'
+        if: steps.detect-package-manager.outputs.manager == 'npm'
         run: |
           echo "cachedir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
       - uses: actions/cache@v6
         id: npm-cache
-        if: steps.detect-package-manager.output.manager == 'npm'
+        if: steps.detect-package-manager.outputs.manager == 'npm'
         with:
           path: ${{ steps.detect-npm-cache.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -99,12 +99,12 @@ jobs:
             ${{ runner.os }}-node-
       - name: Detect package manager cache
         id: detect-yarn-cache
-        if: steps.detect-package-manager.output.manager == 'yarn'
+        if: steps.detect-package-manager.outputs.manager == 'yarn'
         run: |
           echo "cachedir=$(yarn config get cacheFolder)" >> ${GITHUB_OUTPUT}
       - uses: actions/cache@v6
         id: yarn-cache
-        if: steps.detect-package-manager.output.manager == 'yarn'
+        if: steps.detect-package-manager.outputs.manager == 'yarn'
         with:
           path: ${{ steps.detect-yarn-cache.outputs.cachedir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
