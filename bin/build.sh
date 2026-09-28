@@ -52,7 +52,7 @@ rm -rf "$TMP_DIR"
 
 { cd "${ROOT_DIR}" && find "$REL_DIR" -type f -a \( -name '*.html' -o -name '*.css' \) -print ;} | while read -r file; do
     [ -f "${OUT_DIR}/$file" ] && continue
-    [ "$(basename $(dirname $(dirname "$file")))" == '_templates' ] && continue
+    [ "$(basename $(dirname $(dirname "$file")))" = '_templates' ] && continue
     mkdir -p "${OUT_DIR}/$(dirname "$file")"
     echo "Copying $file"
     cp "${ROOT_DIR}/$file" "${OUT_DIR}/$file"
