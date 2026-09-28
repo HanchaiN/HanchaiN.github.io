@@ -7,7 +7,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
     "build:script": "tsc",
-    "build:page": "./bin/build.sh",
+    "build:page": "sh -e ./bin/build.sh",
     "build": "npm run build:page && npm run build:script",
     "serve": "serve dist/"
   },
