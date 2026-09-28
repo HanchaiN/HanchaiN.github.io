@@ -47,7 +47,11 @@ done
 
 # https://git.codemadness.org/saait/
 mkdir -p "$OUT_DIR"
-find "${TMP_DIR}" -type f -name '*.cfg' -print0 | sort -zr | xargs -0 "${SAAIT_BIN}" -c "$GLOBAL_CONFIG" -o "$OUT_DIR" -t "$TEMPLATE_DIR"
+SORT_FLAGS=""
+if [ -f "$PAGE_DIR/.reverse" ]; then
+    SORT_FLAGS+=" -r"
+fi
+find "${TMP_DIR}" -type f -name '*.cfg' -print0 | sort -z ${SORT_FLAGS} | xargs -0 "${SAAIT_BIN}" -c "$GLOBAL_CONFIG" -o "$OUT_DIR" -t "$TEMPLATE_DIR"
 rm -rf "$TMP_DIR"
 
 { cd "${ROOT_DIR}" && find "$REL_DIR" -type f -a \( -name '*.html' -o -name '*.css' \) -print ;} | while read -r file; do
