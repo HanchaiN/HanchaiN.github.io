@@ -85,28 +85,28 @@ jobs:
         with:
           node-version: 24
       - name: Detect package manager cache
-        id: detect-node-cache
+        id: detect-npm-cache
         if: steps.detect-package-manager.output.manager == 'npm'
         run: |
           echo "cachedir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
       - uses: actions/cache@v6
-        id: node-cache
+        id: npm-cache
         if: steps.detect-package-manager.output.manager == 'npm'
         with:
-          path: ${{ steps.detect-node-cache.outputs.dir }}
+          path: ${{ steps.detect-npm-cache.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Detect package manager cache
-        id: detect-node-cache
+        id: detect-yarn-cache
         if: steps.detect-package-manager.output.manager == 'yarn'
         run: |
           echo "cachedir=$(yarn config get cacheFolder)" >> ${GITHUB_OUTPUT}
       - uses: actions/cache@v6
-        id: node-cache
+        id: yarn-cache
         if: steps.detect-package-manager.output.manager == 'yarn'
         with:
-          path: ${{ steps.detect-node-cache.outputs.cachedir }}
+          path: ${{ steps.detect-yarn-cache.outputs.cachedir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
