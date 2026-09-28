@@ -16,7 +16,7 @@ echo "Process ${PAGE_DIR} -> ${TMP_DIR} -> ${OUT_DIR}"
     path="$(dirname "$file")"
     mkdir -p "${TMP_DIR}/${path}"
     [ -f "${TMP_DIR}/${path}/.locked" ] && continue
-    [ "$path" == "$REL_DIR" ] && continue
+    [ "$path" = "$REL_DIR" ] && continue
     mkdir -p "${TMP_DIR}/${path}"
     echo "Entering ${path}"
     REL_DIR="${path}" OUT_DIR="${TMP_DIR}" GLOBAL_CONFIG= TEMPLATE_DIR= "$0"
@@ -25,7 +25,7 @@ echo "Process ${PAGE_DIR} -> ${TMP_DIR} -> ${OUT_DIR}"
 done
 
 { cd "${ROOT_DIR}" && find "$REL_DIR" -type f -name '*.cfg' -print ;} | while read -r file; do
-    [ "$(basename "$file")" == '.saait.cfg' ] && continue
+    [ "$(basename "$file")" = '.saait.cfg' ] && continue
     path="$(dirname "$file")"
     mkdir -p "${TMP_DIR}/${path}" "${OUT_DIR}/${path}"
     if [ -f "${TMP_DIR}/${path}/.locked" ]; then
