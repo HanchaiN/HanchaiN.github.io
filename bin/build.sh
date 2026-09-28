@@ -16,7 +16,7 @@ echo "Process ${PAGE_DIR} -> ${TMP_DIR} -> ${OUT_DIR}"
     path="$(dirname "$file")"
     mkdir -p "${TMP_DIR}/${path}"
     [ -f "${TMP_DIR}/${path}/.locked" ] && continue
-    [ "$(realpath --relative-to "${ROOT_DIR}/$REL_DIR" "${ROOT_DIR}/$path")" == '.' ] && continue
+    [ "$path" == "$REL_DIR" ] && continue
     mkdir -p "${TMP_DIR}/${path}"
     echo "Entering ${path}"
     REL_DIR="${path}" OUT_DIR="${TMP_DIR}" GLOBAL_CONFIG= TEMPLATE_DIR= "$0"
