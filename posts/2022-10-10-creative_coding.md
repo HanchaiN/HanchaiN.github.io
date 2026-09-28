@@ -1,9 +1,3 @@
----
-title: Creative coding
-tags:
-  - creative-coding
----
-
 > Creative coding is a type of computer programming in which the goal is to create something expressive instead of something functional. [1]
 
 ## Fractral tree

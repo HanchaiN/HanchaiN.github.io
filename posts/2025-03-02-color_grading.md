@@ -1,10 +1,3 @@
----
-title: Color grading
-tags:
-  - creative-coding
-  - creative-coding/color
----
-
 > A 3D LUT is a 3D lattice of output RGB color values that can be indexed by sets of input RGB colour values. Each axis of the lattice represents one of the three input color components and the input color thus defines a point inside the lattice. [1]
 
 See: [demo](/creative_coding/clut_generation)

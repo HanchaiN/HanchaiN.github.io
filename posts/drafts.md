@@ -1,0 +1,7 @@
+- 2024-01-31 [Dithering](/creative_coding/dithering)
+- 2023-11-28 [2D Fourier](/creative_coding/2d_fourier)
+- 2023-10-18 [Edge detection](/creative_coding/edge_detection)
+- 2023-09-14 [Self-organizing map](/creative_coding/self_organizing_map)
+- 2023-07-09 [Ideal gas](/creative_coding/ideal_gas)
+- 2023-04-22 [Dynamical system](/creative_coding/dynamical_system) (quoted 2023-07-04)
+- 2023-04-22 [Hydrogen orbital - pilot wave](/creative_coding/hydrogen_pilot) (quoted 2023-07-09)

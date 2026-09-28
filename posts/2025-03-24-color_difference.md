@@ -1,10 +1,3 @@
----
-title: Color difference
-tags:
-  - creative-coding
-  - creative-coding/color
----
-
 > In color science, color difference or color distance is the separation between two colors. [1]
 
 See: [demo](/creative_coding/color_difference)

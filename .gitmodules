@@ -1,0 +1,6 @@
+[submodule "smu"]
+	path = external/smu
+	url = https://github.com/Gottox/smu.git
+[submodule "saait"]
+	path = external/saait
+	url = git://git.codemadness.org/saait

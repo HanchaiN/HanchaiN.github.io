@@ -1,10 +1,3 @@
----
-title: Pitch detection
-tags:
-  - creative-coding
-  - creative-coding/audio
----
-
 > A spectrogram is a visual representation of the spectrum of frequencies of a signal as it varies with time. When applied to an audio signal, spectrograms are sometimes called sonographs, voiceprints, or voicegrams. [1]
 
 See: [demo](/creative_coding/spectrogram)

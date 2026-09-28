@@ -1,10 +1,3 @@
----
-title: Perlin noise
-tags:
-  - creative-coding
-  - creative-coding/generate
----
-
 > Perlin noise is a type of gradient noise developed by Ken Perlin in 1983. It has many uses, including but not limited to: procedurally generating terrain, applying pseudo-random changes to a variable, and assisting in the creation of image textures. It is most commonly implemented in two, three, or four dimensions, but can be defined for any number of dimensions. [1]
 
 See: [demo](/creative_coding/perlin_noise)

@@ -1,10 +1,3 @@
----
-title: Fractral tree
-tags:
-  - creative-coding
-  - creative-coding/generate
----
-
 > The Fibonacci spiral: an approximation of the golden spiral created by drawing circular arcs connecting the opposite corners of squares in the Fibonacci tiling. [1]
 
 See: [demo](/creative_coding/fractral_tree_curve)

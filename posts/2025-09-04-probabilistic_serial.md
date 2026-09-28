@@ -1,10 +1,3 @@
----
-title: Probabilistic Serial
-tags:
-  - creative-coding
-  - creative-coding/visualize
----
-
 > A simultaneous eating algorithm (SE) is an algorithm for allocating divisible objects among agents with ordinal preferences.
 > If all agents are given the same eating speed, then the SE allocation satisfies SD-envy-freeness. This particular variant of SE is called the Probabilistic Serial rule (PS). [1]
 

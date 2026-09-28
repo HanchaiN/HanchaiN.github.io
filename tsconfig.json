@@ -3,7 +3,7 @@
   "compilerOptions": {
     // File Layout
     "rootDir": "./pages",
-    "outDir": "./dist",
+    "outDir": "./dist/out",
     "allowJs": true,
 
     // Environment Settings

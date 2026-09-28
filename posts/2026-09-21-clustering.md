@@ -1,10 +1,3 @@
----
-title: Clustering
-tags:
-  - creative-coding
-  - creative-coding/visualization
----
-
 > Cluster analysis, or clustering, is a data analysis technique aimed at partitioning a set of objects into groups such that objects within the same group (called a cluster) exhibit greater similarity to one another (in some specific sense defined by the analyst) than to those in other groups (clusters). [1]
 
 See: [demo](/creative_coding/clustering)

@@ -31,6 +31,39 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          submodules: "true"
+      - name: Detech submodule hash
+        id: detect-submodule-hash
+        run: |
+          echo "smu=$(git submodule status | grep smu)" >> ${GITHUB_OUTPUT}
+          echo "saait=$(git submodule status | grep saait)" >> ${GITHUB_OUTPUT}
+      - uses: actions/cache@v6
+        id: smu-cache
+        with:
+          path: |
+            ${{ github.workspace }}/external/smu/smu
+            ${{ github.workspace }}/external/smu/*.o
+          key: ${{ runner.os }}-smu-${{ steps.detect-submodule-hash.output.smu }}
+          restore-keys: |
+            ${{ runner.os }}-smu-
+      - name: Build smu
+        if: steps.smu-cache.outputs.cache-hit != 'true'
+        run: |
+          make -C external/smu
+      - uses: actions/cache@v6
+        id: saait-cache
+        with:
+          path: |
+            ${{ github.workspace }}/external/saait/saait
+            ${{ github.workspace }}/external/saait/*.o
+          key: ${{ runner.os }}-saait-${{ steps.detect-submodule-hash.output.saait }}
+          restore-keys: |
+            ${{ runner.os }}-saait-
+      - name: Build saait
+        if: steps.saait-cache.outputs.cache-hit != 'true'
+        run: |
+          make -C external/saait
       - name: Detect package manager
         id: detect-package-manager
         run: |
@@ -50,7 +83,33 @@ jobs:
         run: corepack enable
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
+      - name: Detect package manager cache
+        id: detect-node-cache
+        if: steps.detect-package-manager.output.manager == 'npm'
+        run: |
+          echo "cachedir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
+      - uses: actions/cache@v6
+        id: node-cache
+        if: steps.detect-package-manager.output.manager == 'npm'
+        with:
+          path: ${{ steps.detect-node-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Detect package manager cache
+        id: detect-node-cache
+        if: steps.detect-package-manager.output.manager == 'yarn'
+        run: |
+          echo "cachedir=$(yarn config get cacheFolder)" >> ${GITHUB_OUTPUT}
+      - uses: actions/cache@v6
+        id: node-cache
+        if: steps.detect-package-manager.output.manager == 'yarn'
+        with:
+          path: ${{ steps.detect-node-cache.outputs.cachedir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       - name: Install dependencies
         run: |
           ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
@@ -62,7 +121,7 @@ jobs:
         id: deployment
         uses: actions/upload-pages-artifact@v5
         with:
-          path: ./dist
+          path: ./dist/out
 
   deploy:
     environment:
