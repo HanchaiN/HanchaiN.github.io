@@ -19,7 +19,7 @@ echo "Process ${PAGE_DIR} -> ${TMP_DIR} -> ${OUT_DIR}"
     [ "$path" = "$REL_DIR" ] && continue
     mkdir -p "${TMP_DIR}/${path}"
     echo "Entering ${path}"
-    REL_DIR="${path}" OUT_DIR="${TMP_DIR}" GLOBAL_CONFIG= TEMPLATE_DIR= "$0"
+    REL_DIR="${path}" OUT_DIR="${TMP_DIR}" GLOBAL_CONFIG='' TEMPLATE_DIR='' "$0"
     echo "Exiting ${path}"
     find "${TMP_DIR}/${path}/" -depth -type d -exec touch {}/.locked \; ;
 done
@@ -49,14 +49,14 @@ done
 mkdir -p "$OUT_DIR"
 SORT_FLAGS=""
 if [ -f "$PAGE_DIR/.reverse" ]; then
-    SORT_FLAGS+=" -r"
+    SORT_FLAGS="${SORT_FLAGS} -r"
 fi
 find "${TMP_DIR}" -type f -name '*.cfg' -print0 | sort -z ${SORT_FLAGS} | xargs -0 "${SAAIT_BIN}" -c "$GLOBAL_CONFIG" -o "$OUT_DIR" -t "$TEMPLATE_DIR"
 rm -rf "$TMP_DIR"
 
 { cd "${ROOT_DIR}" && find "$REL_DIR" -type f -a \( -name '*.html' -o -name '*.css' \) -print ;} | while read -r file; do
     [ -f "${OUT_DIR}/$file" ] && continue
-    [ "$(basename $(dirname $(dirname "$file")))" = '_templates' ] && continue
+    [ "$(basename "$(dirname "$(dirname "$file")")")" = '_templates' ] && continue
     mkdir -p "${OUT_DIR}/$(dirname "$file")"
     echo "Copying $file"
     cp "${ROOT_DIR}/$file" "${OUT_DIR}/$file"
