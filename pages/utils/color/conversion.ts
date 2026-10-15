@@ -346,6 +346,9 @@ function cubehelix2rgb(hsl: CubehelixColor): RGBColor {
 export function rgb2lum(rgb: RGBColor): [l: number] {
   return [0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]];
 }
+export function xyz2lum(xyz: XYZColor): [l: number] {
+  return [xyz[1]];
+}
 
 export default function convert_color<
   T1 extends keyof ColorSpaceMapExt,
@@ -403,6 +406,7 @@ export default function convert_color<
       lab: xyz2lab,
       rgb: xyz2rgb,
       lms: xyz2lms,
+      lum: xyz2lum,
     },
     rgb: {
       xyz: rgb2xyz,

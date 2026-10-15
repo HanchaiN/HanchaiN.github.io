@@ -1,10 +1,11 @@
-import { lerp } from "@/utils/math/utils.js";
+import { constrain, lerp } from "@/utils/math/utils.js";
 import { Vector } from "@/utils/math/vector.js";
 
 import { Light } from "./colors.js";
 import {
   MAX_DEPTH,
   MAX_DIST,
+  MIN_DEPTH,
   MIN_DIST,
   RIG_PROB,
   RIG_THETA,
@@ -59,6 +60,7 @@ function _trace(
   ray: Ray,
   object: SceneObject,
   depth = 0,
+  weight = 1,
 ): { light: Light; depth: number } {
   if (depth > MAX_DEPTH) return { light: Light.black, depth };
   const intersect = ray.intersect(object);
@@ -81,6 +83,7 @@ function _trace(
       rigDir.magSq() < 1e-6 || rigDir.dot(normal) * bdf_sign >= 0
         ? RIG_PROB
         : 0;
+    const rigNorm = 1 / (1 - rigProb + rigProb * amp_ratio);
     const isRigged = Math.random() < rigProb;
     if (isRigged) {
       const d0 = rigDir.copy().normalize();
@@ -108,15 +111,21 @@ function _trace(
       isInside ? 1 / material.index : material.index,
     );
     if (!bdf.isBlack()) {
-      const nextPos = position.copy();
-      const { light: next, depth: nextDepth } = _trace(
-        new Ray(nextPos, nextDir),
-        object,
-        depth + 1,
-      );
-      next.mult(1 / (1 - rigProb + rigProb * amp_ratio));
-      light.mix(next.apply(bdf));
-      depth = nextDepth;
+      const next_weight = weight * rigNorm * bdf.weight;
+      const cont_prob =
+        depth > MIN_DEPTH ? constrain(next_weight, 0.05, 0.95) : 1;
+      if (Math.random() < cont_prob) {
+        const nextPos = position.copy();
+        const { light: next, depth: nextDepth } = _trace(
+          new Ray(nextPos, nextDir),
+          object,
+          depth + 1,
+          next_weight,
+        );
+        next.mult(rigNorm / cont_prob);
+        light.mix(next.apply(bdf));
+        depth = nextDepth;
+      }
     }
   }
   if (!isInside && material.interior !== null)

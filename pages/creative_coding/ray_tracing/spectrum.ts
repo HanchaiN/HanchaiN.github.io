@@ -1,5 +1,10 @@
 import convert_color from "@/utils/color/conversion.js";
-import type { RGBColor, XYZColor } from "@/utils/color/conversion.ts";
+import type {
+  ColorSpaceExt,
+  ColorSpaceMapExt,
+  RGBColor,
+  XYZColor,
+} from "@/utils/color/conversion.ts";
 import { type TMatrix, matrix_mult_vector } from "@/utils/math/matrix.js";
 import { map } from "@/utils/math/utils.js";
 
@@ -18,12 +23,13 @@ export function blackBody(temp: number): TSpectrum {
   }) as TSpectrum;
 }
 
-export type CMapMode = "camera" | "approx" | "approxXYZ";
-export type CRefIllum = "Uniform" | "D65";
+export type CMapMode = "camera" | "approx" | "approxXYZ" | "CIE1931XYZ";
+export type CRefIllum_Strict = "Uniform" | "D65";
+export type CRefIllum = CRefIllum_Strict | "none";
 export type CMaxMode = "global" | "channel";
 export type CMode = {
   mode: CMapMode;
-  max_ref: CRefIllum | "none";
+  max_ref: CRefIllum;
   max_mode: CMaxMode;
 };
 export const default_mode: CMode = {
@@ -31,20 +37,28 @@ export const default_mode: CMode = {
   max_ref: "Uniform",
   max_mode: "global",
 };
-export const REF_ILLUM: { [key in CRefIllum]: TSpectrum } = {
+export const REF_ILLUM: { [key in CRefIllum_Strict]: TSpectrum } = {
   Uniform: wavelengths.map(() => MAX_LUM) as TSpectrum,
   D65: blackBody(6504),
 };
-const _toRGBs: Map<
+
+type _MapCacheParam = "xyz" | "rgb";
+type _MapCacheVariant<K extends _MapCacheParam> = {
+  _mode: K;
+  to: (v: TSpectrum) => ColorSpaceMapExt[K];
+  ref_illum: Map<CRefIllum_Strict, ColorSpaceMapExt[K]>;
+};
+
+const _toColors: Map<
   CMapMode,
-  {
-    _toRGB: (v: TSpectrum) => RGBColor;
-    ref_illum: Map<CRefIllum, RGBColor>;
-  }
+  { [K in _MapCacheParam]: _MapCacheVariant<K> }[_MapCacheParam]
 > = new Map();
-async function getToRGB({ mode, max_ref, max_mode }: CMode) {
-  if (!_toRGBs.has(mode)) {
-    let _toRGB: (v: TSpectrum) => RGBColor;
+export async function getToColor<K extends ColorSpaceExt>(
+  { mode, max_ref, max_mode }: CMode,
+  color_mode: K,
+): Promise<(v: TSpectrum) => ColorSpaceMapExt[K]> {
+  if (!_toColors.has(mode)) {
+    let cache: { [K in _MapCacheParam]: _MapCacheVariant<K> }[_MapCacheParam];
     switch (mode) {
       case "camera": {
         const { readSpectrum } = await import("./data.js");
@@ -58,8 +72,12 @@ async function getToRGB({ mode, max_ref, max_mode }: CMode) {
           await readSpectrum(_camera_response, "G"),
           await readSpectrum(_camera_response, "B"),
         ];
-        _toRGB = (v: TSpectrum): RGBColor => {
-          return matrix_mult_vector(camera_response, v) as RGBColor;
+        cache = {
+          _mode: "rgb",
+          ref_illum: new Map(),
+          to: (v: TSpectrum): RGBColor => {
+            return matrix_mult_vector(camera_response, v) as RGBColor;
+          },
         };
         break;
       }
@@ -76,8 +94,12 @@ async function getToRGB({ mode, max_ref, max_mode }: CMode) {
             400 <= v && v <= 500 ? 0.01 : 0,
           ) as TSpectrum,
         ];
-        _toRGB = (v: TSpectrum): RGBColor => {
-          return matrix_mult_vector(approx_response, v) as RGBColor;
+        cache = {
+          _mode: "rgb",
+          ref_illum: new Map(),
+          to: (v: TSpectrum): RGBColor => {
+            return matrix_mult_vector(approx_response, v) as RGBColor;
+          },
         };
         break;
       }
@@ -99,14 +121,40 @@ async function getToRGB({ mode, max_ref, max_mode }: CMode) {
           [12696.8, 55268.7, 4974.29],
           [6.147, 3039.01, 69633.7],
         ];
-        const xyz2rgb = convert_color("xyz", "rgb")!;
-        _toRGB = (v: TSpectrum): RGBColor => {
-          return xyz2rgb(
-            matrix_mult_vector(
+        cache = {
+          _mode: "xyz",
+          ref_illum: new Map(),
+          to: (v: TSpectrum): XYZColor => {
+            return matrix_mult_vector(
               apRGB2XYZ,
               matrix_mult_vector(approx_response, v),
-            ) as XYZColor,
-          );
+            ) as XYZColor;
+          },
+        };
+        break;
+      }
+      case "CIE1931XYZ": {
+        const { readSpectrum } = await import("./data.js");
+        const _color_matching_function = (
+          await import("./data/cie1931.json", {
+            with: { type: "json" },
+          })
+        ).default;
+        const color_matching_function: [
+          x: TSpectrum,
+          y: TSpectrum,
+          z: TSpectrum,
+        ] = [
+          await readSpectrum(_color_matching_function, "x"),
+          await readSpectrum(_color_matching_function, "y"),
+          await readSpectrum(_color_matching_function, "z"),
+        ];
+        cache = {
+          _mode: "xyz",
+          ref_illum: new Map(),
+          to: (v: TSpectrum): XYZColor => {
+            return matrix_mult_vector(color_matching_function, v) as XYZColor;
+          },
         };
         break;
       }
@@ -114,13 +162,15 @@ async function getToRGB({ mode, max_ref, max_mode }: CMode) {
         throw new Error(`Invalid mode ${mode}`);
       }
     }
-    _toRGBs.set(mode, { _toRGB, ref_illum: new Map() });
+    _toColors.set(mode, cache);
   }
-  const { _toRGB, ref_illum } = _toRGBs.get(mode)!;
-  if (max_ref === "none")
-    return { _toRGB, max_response: [1, 1, 1] as RGBColor };
+  const { _mode, to, ref_illum } = _toColors.get(mode)!;
+
+  if (max_ref === "none") {
+    return (v: TSpectrum) => convert_color(_mode, color_mode)!(to(v));
+  }
   if (!ref_illum.has(max_ref)) {
-    ref_illum.set(max_ref, _toRGB(REF_ILLUM[max_ref]!));
+    ref_illum.set(max_ref, to(REF_ILLUM[max_ref]!));
   }
   let max_response = ref_illum.get(max_ref)!;
   switch (max_mode) {
@@ -128,20 +178,21 @@ async function getToRGB({ mode, max_ref, max_mode }: CMode) {
       break;
     case "global": {
       const m = Math.max(...max_response);
-      max_response = max_response.map(() => m) as RGBColor;
+      max_response = max_response.map(() => m) as typeof max_response;
       break;
     }
     default:
       throw new Error(`Invalid max_mode ${max_mode}`);
   }
-  return { _toRGB, max_response };
+  return (v: TSpectrum) =>
+    convert_color(_mode, color_mode)!(
+      to(v).map((c, i) => c / max_response[i]!) as ReturnType<typeof to>,
+    );
 }
 
 export async function toRGB(
   v: TSpectrum,
   mode = default_mode,
 ): Promise<RGBColor> {
-  const { _toRGB, max_response } = await getToRGB(mode);
-  const rgb = _toRGB(v);
-  return rgb.map((c, i) => c / max_response[i]!) as RGBColor;
+  return (await getToColor(mode, "rgb"))(v);
 }

@@ -19,12 +19,22 @@ import "./data/light.json" with { type: "json" };
 import "./data/material.json" with { type: "json" };
 import { postProcessorGen, tone_mappers } from "./postprocessor.js";
 import { REF_ILLUM, default_mode, toRGB } from "./spectrum.js";
-import type { CMapMode, CMaxMode, CRefIllum, TSpectrum } from "./spectrum.ts";
+import type {
+  CMapMode,
+  CMaxMode,
+  CRefIllum,
+  CRefIllum_Strict,
+  TSpectrum,
+} from "./spectrum.ts";
 import type { MessageRequest, MessageResponse } from "./worker.ts";
 import type {
   MessageRequest as WhiteMessageRequest,
   MessageResponse as WhiteMessageResponse,
 } from "./worker_white.ts";
+import {
+  OrderedPriorityQueue,
+  type IBasePriorityQueue,
+} from "@/utils/algo/datastructure.js";
 
 export default function execute() {
   let workers: TaskWorkerWrapper<MessageRequest, MessageResponse>[] = [];
@@ -43,8 +53,8 @@ export default function execute() {
       const renderConfig = {
         postProcessor: (color: RGBColor) => color,
         ref: {
-          white: 0 as CRefIllum | number | null,
-          bright: 0 as CRefIllum | number | null,
+          white: 0 as CRefIllum_Strict | number | null,
+          bright: 0 as CRefIllum_Strict | number | null,
           light: null as TSpectrum | null,
           wall: null as TSpectrum | null,
         },
@@ -53,13 +63,16 @@ export default function execute() {
       };
       const refreshPostProcessor = throttle(async () => {
         async function getRef(
-          r: CRefIllum | number | null,
+          r: CRefIllum_Strict | number | null,
           c0: RGBColor = [1, 1, 1],
         ): Promise<RGBColor> {
           return r === null
             ? c0
             : r in REF_ILLUM
-              ? await toRGB(REF_ILLUM[r as CRefIllum]!, renderConfig.c_mode)
+              ? await toRGB(
+                  REF_ILLUM[r as CRefIllum_Strict]!,
+                  renderConfig.c_mode,
+                )
               : renderConfig.ref.wall !== null &&
                   renderConfig.ref.light !== null
                 ? clerp(
@@ -97,12 +110,12 @@ export default function execute() {
           });
         renderConfig.c_mode.max_ref = config.querySelector<HTMLSelectElement>(
           "#spectrum-ref",
-        )!.value as CRefIllum | "none";
+        )!.value as CRefIllum;
         config
           .querySelector<HTMLSelectElement>("#spectrum-ref")!
           .addEventListener("change", (e) => {
             renderConfig.c_mode.max_ref = (e.target as HTMLSelectElement)
-              .value as CRefIllum | "none";
+              .value as CRefIllum;
           });
         renderConfig.c_mode.max_mode = config.querySelector<HTMLSelectElement>(
           "#channel-ref",
@@ -120,14 +133,14 @@ export default function execute() {
           itpl: HTMLInputElement,
         ) {
           if (!check.value) return null;
-          if (r.value in REF_ILLUM) return r.value as CRefIllum;
+          if (r.value in REF_ILLUM) return r.value as CRefIllum_Strict;
           return itpl.valueAsNumber;
         }
         const wb = new CheckDisplay(
           config.querySelector<HTMLInputElement>("#white-balance")!,
           config.querySelector<HTMLElement>("#white-balance-options")!,
         );
-        const wb_r = new SelectDisplay<CRefIllum | "Wall-Light">(
+        const wb_r = new SelectDisplay<CRefIllum_Strict | "Wall-Light">(
           wb.container.querySelector<HTMLSelectElement>(
             "#white-balance-reference",
           )!,
@@ -197,7 +210,30 @@ export default function execute() {
       });
 
       {
-        const render_queue: MessageRequest[] = [];
+        const render_queue: IBasePriorityQueue<
+          MessageRequest & { priority?: number }
+        > = new OrderedPriorityQueue((e) => {
+          if (typeof e.priority !== "undefined") return e.priority;
+          const { x0, y0, x1, y1 } = e;
+          const w = x1 - x0;
+          const h = y1 - y0;
+          const low = w * h;
+          const min = (low * (w * h)) / 2;
+          let p = 0;
+          for (let x = 0; x < w; x++) {
+            if (p < -min) break;
+            for (let y = 0; y < h; y++) {
+              if (p < -min) break;
+              const a = acc[x0 + x]![y0 + y]!;
+              if (a.n < 10) {
+                p -= low;
+                continue;
+              }
+              p += Math.min(1, (0.01 + 0.05 * Math.abs(a.avg)) / a.se);
+            }
+          }
+          return (e.priority = p);
+        });
         for (let y0 = 0; y0 < render_size.h; y0 += chunkSize) {
           for (let x0 = 0; x0 < render_size.w; x0 += chunkSize) {
             render_queue.push({
@@ -222,12 +258,14 @@ export default function execute() {
             }),
         );
         workers.map(async function eventLoop(worker) {
-          let task;
+          let _qe;
           do {
             await new Promise((resolve) => setTimeout(resolve, 0));
             if (!isActive) return;
-            task = render_queue.shift();
-          } while (typeof task === "undefined");
+            _qe = render_queue.pop();
+          } while (_qe === null);
+          const { priority: _, ..._task } = _qe;
+          const task = _task as MessageRequest;
           worker.push(task);
           let data;
           try {
