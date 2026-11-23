@@ -21,6 +21,6 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "serve": "^14.2.7"
+    "serve": "^14.2.8"
   }
 }
